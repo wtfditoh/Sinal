@@ -1,5 +1,6 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
+import { initPerfil } from "./perfil.js";
 import {
   collection, query, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -19,12 +20,9 @@ function escapeHtml(texto) {
   return div.innerHTML;
 }
 
-function ehImagemDireta(url) {
-  return /\.(jpg|jpeg|png|webp|gif)$/i.test(url);
-}
-
 exigirLogin((usuario) => {
   usuarioAtual = usuario;
+  initPerfil(usuario);
   carregarCartazes();
   marcarVisita();
 });
@@ -52,7 +50,7 @@ function renderCartazes(docs) {
   cartazesCache.clear();
   emptyState.style.display = docs.length === 0 ? "block" : "none";
 
-  docs.forEach((docSnap) => {
+  docs.forEach((docSnap, index) => {
     const c = docSnap.data();
     const id = docSnap.id;
     cartazesCache.set(id, c);
@@ -60,16 +58,17 @@ function renderCartazes(docs) {
 
     const card = document.createElement("div");
     card.className = "cartaz-card";
+    card.style.animationDelay = `${index * 0.04}s`;
     card.innerHTML = `
       <div class="cartaz-thumb">
-        ${ehImagemDireta(c.link) ? `<img src="${escapeHtml(c.link)}" alt="">` : "🖼️"}
+        <img src="${escapeHtml(c.link)}" alt="" onerror="this.parentElement.textContent='🖼️'">
       </div>
       <div class="cartaz-body">
         <div class="cartaz-titulo">${escapeHtml(c.titulo)}</div>
         ${c.lembreteTexto ? `<div class="cartaz-lembrete">⏰ ${escapeHtml(c.lembreteTexto)}${c.lembreteData ? " · " + formatarDataCurta(c.lembreteData) : ""}</div>` : ""}
-        <a href="${escapeHtml(c.link)}" target="_blank" class="cartaz-link">Abrir arte ↗</a>
+        <a href="${escapeHtml(c.link)}" target="_blank" rel="noopener" class="cartaz-link">Abrir imagem ↗</a>
         <div class="cartaz-actions">
-          <div class="tally ${isPostado ? "postado" : "pendente"}" style="margin-right:4px;"></div>
+          <div class="tally ${isPostado ? "postado" : "pendente"}" style="margin-right:2px;"></div>
           ${isPostado
             ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
             : `<button class="btn btn-mark" data-id="${id}" data-action="marcar">✓ Postado</button>`
@@ -120,15 +119,32 @@ async function excluirCartaz(id) {
 // ---------- Modal ----------
 const modalOverlay = document.getElementById("modalOverlay");
 const cartazForm = document.getElementById("cartazForm");
-const modalTitle = document.querySelector(".modal-title");
-const submitBtn = cartazForm.querySelector("button[type=submit]");
+const modalTitle = document.getElementById("cartazModalTitle");
+const submitBtn = document.getElementById("cartazSubmitBtn");
+const linkInput = document.getElementById("pLink");
+const linkPreviewBox = document.getElementById("linkPreviewBox");
+const linkPreviewImg = document.getElementById("linkPreviewImg");
 let editandoId = null;
+
+linkInput.addEventListener("input", () => {
+  const url = linkInput.value.trim();
+  if (url) {
+    linkPreviewImg.src = url;
+    linkPreviewBox.style.display = "block";
+  } else {
+    linkPreviewBox.style.display = "none";
+  }
+});
+linkPreviewImg.addEventListener("error", () => {
+  linkPreviewBox.style.display = "none";
+});
 
 document.getElementById("addBtn").addEventListener("click", () => {
   editandoId = null;
   modalTitle.textContent = "Novo cartaz";
   submitBtn.textContent = "Salvar";
   cartazForm.reset();
+  linkPreviewBox.style.display = "none";
   modalOverlay.classList.add("active");
 });
 document.getElementById("cancelBtn").addEventListener("click", fecharModal);
@@ -150,6 +166,12 @@ function abrirModalEdicao(id) {
   document.getElementById("pTitulo").value = c.titulo || "";
   document.getElementById("pLink").value = c.link || "";
   document.getElementById("pLembreteTexto").value = c.lembreteTexto || "";
+  if (c.link) {
+    linkPreviewImg.src = c.link;
+    linkPreviewBox.style.display = "block";
+  } else {
+    linkPreviewBox.style.display = "none";
+  }
   if (c.lembreteData) {
     const d = c.lembreteData.toDate();
     document.getElementById("pLembreteData").value =
@@ -162,6 +184,7 @@ function abrirModalEdicao(id) {
 
 cartazForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+
   const lembreteDataInput = document.getElementById("pLembreteData").value;
   let lembreteData = null;
   if (lembreteDataInput) {
