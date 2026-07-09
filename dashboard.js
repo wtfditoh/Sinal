@@ -2,7 +2,7 @@ import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import {
   collection, query, where, orderBy, onSnapshot,
-  addDoc, updateDoc, doc, serverTimestamp, Timestamp,
+  addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
   getDoc, setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -11,6 +11,8 @@ const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","ag
 let usuarioAtual = null;
 let mesAtual = new Date();
 mesAtual.setDate(1);
+let editandoId = null; // null = criando novo culto; senão, id do culto sendo editado
+let cultosCache = new Map(); // id -> dados, usado pra preencher o modal de edição
 
 const listaCultos = document.getElementById("listaCultos");
 const emptyState = document.getElementById("emptyState");
@@ -39,6 +41,14 @@ function atualizarLabelMes() {
   monthLabel.textContent = `${MESES[mesAtual.getMonth()]} ${mesAtual.getFullYear()}`;
 }
 
+// ---------- Segurança básica de exibição (evita HTML quebrado com texto livre) ----------
+function escapeHtml(texto) {
+  if (!texto) return "";
+  const div = document.createElement("div");
+  div.textContent = texto;
+  return div.innerHTML;
+}
+
 // ---------- Carregar cultos do mês (tempo real) ----------
 let unsubscribe = null;
 
@@ -58,6 +68,8 @@ function carregarCultosDoMes() {
   if (unsubscribe) unsubscribe();
   unsubscribe = onSnapshot(q, (snapshot) => {
     renderCultos(snapshot.docs);
+  }, (erro) => {
+    console.error("Erro ao carregar cultos:", erro);
   });
 }
 
@@ -67,8 +79,14 @@ function formatarData(timestamp) {
   return `${dias[d.getDay()]}, ${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
 }
 
+function formatarDataInput(timestamp) {
+  const d = timestamp.toDate();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
 function renderCultos(docs) {
   listaCultos.innerHTML = "";
+  cultosCache.clear();
 
   if (docs.length === 0) {
     emptyState.style.display = "block";
@@ -81,6 +99,7 @@ function renderCultos(docs) {
   docs.forEach((docSnap) => {
     const c = docSnap.data();
     const id = docSnap.id;
+    cultosCache.set(id, c);
     const isPostado = c.status === "postado";
     if (isPostado) postados++; else pendentes++;
 
@@ -94,18 +113,21 @@ function renderCultos(docs) {
           ${isPostado ? "postado" : "pendente"}
         </div>
       </div>
-      <div class="culto-tipo">${c.tipo || "Culto"}</div>
-      ${c.tema ? `<div class="culto-tema">📌 ${c.tema}</div>` : ""}
-      ${c.versiculo ? `<div class="culto-versiculo">“${c.versiculo}”</div>` : ""}
+      <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
+      ${c.tema ? `<div class="culto-tema">📌 ${escapeHtml(c.tema)}</div>` : ""}
+      ${c.versiculo
+        ? `<div class="culto-versiculo">"${escapeHtml(c.versiculo)}"</div>`
+        : `<div class="culto-versiculo culto-versiculo-vazio">Versículo da pregação ainda não adicionado</div>`
+      }
       <div class="culto-actions">
         ${isPostado
-          ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>
-             <span class="btn" style="border:none;background:none;color:var(--text-faint);pointer-events:none;">
-               por ${c.postadoPor || "—"}
-             </span>`
+          ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
           : `<button class="btn btn-mark" data-id="${id}" data-action="marcar">✓ Marcar como postado</button>`
         }
+        <button class="btn" data-id="${id}" data-action="editar">Editar</button>
+        <button class="btn btn-excluir" data-id="${id}" data-action="excluir">🗑</button>
       </div>
+      ${isPostado ? `<div class="culto-postado-por">postado por ${escapeHtml(c.postadoPor) || "—"}</div>` : ""}
     `;
     listaCultos.appendChild(card);
   });
@@ -115,7 +137,13 @@ function renderCultos(docs) {
   document.getElementById("totalPendentes").textContent = pendentes;
 
   listaCultos.querySelectorAll("button[data-action]").forEach((btn) => {
-    btn.addEventListener("click", () => toggleStatus(btn.dataset.id, btn.dataset.action));
+    btn.addEventListener("click", () => {
+      const acao = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (acao === "marcar" || acao === "desmarcar") toggleStatus(id, acao);
+      else if (acao === "editar") abrirModalEdicao(id);
+      else if (acao === "excluir") excluirCulto(id);
+    });
   });
 }
 
@@ -138,19 +166,54 @@ async function toggleStatus(id, action) {
   }
 }
 
-// ---------- Modal: novo culto ----------
+async function excluirCulto(id) {
+  const c = cultosCache.get(id);
+  const confirmar = window.confirm(
+    `Excluir o culto "${c?.tipo || "sem nome"}" de ${c ? formatarData(c.data) : ""}?\n\nEssa ação não pode ser desfeita.`
+  );
+  if (!confirmar) return;
+  await deleteDoc(doc(db, "cultos", id));
+}
+
+// ---------- Modal: criar/editar culto ----------
 const modalOverlay = document.getElementById("modalOverlay");
 const cultoForm = document.getElementById("cultoForm");
+const modalTitle = document.querySelector(".modal-title");
+const submitBtn = cultoForm.querySelector("button[type=submit]");
 
 document.getElementById("addBtn").addEventListener("click", () => {
-  modalOverlay.classList.add("active");
+  abrirModalCriacao();
 });
-document.getElementById("cancelBtn").addEventListener("click", () => {
-  modalOverlay.classList.remove("active");
-});
+document.getElementById("cancelBtn").addEventListener("click", fecharModal);
 modalOverlay.addEventListener("click", (e) => {
-  if (e.target === modalOverlay) modalOverlay.classList.remove("active");
+  if (e.target === modalOverlay) fecharModal();
 });
+
+function abrirModalCriacao() {
+  editandoId = null;
+  modalTitle.textContent = "Novo culto";
+  submitBtn.textContent = "Salvar culto";
+  cultoForm.reset();
+  modalOverlay.classList.add("active");
+}
+
+function abrirModalEdicao(id) {
+  const c = cultosCache.get(id);
+  if (!c) return;
+  editandoId = id;
+  modalTitle.textContent = "Editar culto";
+  submitBtn.textContent = "Salvar alterações";
+  document.getElementById("cData").value = formatarDataInput(c.data);
+  document.getElementById("cTipo").value = c.tipo || "";
+  document.getElementById("cTema").value = c.tema || "";
+  document.getElementById("cVersiculo").value = c.versiculo || "";
+  modalOverlay.classList.add("active");
+}
+
+function fecharModal() {
+  modalOverlay.classList.remove("active");
+  editandoId = null;
+}
 
 cultoForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -158,20 +221,28 @@ cultoForm.addEventListener("submit", async (e) => {
   const [ano, mes, dia] = dataInput.split("-").map(Number);
   const dataCulto = new Date(ano, mes - 1, dia, 12, 0); // meio-dia evita fuso
 
-  await addDoc(collection(db, "cultos"), {
+  const payload = {
     data: Timestamp.fromDate(dataCulto),
     tipo: document.getElementById("cTipo").value,
     tema: document.getElementById("cTema").value,
     versiculo: document.getElementById("cVersiculo").value,
-    status: "pendente",
-    postadoPor: null,
-    postadoEm: null,
-    criadoPor: usuarioAtual.uid,
     atualizadoEm: serverTimestamp()
-  });
+  };
+
+  if (editandoId) {
+    await updateDoc(doc(db, "cultos", editandoId), payload);
+  } else {
+    await addDoc(collection(db, "cultos"), {
+      ...payload,
+      status: "pendente",
+      postadoPor: null,
+      postadoEm: null,
+      criadoPor: usuarioAtual.uid
+    });
+  }
 
   cultoForm.reset();
-  modalOverlay.classList.remove("active");
+  fecharModal();
 });
 
 // ---------- Notificações (bolinha vermelha) ----------
@@ -200,5 +271,7 @@ function checarColecao(nomeColecao, ultimaVisita, idBolinha) {
     } else {
       bolinha.classList.remove("active");
     }
+  }, (erro) => {
+    console.error(`Erro ao checar notificações de ${nomeColecao}:`, erro);
   });
 }
