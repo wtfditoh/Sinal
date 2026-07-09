@@ -1,6 +1,7 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
+import { confirmarExclusao } from "./confirm.js";
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -148,7 +149,8 @@ function renderModalDia(dataObj) {
 
   diaModalLista.querySelectorAll(".escala-del").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      if (!window.confirm("Remover essa escala?")) return;
+      const confirmar = await confirmarExclusao("Remover essa pessoa da escala desse dia?");
+      if (!confirmar) return;
       await deleteDoc(doc(db, "escalas", btn.dataset.id));
     });
   });
