@@ -813,3 +813,24 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   font-family: var(--font-mono);
   font-size: 10px;
 }
+
+/* ---------- Confirmação de exclusão ---------- */
+.confirm-sheet {
+  max-width: 340px;
+  margin: 0 auto;
+  text-align: center;
+  border-radius: 18px;
+}
+.confirm-icone { font-size: 30px; margin-bottom: 6px; }
+.confirm-sheet .modal-title { text-align: center; }
+.confirm-mensagem {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-top: 6px;
+}
+.btn-danger {
+  background: var(--red);
+  border-color: var(--red);
+  color: #2a0d0d;
+}
