@@ -1,5 +1,6 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
+import { initPerfil } from "./perfil.js";
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -21,6 +22,7 @@ const monthLabel = document.getElementById("monthLabel");
 // ---------- Sessão ----------
 exigirLogin((usuario) => {
   usuarioAtual = usuario;
+  initPerfil(usuario);
   carregarCultosDoMes();
   checarNotificacoes();
 });
@@ -96,7 +98,7 @@ function renderCultos(docs) {
 
   let postados = 0, pendentes = 0;
 
-  docs.forEach((docSnap) => {
+  docs.forEach((docSnap, index) => {
     const c = docSnap.data();
     const id = docSnap.id;
     cultosCache.set(id, c);
@@ -105,6 +107,7 @@ function renderCultos(docs) {
 
     const card = document.createElement("div");
     card.className = "culto-card";
+    card.style.animationDelay = `${index * 0.05}s`;
     card.innerHTML = `
       <div class="culto-top">
         <div class="tally ${isPostado ? "postado" : "pendente"}"></div>
@@ -135,6 +138,12 @@ function renderCultos(docs) {
   document.getElementById("totalCultos").textContent = docs.length;
   document.getElementById("totalPostados").textContent = postados;
   document.getElementById("totalPendentes").textContent = pendentes;
+
+  const progressFill = document.getElementById("progressFill");
+  if (progressFill) {
+    const pct = docs.length ? Math.round((postados / docs.length) * 100) : 0;
+    progressFill.style.width = `${pct}%`;
+  }
 
   listaCultos.querySelectorAll("button[data-action]").forEach((btn) => {
     btn.addEventListener("click", () => {
