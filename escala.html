@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SINAL — Escala</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B0D12">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">SINAL</div>
+    </div>
+    <button class="icon-btn" id="logoutBtn" title="Sair">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
+  </div>
+
+  <main>
+
+    <div class="month-nav">
+      <button class="month-arrow" id="prevMonth">‹</button>
+      <div class="month-label" id="monthLabel">—</div>
+      <button class="month-arrow" id="nextMonth">›</button>
+    </div>
+
+    <div id="listaEscala"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div style="font-size:32px;">🗓️</div>
+      <p>Nenhuma escala definida pra esse mês ainda.<br>Toca no + pra adicionar a primeira.</p>
+    </div>
+
+  </main>
+
+  <button class="fab-inner" id="addBtn" title="Nova escala">+</button>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <a href="dashboard.html" class="nav-item">
+        <span>📋</span> Dashboard
+      </a>
+      <a href="escala.html" class="nav-item active">
+        <span>🗓️</span> Escala
+      </a>
+      <a href="cartazes.html" class="nav-item">
+        <span>🖼️</span> Cartazes
+        <span class="notif-dot" id="dotCartazes"></span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: nova escala -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title">Nova escala</div>
+    <form id="escalaForm">
+      <div class="field">
+        <label for="eData">Data do culto</label>
+        <input type="date" id="eData" required>
+      </div>
+      <div class="field">
+        <label for="eFuncao">Função</label>
+        <select id="eFuncao" required>
+          <option value="Câmera">Câmera</option>
+          <option value="Transmissão/Live">Transmissão / Live</option>
+          <option value="Fotos">Fotos</option>
+          <option value="Stories/Redes">Stories / Redes sociais</option>
+          <option value="Datashow">Datashow / Projeção</option>
+          <option value="Som">Som</option>
+          <option value="Edição">Edição</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="ePessoa">Responsável</label>
+        <input type="text" id="ePessoa" placeholder="Nome da pessoa" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="escala.js"></script>
+</body>
+</html>
