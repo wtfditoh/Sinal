@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SINAL — Dashboard</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B0D12">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">SINAL</div>
+    </div>
+    <button class="icon-btn" id="logoutBtn" title="Sair">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
+  </div>
+
+  <main>
+
+    <div class="month-nav">
+      <button class="month-arrow" id="prevMonth">‹</button>
+      <div class="month-label" id="monthLabel">—</div>
+      <button class="month-arrow" id="nextMonth">›</button>
+    </div>
+
+    <div class="summary-strip">
+      <div class="summary-chip">
+        <div class="summary-num" id="totalCultos">0</div>
+        <div class="summary-tag">cultos</div>
+      </div>
+      <div class="summary-chip">
+        <div class="summary-num green" id="totalPostados">0</div>
+        <div class="summary-tag">postados</div>
+      </div>
+      <div class="summary-chip">
+        <div class="summary-num red" id="totalPendentes">0</div>
+        <div class="summary-tag">pendentes</div>
+      </div>
+    </div>
+
+    <div id="listaCultos"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div style="font-size:32px;">🎙️</div>
+      <p>Nenhum culto cadastrado nesse mês ainda.<br>Toca no + pra adicionar o primeiro.</p>
+    </div>
+
+  </main>
+
+  <button class="fab-inner" id="addBtn" title="Novo culto">+</button>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <div class="nav-item active">
+        <span>📋</span> Dashboard
+      </div>
+      <div class="nav-item">
+        <span>🗓️</span> Escala
+        <span class="notif-dot" id="dotEscala"></span>
+      </div>
+      <div class="nav-item">
+        <span>🖼️</span> Cartazes
+        <span class="notif-dot" id="dotCartazes"></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: novo culto -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title">Novo culto</div>
+    <form id="cultoForm">
+      <div class="field">
+        <label for="cData">Data</label>
+        <input type="date" id="cData" required>
+      </div>
+      <div class="field">
+        <label for="cTipo">Tipo de culto</label>
+        <input type="text" id="cTipo" placeholder="ex: Culto de Jovens, Domingo Manhã" required>
+      </div>
+      <div class="field">
+        <label for="cTema">Tema</label>
+        <input type="text" id="cTema" placeholder="ex: Fé em tempos de espera">
+      </div>
+      <div class="field">
+        <label for="cVersiculo">Versículo-chave</label>
+        <textarea id="cVersiculo" rows="2" placeholder="ex: Hebreus 11:1"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar culto</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

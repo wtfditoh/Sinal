@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SINAL — Painel de Mídia</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B0D12">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-mark"></div>
+    <div class="login-title">SINAL</div>
+    <div class="login-sub">Painel de mídia da equipe</div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="nome">Seu nome</label>
+        <input type="text" id="nome" autocomplete="username" required placeholder="ex: joão">
+      </div>
+      <div class="field">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" autocomplete="current-password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="login-btn" id="loginBtn">Entrar</button>
+      <div class="login-error" id="loginError">Nome ou senha incorretos.</div>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="js/auth.js"></script>
+</body>
+</html>

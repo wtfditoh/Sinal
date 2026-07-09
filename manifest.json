@@ -1,0 +1,9 @@
+{
+  "name": "SINAL — Painel de Mídia",
+  "short_name": "SINAL",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0B0D12",
+  "theme_color": "#0B0D12",
+  "icons": []
+}
