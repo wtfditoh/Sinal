@@ -14,7 +14,7 @@
 
   <div class="topbar">
     <div class="brand">
-      <div class="brand-mark"></div>
+      <button class="avatar-btn" id="topbarAvatar"></button>
       <div class="brand-name">SINAL</div>
     </div>
     <button class="icon-btn" id="logoutBtn" title="Sair">
@@ -34,12 +34,10 @@
       <button class="month-arrow" id="nextMonth">›</button>
     </div>
 
-    <div id="listaEscala"></div>
-
-    <div class="empty-state" id="emptyState" style="display:none;">
-      <div style="font-size:32px;">🗓️</div>
-      <p>Nenhuma escala definida pra esse mês ainda.<br>Toca no + pra adicionar a primeira.</p>
+    <div class="calendar-weekdays">
+      <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
     </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
 
   </main>
 
@@ -60,6 +58,15 @@
     </div>
   </div>
 
+</div>
+
+<!-- Modal: detalhe do dia -->
+<div class="modal-overlay" id="diaModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title" id="diaModalTitle">Dia</div>
+    <div id="diaModalLista"></div>
+    <button class="btn btn-primary" id="diaAddBtn" style="width:100%; margin-top:14px;">+ Adicionar pessoa</button>
+  </div>
 </div>
 
 <!-- Modal: nova escala -->
