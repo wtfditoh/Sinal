@@ -1,6 +1,7 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
+import { confirmarExclusao } from "./confirm.js";
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -177,8 +178,8 @@ async function toggleStatus(id, action) {
 
 async function excluirCulto(id) {
   const c = cultosCache.get(id);
-  const confirmar = window.confirm(
-    `Excluir o culto "${c?.tipo || "sem nome"}" de ${c ? formatarData(c.data) : ""}?\n\nEssa ação não pode ser desfeita.`
+  const confirmar = await confirmarExclusao(
+    `Excluir o culto "${c?.tipo || "sem nome"}" de ${c ? formatarData(c.data) : ""}? Essa ação não pode ser desfeita.`
   );
   if (!confirmar) return;
   await deleteDoc(doc(db, "cultos", id));
