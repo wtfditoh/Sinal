@@ -293,19 +293,12 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
 }
 
 /* ---------- FAB ---------- */
-.fab {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(calc(-1 * min(320px, 50vw) + 0px));
-  margin-left: 0;
-}
 .fab-inner {
   position: fixed;
-  bottom: 24px;
-  right: max(20px, calc(50vw - 320px + 20px));
-  width: 52px;
-  height: 52px;
+  bottom: 92px;
+  right: 20px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   background: var(--amber);
   color: #17130A;
@@ -315,12 +308,105 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 18px rgba(255, 176, 32, 0.35);
+  box-shadow: 0 4px 20px rgba(255, 176, 32, 0.45);
   transition: transform 0.15s ease;
+  z-index: 15;
 }
-.fab-inner:hover { transform: scale(1.06); }
+.fab-inner:active { transform: scale(0.92); }
+@media (min-width: 640px) {
+  .fab-inner { right: calc(50vw - 300px); }
+}
 
-/* ---------- Empty state ---------- */
+/* ---------- Avatar / Perfil ---------- */
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-elevated);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.avatar-btn:hover { border-color: var(--amber); transform: scale(1.05); }
+.avatar-img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-iniciais {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--amber);
+}
+.perfil-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.avatar-grande {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-elevated);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-grande img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-grande span {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 30px;
+  color: var(--amber);
+}
+
+/* ---------- Vida: animações e progresso ---------- */
+@keyframes slideFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.culto-card {
+  animation: slideFadeIn 0.35s ease backwards;
+}
+.culto-card:active { transform: scale(0.985); }
+
+@keyframes popIn {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.tally.postado { animation: popIn 0.35s ease; }
+
+.progress-strip {
+  height: 6px;
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  overflow: hidden;
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #6FE3B4);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.btn-mark {
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+.btn-mark:active { transform: scale(0.94); }
+
+.summary-chip {
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.summary-chip:active { transform: scale(0.97); }
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -528,6 +614,73 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
 
 .nav-item { text-decoration: none; }
 
+/* ---------- Calendário (Escala) ---------- */
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+.cal-day {
+  aspect-ratio: 1 / 1.1;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 5px 4px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideFadeIn 0.3s ease backwards;
+}
+.cal-day.vazio { border: none; background: transparent; }
+.cal-day.tem-culto { border-color: rgba(255, 176, 32, 0.35); }
+.cal-day.hoje { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+.cal-day:active { transform: scale(0.94); }
+.cal-day-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.cal-day-nomes {
+  margin-top: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+.cal-day-nome {
+  font-size: 8.5px;
+  line-height: 1.25;
+  color: var(--green);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-day-mais {
+  font-size: 8px;
+  color: var(--text-faint);
+}
+
+.dia-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
 /* ---------- Escala ---------- */
 .escala-dia {
   margin-bottom: 18px;
@@ -629,3 +782,34 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   flex-wrap: wrap;
 }
 .cartaz-actions .btn { padding: 7px 10px; font-size: 12px; }
+
+.upload-box {
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.upload-box:hover { border-color: var(--amber); }
+.upload-box img {
+  max-width: 100%;
+  max-height: 160px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+.field-hint {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.field-hint code {
+  background: var(--bg-elevated);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
