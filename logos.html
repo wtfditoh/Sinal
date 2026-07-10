@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SINAL — Logos</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0B0D12">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <button class="avatar-btn" id="topbarAvatar"></button>
+      <div class="brand-name">SINAL</div>
+    </div>
+    <button class="icon-btn" id="logoutBtn" title="Sair">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
+  </div>
+
+  <main>
+    <div class="month-nav">
+      <div class="month-label">Logos</div>
+    </div>
+
+    <div class="field" style="margin-bottom:16px;">
+      <input type="text" id="buscaInput" placeholder="Pesquisar departamento (ex: umadep)" style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; padding:11px 12px; color:var(--text); width:100%; font-size:14px;">
+    </div>
+
+    <div id="listaLogos"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div style="font-size:32px;">🏷️</div>
+      <p>Nenhuma logo cadastrada ainda.<br>Toca no + pra adicionar a primeira.</p>
+    </div>
+  </main>
+
+  <button class="fab-inner" id="addBtn" title="Nova logo">+</button>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <a href="dashboard.html" class="nav-item">
+        <span>📋</span> Culto
+      </a>
+      <a href="escala.html" class="nav-item">
+        <span>🗓️</span> Escala
+      </a>
+      <a href="cartazes.html" class="nav-item">
+        <span>🖼️</span> Cartazes
+      </a>
+      <a href="logos.html" class="nav-item active">
+        <span>🏷️</span> Logos
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: nova logo -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title" id="logoModalTitle">Nova logo</div>
+    <form id="logoForm">
+      <div class="field">
+        <label for="lDepartamento">Departamento</label>
+        <input type="text" id="lDepartamento" required placeholder="ex: UMADEP">
+      </div>
+      <div class="field">
+        <label for="lLink">Link da imagem</label>
+        <input type="url" id="lLink" required placeholder="Link direto do Drive, Canva, etc.">
+        <div class="field-hint">Dica pro Drive: <code>drive.google.com/uc?export=view&id=SEU_ID</code></div>
+        <div class="upload-box" id="logoPreviewBox" style="display:none; margin-top:8px;">
+          <img id="logoPreviewImg">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="logoSubmitBtn">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="logos.js"></script>
+</body>
+</html>
