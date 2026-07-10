@@ -15,6 +15,8 @@ let mesAtual = new Date();
 mesAtual.setDate(1);
 let editandoId = null; // null = criando novo culto; senão, id do culto sendo editado
 let cultosCache = new Map(); // id -> dados, usado pra preencher o modal de edição
+let solicitacoesCache = new Map();
+let respostaAtualId = null;
 
 const listaCultos = document.getElementById("listaCultos");
 const emptyState = document.getElementById("emptyState");
@@ -26,6 +28,7 @@ exigirLogin((usuario) => {
   initPerfil(usuario);
   carregarCultosDoMes();
   checarNotificacoes();
+  carregarSolicitacoes();
 });
 
 document.getElementById("logoutBtn").addEventListener("click", sair);
@@ -119,10 +122,13 @@ function renderCultos(docs) {
       </div>
       <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
       ${c.tema ? `<div class="culto-tema">📌 ${escapeHtml(c.tema)}</div>` : ""}
+      ${c.pregador ? `<div class="culto-tema">🎤 ${escapeHtml(c.pregador)}</div>` : ""}
+      ${c.eventoParte ? `<div class="culto-tema">📎 ${escapeHtml(c.eventoParte)}</div>` : ""}
       ${c.versiculo
         ? `<div class="culto-versiculo">"${escapeHtml(c.versiculo)}"</div>`
         : `<div class="culto-versiculo culto-versiculo-vazio">Versículo da pregação ainda não adicionado</div>`
       }
+      ${c.origemPublica ? `<div class="culto-origem-form">📝 preenchido pelo formulário de líderes</div>` : ""}
       <div class="culto-actions">
         ${isPostado
           ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
@@ -216,6 +222,8 @@ function abrirModalEdicao(id) {
   document.getElementById("cData").value = formatarDataInput(c.data);
   document.getElementById("cTipo").value = c.tipo || "";
   document.getElementById("cTema").value = c.tema || "";
+  document.getElementById("cPregador").value = c.pregador || "";
+  document.getElementById("cEventoParte").value = c.eventoParte || "";
   document.getElementById("cVersiculo").value = c.versiculo || "";
   modalOverlay.classList.add("active");
 }
@@ -235,6 +243,8 @@ cultoForm.addEventListener("submit", async (e) => {
     data: Timestamp.fromDate(dataCulto),
     tipo: document.getElementById("cTipo").value,
     tema: document.getElementById("cTema").value,
+    pregador: document.getElementById("cPregador").value,
+    eventoParte: document.getElementById("cEventoParte").value,
     versiculo: document.getElementById("cVersiculo").value,
     atualizadoEm: serverTimestamp()
   };
@@ -285,3 +295,187 @@ function checarColecao(nomeColecao, ultimaVisita, idBolinha) {
     console.error(`Erro ao checar notificações de ${nomeColecao}:`, erro);
   });
 }
+
+// ---------- Solicitações a líderes ----------
+const solicitacoesToggle = document.getElementById("solicitacoesToggle");
+const solicitacoesBody = document.getElementById("solicitacoesBody");
+const solicitacoesSeta = document.getElementById("solicitacoesSeta");
+const listaSolicitacoes = document.getElementById("listaSolicitacoes");
+
+solicitacoesToggle.addEventListener("click", () => {
+  const aberta = solicitacoesBody.style.display !== "none";
+  solicitacoesBody.style.display = aberta ? "none" : "block";
+  solicitacoesSeta.classList.toggle("aberta", !aberta);
+});
+
+function carregarSolicitacoes() {
+  const q = query(collection(db, "solicitacoes"), orderBy("criadoEm", "desc"));
+  onSnapshot(q, (snapshot) => {
+    solicitacoesCache.clear();
+    listaSolicitacoes.innerHTML = "";
+    let pendentesRespondidos = 0;
+
+    snapshot.docs.forEach((docSnap) => {
+      const s = docSnap.data();
+      const id = docSnap.id;
+      solicitacoesCache.set(id, s);
+      if (s.status === "respondido") pendentesRespondidos++;
+
+      const item = document.createElement("div");
+      item.className = "solicitacao-item";
+      const statusLabel = { aguardando: "aguardando resposta", respondido: "respondido, revisar", aplicado: "já aplicado" };
+      item.innerHTML = `
+        <div class="solicitacao-info">
+          <div class="solicitacao-titulo">${escapeHtml(s.titulo)}</div>
+          <div class="solicitacao-status ${s.status}">${statusLabel[s.status] || s.status}</div>
+        </div>
+        ${s.status === "aguardando" ? `<button class="btn" data-id="${id}" data-acao="link">🔗 Link</button>` : ""}
+        ${s.status === "respondido" ? `<button class="btn btn-mark" data-id="${id}" data-acao="ver">Ver</button>` : ""}
+        <button class="btn btn-excluir" data-id="${id}" data-acao="excluir">🗑</button>
+      `;
+      listaSolicitacoes.appendChild(item);
+    });
+
+    if (snapshot.empty) {
+      listaSolicitacoes.innerHTML = `<p style="color:var(--text-faint); font-size:13px;">Nenhum pedido gerado ainda.</p>`;
+    }
+
+    const badge = document.getElementById("solicitacoesBadge");
+    if (pendentesRespondidos > 0) {
+      badge.textContent = pendentesRespondidos;
+      badge.style.display = "inline-block";
+    } else {
+      badge.style.display = "none";
+    }
+
+    listaSolicitacoes.querySelectorAll("button[data-acao]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        const acao = btn.dataset.acao;
+        if (acao === "link") mostrarLink(id);
+        else if (acao === "ver") abrirModalResposta(id);
+        else if (acao === "excluir") excluirSolicitacao(id);
+      });
+    });
+  });
+}
+
+async function excluirSolicitacao(id) {
+  const confirmar = await confirmarExclusao("Excluir esse pedido? O link deixa de funcionar.");
+  if (!confirmar) return;
+  await deleteDoc(doc(db, "solicitacoes", id));
+}
+
+// ---------- Modal: nova solicitação ----------
+const solicitacaoModalOverlay = document.getElementById("solicitacaoModalOverlay");
+const solicitacaoForm = document.getElementById("solicitacaoForm");
+
+document.getElementById("novaSolicitacaoBtn").addEventListener("click", () => {
+  solicitacaoForm.reset();
+  solicitacaoModalOverlay.classList.add("active");
+});
+document.getElementById("solicitacaoCancelBtn").addEventListener("click", () => {
+  solicitacaoModalOverlay.classList.remove("active");
+});
+solicitacaoModalOverlay.addEventListener("click", (e) => {
+  if (e.target === solicitacaoModalOverlay) solicitacaoModalOverlay.classList.remove("active");
+});
+
+solicitacaoForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const dataInput = document.getElementById("sData").value;
+  let dataCulto = null;
+  if (dataInput) {
+    const [ano, mes, dia] = dataInput.split("-").map(Number);
+    dataCulto = Timestamp.fromDate(new Date(ano, mes - 1, dia, 12, 0));
+  }
+
+  const novoDoc = await addDoc(collection(db, "solicitacoes"), {
+    titulo: document.getElementById("sTitulo").value,
+    dataCulto,
+    status: "aguardando",
+    resposta: null,
+    criadoPor: usuarioAtual.uid,
+    criadoEm: serverTimestamp()
+  });
+
+  solicitacaoModalOverlay.classList.remove("active");
+  mostrarLink(novoDoc.id);
+});
+
+// ---------- Modal: link gerado ----------
+const linkModalOverlay = document.getElementById("linkModalOverlay");
+const linkGeradoTexto = document.getElementById("linkGeradoTexto");
+let linkAtual = "";
+
+function mostrarLink(id) {
+  linkAtual = `${window.location.origin}${window.location.pathname.replace("dashboard.html", "")}formulario.html?id=${id}`;
+  linkGeradoTexto.textContent = linkAtual;
+  linkModalOverlay.classList.add("active");
+}
+
+document.getElementById("linkFecharBtn").addEventListener("click", () => {
+  linkModalOverlay.classList.remove("active");
+});
+linkModalOverlay.addEventListener("click", (e) => {
+  if (e.target === linkModalOverlay) linkModalOverlay.classList.remove("active");
+});
+document.getElementById("linkCopiarBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("linkCopiarBtn");
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: "SINAL — Formulário do culto", url: linkAtual });
+    } else {
+      await navigator.clipboard.writeText(linkAtual);
+      btn.textContent = "Copiado!";
+      setTimeout(() => { btn.textContent = "Copiar link"; }, 1800);
+    }
+  } catch (e) {
+    // usuário cancelou o compartilhamento, ignora
+  }
+});
+
+// ---------- Modal: ver resposta / aplicar ----------
+const respostaModalOverlay = document.getElementById("respostaModalOverlay");
+const respostaModalTitulo = document.getElementById("respostaModalTitulo");
+const respostaModalCorpo = document.getElementById("respostaModalCorpo");
+
+function abrirModalResposta(id) {
+  const s = solicitacoesCache.get(id);
+  if (!s || !s.resposta) return;
+  respostaAtualId = id;
+  respostaModalTitulo.textContent = s.titulo;
+  const r = s.resposta;
+  respostaModalCorpo.innerHTML = `
+    <div class="resposta-linha"><strong>Preenchido por</strong>${escapeHtml(r.nomeLider) || "—"}</div>
+    ${r.pregador ? `<div class="resposta-linha"><strong>Pregador</strong>${escapeHtml(r.pregador)}</div>` : ""}
+    ${r.tema ? `<div class="resposta-linha"><strong>Tema</strong>${escapeHtml(r.tema)}</div>` : ""}
+    ${r.versiculo ? `<div class="resposta-linha"><strong>Versículo</strong>${escapeHtml(r.versiculo)}</div>` : ""}
+    ${r.eventoParte ? `<div class="resposta-linha"><strong>Evento à parte</strong>${escapeHtml(r.eventoParte)}</div>` : ""}
+  `;
+  respostaModalOverlay.classList.add("active");
+}
+
+document.getElementById("respostaFecharBtn").addEventListener("click", () => {
+  respostaModalOverlay.classList.remove("active");
+});
+respostaModalOverlay.addEventListener("click", (e) => {
+  if (e.target === respostaModalOverlay) respostaModalOverlay.classList.remove("active");
+});
+
+document.getElementById("respostaAplicarBtn").addEventListener("click", async () => {
+  const s = solicitacoesCache.get(respostaAtualId);
+  if (!s) return;
+  respostaModalOverlay.classList.remove("active");
+
+  // Abre o modal de culto já preenchido com a resposta, pra revisão antes de salvar
+  abrirModalCriacao();
+  if (s.dataCulto) document.getElementById("cData").value = formatarDataInput(s.dataCulto);
+  document.getElementById("cTipo").value = s.titulo;
+  document.getElementById("cTema").value = s.resposta.tema || "";
+  document.getElementById("cPregador").value = s.resposta.pregador || "";
+  document.getElementById("cVersiculo").value = s.resposta.versiculo || "";
+  document.getElementById("cEventoParte").value = s.resposta.eventoParte || "";
+
+  await updateDoc(doc(db, "solicitacoes", respostaAtualId), { status: "aplicado" });
+});
