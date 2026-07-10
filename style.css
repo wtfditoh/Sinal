@@ -530,13 +530,13 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 9.5px;
   font-family: var(--font-mono);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
   color: var(--text-faint);
   position: relative;
-  padding: 4px 14px;
+  padding: 4px 6px;
 }
 .nav-item.active { color: var(--amber); }
 .nav-item .notif-dot { top: -2px; right: 6px; }
@@ -610,6 +610,104 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   font-size: 11px;
   color: var(--text-faint);
   margin-top: 8px;
+}
+
+.culto-origem-form {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--amber);
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+}
+
+/* ---------- Solicitações a líderes ---------- */
+.solicitacoes-section {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.solicitacoes-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.solicitacoes-badge {
+  background: var(--amber);
+  color: #17130A;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+.solicitacoes-seta {
+  margin-left: auto;
+  color: var(--text-faint);
+  transition: transform 0.2s ease;
+}
+.solicitacoes-seta.aberta { transform: rotate(180deg); }
+.solicitacoes-body {
+  padding: 0 14px 14px;
+}
+.solicitacao-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.solicitacao-info { flex: 1; min-width: 0; }
+.solicitacao-titulo {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.solicitacao-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.solicitacao-status.aguardando { color: var(--text-faint); }
+.solicitacao-status.respondido { color: var(--green); }
+.solicitacao-status.aplicado { color: var(--text-faint); }
+
+.link-box {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--amber);
+  word-break: break-all;
+  margin-bottom: 6px;
+}
+
+.resposta-linha {
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.resposta-linha strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 2px;
 }
 
 .nav-item { text-decoration: none; }
