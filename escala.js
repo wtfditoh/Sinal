@@ -78,8 +78,55 @@ function carregarEscalaDoMes() {
       escalasPorDia.get(chave).push({ id: docSnap.id, ...d });
     });
     renderCalendario();
+    renderListaMes();
     if (diaSelecionado) renderModalDia(diaSelecionado);
   }, (erro) => console.error("Erro ao carregar escala:", erro));
+}
+
+function renderListaMes() {
+  const container = document.getElementById("listaEscalaMes");
+  const empty = document.getElementById("emptyStateMes");
+  container.innerHTML = "";
+
+  const chavesOrdenadas = [...escalasPorDia.keys()].sort();
+
+  if (chavesOrdenadas.length === 0) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  chavesOrdenadas.forEach((chave) => {
+    const itens = escalasPorDia.get(chave);
+    const dataObj = itens[0].data.toDate();
+
+    const bloco = document.createElement("div");
+    bloco.className = "escala-dia";
+    bloco.innerHTML = `
+      <div class="escala-dia-header">
+        ${DIAS_LONGO[dataObj.getDay()]}, ${String(dataObj.getDate()).padStart(2,"0")}/${String(dataObj.getMonth()+1).padStart(2,"0")}
+      </div>
+    `;
+    itens.forEach((item) => {
+      const linha = document.createElement("div");
+      linha.className = "escala-item";
+      linha.innerHTML = `
+        <span class="escala-funcao-tag">${escapeHtml(item.funcao)}</span>
+        <span class="escala-pessoa">${escapeHtml(item.pessoa)}</span>
+        <button class="escala-del" data-id="${item.id}" title="Remover">✕</button>
+      `;
+      bloco.appendChild(linha);
+    });
+    container.appendChild(bloco);
+  });
+
+  container.querySelectorAll(".escala-del").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const confirmar = await confirmarExclusao("Remover essa pessoa da escala desse dia?");
+      if (!confirmar) return;
+      await deleteDoc(doc(db, "escalas", btn.dataset.id));
+    });
+  });
 }
 
 function renderCalendario() {
@@ -207,7 +254,108 @@ document.getElementById("addBtn").addEventListener("click", () => {
   modalOverlay.classList.add("active");
 });
 
-// ---------- Marca visita e checa notificação de cartazes ----------
+// ---------- Baixar escala como imagem (pra compartilhar no zap) ----------
+document.getElementById("baixarEscalaBtn").addEventListener("click", gerarImagemEscala);
+
+async function gerarImagemEscala() {
+  const todos = [];
+  [...escalasPorDia.keys()].sort().forEach((chave) => {
+    escalasPorDia.get(chave).forEach((item) => todos.push(item));
+  });
+
+  if (todos.length === 0) {
+    alert("Não tem escala cadastrada nesse mês ainda.");
+    return;
+  }
+
+  const DIAS_ABREV = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  const largura = 900;
+  const alturaLinha = 68;
+  const alturaHeader = 150;
+  const alturaFooter = 50;
+  const altura = alturaHeader + todos.length * alturaLinha + alturaFooter;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = largura;
+  canvas.height = altura;
+  const ctx = canvas.getContext("2d");
+
+  // fundo
+  const grad = ctx.createLinearGradient(0, 0, largura, altura);
+  grad.addColorStop(0, "#181C26");
+  grad.addColorStop(1, "#08090D");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, largura, altura);
+
+  // marca circular
+  ctx.beginPath();
+  ctx.arc(56, 55, 18, 0, Math.PI * 2);
+  const anelGrad = ctx.createLinearGradient(38, 37, 74, 73);
+  anelGrad.addColorStop(0, "#2EE896");
+  anelGrad.addColorStop(0.5, "#FFB020");
+  anelGrad.addColorStop(1, "#FF5C5C");
+  ctx.strokeStyle = anelGrad;
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  // título
+  ctx.fillStyle = "#F5F6F8";
+  ctx.font = "bold 32px Arial, sans-serif";
+  ctx.fillText("SINAL — Escala", 92, 65);
+
+  ctx.fillStyle = "#9CA3B5";
+  ctx.font = "20px Arial, sans-serif";
+  ctx.fillText(`${MESES[mesAtual.getMonth()]} ${mesAtual.getFullYear()}`, 92, 95);
+
+  ctx.strokeStyle = "#2E3444";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(40, alturaHeader - 20);
+  ctx.lineTo(largura - 40, alturaHeader - 20);
+  ctx.stroke();
+
+  // linhas
+  todos.forEach((item, i) => {
+    const y = alturaHeader + i * alturaLinha;
+    const d = item.data.toDate();
+
+    if (i % 2 === 0) {
+      ctx.fillStyle = "rgba(255,255,255,0.025)";
+      ctx.fillRect(30, y, largura - 60, alturaLinha - 8);
+    }
+
+    ctx.fillStyle = "#F5F6F8";
+    ctx.font = "bold 22px Arial, sans-serif";
+    ctx.fillText(`${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`, 50, y + 32);
+
+    ctx.fillStyle = "#5C6478";
+    ctx.font = "13px Arial, sans-serif";
+    ctx.fillText(DIAS_ABREV[d.getDay()], 50, y + 52);
+
+    ctx.fillStyle = "#FFB020";
+    ctx.font = "bold 13px Arial, sans-serif";
+    ctx.fillText(item.funcao.toUpperCase(), 175, y + 26);
+
+    ctx.fillStyle = "#2EE896";
+    ctx.font = "bold 24px Arial, sans-serif";
+    ctx.fillText(item.pessoa, 175, y + 54);
+  });
+
+  ctx.fillStyle = "#5C6478";
+  ctx.font = "13px Arial, sans-serif";
+  ctx.fillText("Gerado pelo app SINAL", 40, altura - 18);
+
+  canvas.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `escala-${MESES[mesAtual.getMonth()]}-${mesAtual.getFullYear()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, "image/png");
+}
 async function marcarVisita() {
   const visitaRef = doc(db, "visitas", usuarioAtual.uid);
   await setDoc(visitaRef, { ultimaVisitaEscalas: serverTimestamp() }, { merge: true });
