@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');
 
 :root {
-  --bg: #0B0D12;
-  --bg-elevated: #11141B;
-  --card: #171B24;
-  --card-hover: #1D222D;
-  --border: #262B36;
-  --text: #EDEFF3;
-  --text-dim: #8A93A3;
-  --text-faint: #565D6C;
+  --bg: #08090D;
+  --bg-elevated: #14171F;
+  --card: #1B1F2A;
+  --card-hover: #232836;
+  --border: #2E3444;
+  --text: #F5F6F8;
+  --text-dim: #9CA3B5;
+  --text-faint: #5C6478;
 
   --amber: #FFB020;
-  --green: #34D399;
-  --red: #FB5B5B;
+  --green: #2EE896;
+  --red: #FF5C5C;
 
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius: 10px;
+  --radius: 12px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -170,19 +170,19 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
 
 /* ---------- Tally light (signature element) ---------- */
 .tally {
-  width: 11px;
-  height: 11px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 .tally.pendente {
   background: var(--red);
-  box-shadow: 0 0 8px 2px rgba(251, 91, 91, 0.55);
+  box-shadow: 0 0 10px 3px rgba(255, 92, 92, 0.65);
   animation: pulse-red 1.8s ease-in-out infinite;
 }
 .tally.postado {
   background: var(--green);
-  box-shadow: 0 0 8px 2px rgba(52, 211, 153, 0.5);
+  box-shadow: 0 0 10px 3px rgba(46, 232, 150, 0.6);
 }
 @keyframes pulse-red {
   0%, 100% { opacity: 1; }
@@ -210,13 +210,11 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 3px;
+  width: 4px;
   background: var(--red);
-  opacity: 0.55;
 }
 .culto-card:has(.tally.postado)::before {
   background: var(--green);
-  opacity: 0.7;
 }
 .culto-card:hover {
   border-color: #333a49;
@@ -245,19 +243,21 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   margin-left: auto;
   font-family: var(--font-mono);
   font-size: 10px;
+  font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 20px;
 }
-.culto-status-label.pendente { color: var(--red); background: rgba(251, 91, 91, 0.12); }
-.culto-status-label.postado { color: var(--green); background: rgba(52, 211, 153, 0.12); }
+.culto-status-label.pendente { color: var(--red); background: rgba(255, 92, 92, 0.15); border: 1px solid rgba(255, 92, 92, 0.3); }
+.culto-status-label.postado { color: var(--green); background: rgba(46, 232, 150, 0.15); border: 1px solid rgba(46, 232, 150, 0.3); }
 
 .culto-tipo {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 20px;
   margin-bottom: 6px;
+  letter-spacing: 0.2px;
 }
 
 .culto-tema {
@@ -478,6 +478,152 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   box-shadow: 0 0 12px 1px rgba(52, 211, 153, 0.55);
 }
 
+/* ---------- Hero do mês com anel circular ---------- */
+.hero-mes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: linear-gradient(160deg, var(--card), #14171F);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 16px 32px -20px rgba(0,0,0,0.7);
+}
+.hero-mes-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.hero-mes .month-label {
+  font-size: 19px;
+  min-width: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+.hero-mes .month-arrow { flex-shrink: 0; }
+.anel-progresso {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+}
+.anel-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.anel-trilho {
+  fill: none;
+  stroke: var(--bg-elevated);
+  stroke-width: 10;
+}
+.anel-preenchido {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 327;
+  stroke-dashoffset: 327;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.2,0.8,0.2,1);
+  filter: drop-shadow(0 0 6px rgba(46, 232, 150, 0.6));
+}
+.anel-texto {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.anel-pct {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 1;
+}
+.anel-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+/* ---------- Métricas ---------- */
+.metrica-hero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: linear-gradient(160deg, var(--card), #14171F);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 16px 32px -20px rgba(0,0,0,0.7);
+}
+.anel-grande { width: 92px; height: 92px; }
+.anel-grande .anel-pct { font-size: 22px; }
+.metrica-hero-info { flex: 1; }
+.metrica-hero-linha {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+.metrica-hero-linha span { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--text); }
+.metrica-hero-linha.green span { color: var(--green); }
+
+.metrica-secao-titulo {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 22px 0 10px;
+}
+.metrica-barra-linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  animation: slideFadeIn 0.3s ease backwards;
+}
+.metrica-barra-label {
+  width: 68px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.metrica-barra-trilho {
+  flex: 1;
+  height: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.metrica-barra-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #6FE3B4);
+  border-radius: 6px;
+  box-shadow: 0 0 8px 1px rgba(46, 232, 150, 0.5);
+  transition: width 0.5s ease;
+}
+.metrica-barra-fill.amber {
+  background: linear-gradient(90deg, var(--amber), #FFC454);
+  box-shadow: 0 0 8px 1px rgba(255, 176, 32, 0.5);
+}
+.metrica-barra-valor {
+  width: 44px;
+  flex-shrink: 0;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
 .btn-mark {
   transition: transform 0.12s ease, background 0.15s ease;
 }
@@ -623,15 +769,16 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font-size: 9.5px;
+  gap: 3px;
+  font-size: 8.5px;
   font-family: var(--font-mono);
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   text-transform: uppercase;
   color: var(--text-faint);
   position: relative;
-  padding: 4px 6px;
+  padding: 4px 3px;
 }
+.nav-item span:first-child { font-size: 15px; }
 .nav-item.active {
   color: var(--amber);
   position: relative;
@@ -654,24 +801,30 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(2px);
   display: none;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   z-index: 20;
+  padding: 20px;
 }
 .modal-overlay.active { display: flex; }
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
 .modal-sheet {
   width: 100%;
-  max-width: 640px;
+  max-width: 400px;
   background: linear-gradient(165deg, var(--card), #14171F);
-  border: 1px solid var(--border);
-  border-top: 1px solid #3a4152;
-  border-radius: 20px 20px 0 0;
-  padding: 24px 20px 28px;
+  border: 1px solid #333a49;
+  border-radius: 20px;
+  padding: 26px 22px;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 -20px 50px -20px rgba(0,0,0,0.6);
+  box-shadow: 0 30px 70px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03) inset;
+  animation: modalPop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .modal-title {
   font-family: var(--font-display);
