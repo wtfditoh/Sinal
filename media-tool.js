@@ -1,18 +1,13 @@
-const API_KEY = "const API_KEY = "5e3b2c6eae12635e0d9b00e9af54edb6";
+const API_KEY = "5e3b2c6eae12635e0d9b00e9af54edb6";
 
-
-// ELEMENTOS
 
 const fileInput = document.querySelector("#file");
-
 const preview = document.querySelector("#preview");
 const previewBox = document.querySelector("#previewBox");
 const emptyState = document.querySelector("#emptyState");
 
 const fileName = document.querySelector("#fileName");
 const removeBtn = document.querySelector("#remove");
-
-const renameInput = document.querySelector("#renameInput");
 
 const uploadBtn = document.querySelector("#upload");
 
@@ -26,15 +21,11 @@ const resultCard = document.querySelector("#resultCard");
 const urlBox = document.querySelector("#url");
 const copyBtn = document.querySelector("#copy");
 
-
+const renameInput = document.querySelector("#renameInput");
 
 let selectedFile = null;
 
 
-
-
-
-// STATUS
 
 function setStatus(text,color){
 
@@ -50,21 +41,16 @@ statusDot.style.boxShadow =
 
 
 
-
-// ESCOLHER IMAGEM
-
-fileInput.addEventListener("change",()=>{
+fileInput.addEventListener("change",(e)=>{
 
 
-const file = fileInput.files[0];
+const file = e.target.files[0];
 
 
 if(!file) return;
 
 
-
 selectedFile = file;
-
 
 
 preview.src = URL.createObjectURL(file);
@@ -73,18 +59,15 @@ preview.src = URL.createObjectURL(file);
 fileName.innerText = file.name;
 
 
-
 emptyState.classList.add("hidden");
 
 previewBox.classList.remove("hidden");
 
 
-
 setStatus(
-"Imagem pronta",
+"Imagem pronta para envio",
 "#FFB020"
 );
-
 
 
 });
@@ -92,17 +75,10 @@ setStatus(
 
 
 
-
-
-
-// REMOVER IMAGEM
-
-
 removeBtn.onclick = (e)=>{
 
 
 e.preventDefault();
-
 
 
 selectedFile = null;
@@ -114,15 +90,10 @@ fileInput.value="";
 preview.src="";
 
 
-renameInput.value="";
-
-
-
 previewBox.classList.add("hidden");
 
 
 emptyState.classList.remove("hidden");
-
 
 
 setStatus(
@@ -131,16 +102,9 @@ setStatus(
 );
 
 
-
 };
 
 
-
-
-
-
-
-// UPLOAD
 
 
 uploadBtn.onclick = async()=>{
@@ -148,20 +112,16 @@ uploadBtn.onclick = async()=>{
 
 if(!selectedFile){
 
-
-alert("Escolha uma imagem primeiro");
+alert("Selecione uma imagem primeiro");
 
 return;
-
 
 }
 
 
 
-
 uploadBtn.innerText =
 "⏳ ENVIANDO...";
-
 
 
 setStatus(
@@ -175,19 +135,18 @@ progress.classList.remove("hidden");
 
 
 
-let percent = 0;
+let progressValue = 0;
 
 
+const animation = setInterval(()=>{
 
-const loader = setInterval(()=>{
 
+if(progressValue < 90){
 
-if(percent < 90){
-
-percent += Math.random()*8;
+progressValue += Math.random()*10;
 
 progressBar.style.width =
-percent+"%";
+progressValue+"%";
 
 }
 
@@ -197,68 +156,40 @@ percent+"%";
 
 
 
-
-
-
-// RENOMEAR ARQUIVO
+const form = new FormData();
 
 
 let fileToSend = selectedFile;
 
 
-
 if(renameInput.value.trim()){
 
-
-const extension =
-selectedFile.name.split(".").pop();
-
+const extension = selectedFile.name.split(".").pop();
 
 
 const newName =
-renameInput.value
-.trim()
+renameInput.value.trim()
 +
 "."
 +
 extension;
 
 
-
 fileToSend = new File(
-
 [selectedFile],
-
 newName,
-
 {
 type:selectedFile.type
 }
-
 );
 
-
 }
-
-
-
-
-
-
-// FORM DATA
-
-
-const form = new FormData();
 
 
 form.append(
 "image",
 fileToSend
 );
-
-
-
-
 
 
 
@@ -285,8 +216,7 @@ const data = await response.json();
 
 
 
-
-clearInterval(loader);
+clearInterval(animation);
 
 
 
@@ -294,39 +224,20 @@ progressBar.style.width="100%";
 
 
 
-
-
-if(!data.success){
-
-throw new Error();
-
-}
+const link = data.data.url;
 
 
 
-
-const directLink =
-data.data.url;
-
-
-
-urlBox.innerText =
-directLink;
-
+urlBox.innerText = link;
 
 
 resultCard.classList.remove("hidden");
 
 
 
-
-
 setStatus(
-
 "Upload concluído",
-
 "#2EE896"
-
 );
 
 
@@ -336,43 +247,30 @@ uploadBtn.innerText =
 
 
 
-
-
 }
-
-
 
 catch(error){
 
 
-
-clearInterval(loader);
-
+clearInterval(animation);
 
 
 setStatus(
-
 "Erro no upload",
-
 "#FF5C5C"
-
 );
-
 
 
 uploadBtn.innerText =
 "⚡ GERAR LINK DIRETO";
 
 
-
 alert(
-"Erro ao enviar imagem"
+"Não foi possível enviar a imagem"
 );
 
 
-
 }
-
 
 
 };
@@ -381,35 +279,24 @@ alert(
 
 
 
+copyBtn.onclick = ()=>{
 
 
-
-// COPIAR LINK
-
-
-copyBtn.onclick = async()=>{
-
-
-await navigator.clipboard.writeText(
+navigator.clipboard.writeText(
 urlBox.innerText
 );
-
 
 
 copyBtn.innerText =
 "✓ COPIADO";
 
 
-
 setTimeout(()=>{
-
 
 copyBtn.innerText =
 "📋 COPIAR LINK";
 
-
 },2000);
-
 
 
 };
