@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&family=JetBrains+Mono:wght@500&display=swap');
 
 
 :root{
 
 --bg:#08090D;
---card:#1B1F2A;
+--card:#14171F;
 --border:#2E3444;
 --text:#F5F6F8;
 --dim:#9CA3B5;
@@ -25,15 +25,13 @@ body{
 min-height:100vh;
 
 background:
-radial-gradient(circle at top,rgba(255,176,32,.12),transparent 40%),
+radial-gradient(circle at 15% -10%,rgba(255,176,32,.15),transparent 40%),
+radial-gradient(circle at 90% 100%,rgba(46,232,150,.08),transparent 40%),
 var(--bg);
 
 color:var(--text);
 
 font-family:Inter,sans-serif;
-
-display:flex;
-justify-content:center;
 
 }
 
@@ -41,16 +39,23 @@ justify-content:center;
 
 .app{
 
-width:100%;
-max-width:520px;
+max-width:600px;
 
-padding:30px 20px;
+margin:auto;
+
+padding:25px 20px;
 
 }
 
 
 
-header{
+.top{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
 
 margin-bottom:25px;
 
@@ -58,20 +63,115 @@ margin-bottom:25px;
 
 
 
-.logo{
+.brand{
 
-font-family:"Space Grotesk";
-font-weight:700;
-font-size:30px;
+display:flex;
+
+align-items:center;
+
+gap:12px;
 
 }
 
 
 
-header p{
+.brand-mark{
+
+width:42px;
+height:42px;
+
+border-radius:50%;
+
+background:
+conic-gradient(
+var(--amber),
+#FFD36A,
+#fff,
+var(--amber)
+);
+
+position:relative;
+
+box-shadow:
+0 0 25px rgba(255,176,32,.35);
+
+}
+
+
+.brand-mark::after{
+
+content:"";
+
+position:absolute;
+
+inset:7px;
+
+background:var(--bg);
+
+border-radius:50%;
+
+}
+
+
+
+h1{
+
+font-family:"Space Grotesk";
+
+font-size:26px;
+
+letter-spacing:1px;
+
+background:linear-gradient(90deg,#fff,var(--amber));
+
+-webkit-background-clip:text;
+
+-webkit-text-fill-color:transparent;
+
+}
+
+
+
+.brand p{
+
+font-size:12px;
 
 color:var(--dim);
-margin-top:5px;
+
+margin-top:2px;
+
+}
+
+
+
+.status{
+
+font-family:"JetBrains Mono";
+
+font-size:10px;
+
+color:#2EE896;
+
+display:flex;
+
+align-items:center;
+
+gap:6px;
+
+}
+
+
+
+.status span{
+
+width:8px;
+height:8px;
+
+background:#2EE896;
+
+border-radius:50%;
+
+box-shadow:0 0 10px #2EE896;
 
 }
 
@@ -80,7 +180,7 @@ margin-top:5px;
 .card{
 
 background:
-linear-gradient(160deg,var(--card),#14171F);
+linear-gradient(160deg,#1B1F2A,#14171F);
 
 border:1px solid var(--border);
 
@@ -88,8 +188,26 @@ border-radius:18px;
 
 padding:20px;
 
+margin-bottom:15px;
+
 box-shadow:
-0 20px 40px -20px rgba(0,0,0,.7);
+0 20px 40px -25px black;
+
+}
+
+
+
+.section-title{
+
+font-family:"JetBrains Mono";
+
+font-size:11px;
+
+letter-spacing:1px;
+
+color:var(--dim);
+
+margin-bottom:15px;
 
 }
 
@@ -97,9 +215,9 @@ box-shadow:
 
 .drop{
 
-height:220px;
+height:230px;
 
-border:1.5px dashed var(--border);
+border:1.5px dashed #394052;
 
 border-radius:14px;
 
@@ -137,9 +255,29 @@ display:none;
 
 
 
-.drop span{
+.upload-icon{
 
-font-size:42px;
+width:60px;
+
+height:60px;
+
+border-radius:50%;
+
+margin:auto;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:32px;
+
+font-weight:bold;
+
+color:var(--amber);
+
+background:rgba(255,176,32,.12);
 
 }
 
@@ -149,7 +287,7 @@ font-size:42px;
 
 font-family:"Space Grotesk";
 
-margin-top:10px;
+margin-top:15px;
 
 }
 
@@ -157,9 +295,11 @@ margin-top:10px;
 
 .drop p{
 
+font-size:13px;
+
 color:var(--dim);
 
-font-size:13px;
+margin-top:5px;
 
 }
 
@@ -183,52 +323,38 @@ object-fit:cover;
 
 button{
 
-width:100%;
-
-margin-top:15px;
-
-padding:13px;
-
 border:none;
-
-border-radius:10px;
-
-background:
-linear-gradient(135deg,#FFC454,var(--amber));
-
-font-weight:700;
 
 cursor:pointer;
 
-}
-
-
-
-button:active{
-
-transform:scale(.98);
+font-weight:700;
 
 }
 
 
 
-.result{
+#upload{
 
-margin-top:20px;
+width:100%;
+
+margin-top:18px;
+
+padding:14px;
+
+border-radius:10px;
+
+background:linear-gradient(135deg,#FFC454,var(--amber));
+
+color:#17130A;
+
+box-shadow:
+0 10px 25px -10px rgba(255,176,32,.7);
 
 }
 
 
 
-.hidden{
-
-display:none;
-
-}
-
-
-
-.link{
+.link-box{
 
 background:#08090D;
 
@@ -238,11 +364,13 @@ border-radius:10px;
 
 padding:12px;
 
-margin-top:8px;
+font-family:"JetBrains Mono";
+
+font-size:12px;
+
+color:var(--amber);
 
 word-break:break-all;
-
-font-size:13px;
 
 }
 
@@ -251,5 +379,25 @@ font-size:13px;
 #copy{
 
 margin-top:12px;
+
+width:100%;
+
+padding:10px;
+
+border-radius:8px;
+
+background:var(--card);
+
+border:1px solid var(--border);
+
+color:var(--text);
+
+}
+
+
+
+.hidden{
+
+display:none;
 
 }
