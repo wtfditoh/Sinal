@@ -146,10 +146,14 @@ function renderCultos(docs) {
   document.getElementById("totalPostados").textContent = postados;
   document.getElementById("totalPendentes").textContent = pendentes;
 
-  const progressFill = document.getElementById("progressFill");
-  if (progressFill) {
+  const anelPreenchido = document.getElementById("anelPreenchido");
+  const anelPct = document.getElementById("anelPct");
+  if (anelPreenchido) {
     const pct = docs.length ? Math.round((postados / docs.length) * 100) : 0;
-    progressFill.style.width = `${pct}%`;
+    const circunferencia = 327; // 2 * PI * 52
+    const offset = circunferencia - (circunferencia * pct) / 100;
+    anelPreenchido.style.strokeDashoffset = offset;
+    anelPct.textContent = `${pct}%`;
   }
 
   listaCultos.querySelectorAll("button[data-action]").forEach((btn) => {
