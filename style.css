@@ -624,6 +624,88 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   color: var(--text-faint);
 }
 
+/* ---------- Sub-abas (Recursos: Logos / Senhas) ---------- */
+.sub-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+}
+.sub-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 9px;
+  border-radius: 7px;
+  transition: all 0.15s ease;
+}
+.sub-tab.active {
+  background: var(--card);
+  color: var(--amber);
+  box-shadow: 0 4px 10px -4px rgba(0,0,0,0.5);
+}
+
+.senha-aviso {
+  font-size: 11px;
+  color: var(--text-faint);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.senha-card {
+  background: linear-gradient(160deg, var(--card), #14171F);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 18px -14px rgba(0,0,0,0.6);
+  animation: slideFadeIn 0.3s ease backwards;
+}
+.senha-servico {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.senha-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+.senha-copiar {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 12px;
+  padding: 2px 6px;
+}
+.senha-copiar:hover { color: var(--amber); }
+.senha-obs {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 6px;
+  font-style: italic;
+}
+.senha-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
 .btn-mark {
   transition: transform 0.12s ease, background 0.15s ease;
 }
@@ -1147,9 +1229,15 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
 }
 .cartaz-link {
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--amber);
   text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-body);
+  cursor: pointer;
 }
+.cartaz-link:disabled { color: var(--text-faint); cursor: default; }
 .cartaz-actions {
   display: flex;
   gap: 6px;
