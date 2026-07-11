@@ -2,6 +2,7 @@ import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
 import { confirmarExclusao } from "./confirm.js";
+import { atualizarBadgeApp } from "./badge.js";
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -17,6 +18,7 @@ let editandoId = null; // null = criando novo culto; senão, id do culto sendo e
 let cultosCache = new Map(); // id -> dados, usado pra preencher o modal de edição
 let solicitacoesCache = new Map();
 let respostaAtualId = null;
+let contagemCultosPendentes = 0;
 
 const listaCultos = document.getElementById("listaCultos");
 const emptyState = document.getElementById("emptyState");
@@ -91,6 +93,10 @@ function formatarDataInput(timestamp) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
+function renderChecklistItem(cultoId, chave, label, feito) {
+  return `<button class="checklist-item ${feito ? "feito" : ""}" data-culto="${cultoId}" data-chave="${chave}">${label}</button>`;
+}
+
 function renderCultos(docs) {
   listaCultos.innerHTML = "";
   cultosCache.clear();
@@ -130,6 +136,11 @@ function renderCultos(docs) {
         : `<div class="culto-versiculo culto-versiculo-vazio">Versículo da pregação ainda não adicionado</div>`
       }
       ${c.origemPublica ? `<div class="culto-origem-form">📝 preenchido pelo formulário de líderes</div>` : ""}
+      <div class="checklist-dia">
+        ${renderChecklistItem(id, "foto", "📸 Foto", c.checklist?.foto)}
+        ${renderChecklistItem(id, "story", "📱 Story", c.checklist?.story)}
+        ${renderChecklistItem(id, "feed", "📰 Feed", c.checklist?.feed)}
+      </div>
       <div class="culto-actions">
         ${isPostado
           ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
@@ -146,6 +157,8 @@ function renderCultos(docs) {
   document.getElementById("totalCultos").textContent = docs.length;
   document.getElementById("totalPostados").textContent = postados;
   document.getElementById("totalPendentes").textContent = pendentes;
+  contagemCultosPendentes = pendentes;
+  atualizarBadgeApp(contagemCultosPendentes + contagemLideresRespondidos + contagemPedidosAbertos);
 
   const anelPreenchido = document.getElementById("anelPreenchido");
   const anelPct = document.getElementById("anelPct");
@@ -157,6 +170,10 @@ function renderCultos(docs) {
     anelPct.textContent = `${pct}%`;
   }
 
+  listaCultos.querySelectorAll(".checklist-item").forEach((btn) => {
+    btn.addEventListener("click", () => toggleChecklistItem(btn.dataset.culto, btn.dataset.chave, btn));
+  });
+
   listaCultos.querySelectorAll("button[data-action]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const acao = btn.dataset.action;
@@ -165,6 +182,15 @@ function renderCultos(docs) {
       else if (acao === "editar") abrirModalEdicao(id);
       else if (acao === "excluir") excluirCulto(id);
     });
+  });
+}
+
+async function toggleChecklistItem(cultoId, chave, btn) {
+  const jaFeito = btn.classList.contains("feito");
+  btn.classList.toggle("feito", !jaFeito);
+  await updateDoc(doc(db, "cultos", cultoId), {
+    [`checklist.${chave}`]: !jaFeito,
+    atualizadoEm: serverTimestamp()
   });
 }
 
@@ -324,6 +350,7 @@ function atualizarBadgePedidos() {
   } else {
     badge.style.display = "none";
   }
+  atualizarBadgeApp(contagemCultosPendentes + contagemLideresRespondidos + contagemPedidosAbertos);
 }
 
 const tabLideres = document.getElementById("tabLideres");
