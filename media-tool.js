@@ -8,6 +8,7 @@ const emptyState = document.querySelector("#emptyState");
 
 const fileName = document.querySelector("#fileName");
 const removeBtn = document.querySelector("#remove");
+const renameInput = document.querySelector("#renameInput");
 
 const uploadBtn = document.querySelector("#upload");
 
@@ -158,9 +159,36 @@ progressValue+"%";
 const form = new FormData();
 
 
+let fileToSend = selectedFile;
+
+
+if(renameInput.value.trim()){
+
+const extension = selectedFile.name.split(".").pop();
+
+
+const newName =
+renameInput.value.trim()
++
+"."
++
+extension;
+
+
+fileToSend = new File(
+[selectedFile],
+newName,
+{
+type:selectedFile.type
+}
+);
+
+}
+
+
 form.append(
 "image",
-selectedFile
+fileToSend
 );
 
 
