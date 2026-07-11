@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SINAL — Criar conta</title>
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#0B0D12">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-mark"></div>
+    <div class="login-title">Criar conta</div>
+    <div class="login-sub">Pra entrar na equipe de mídia do SINAL</div>
+
+    <form id="cadastroForm">
+      <div class="field">
+        <label for="nome">Seu nome</label>
+        <input type="text" id="nome" required placeholder="ex: joão">
+      </div>
+      <div class="field">
+        <label for="senha">Crie uma senha</label>
+        <input type="password" id="senha" required placeholder="mínimo 6 caracteres" minlength="6">
+      </div>
+      <div class="field">
+        <label for="senhaConfirma">Confirme a senha</label>
+        <input type="password" id="senhaConfirma" required placeholder="repete a senha">
+      </div>
+      <button type="submit" class="login-btn" id="cadastroBtn">Criar conta</button>
+      <div class="login-error" id="cadastroError">Não foi possível criar a conta.</div>
+    </form>
+
+    <div id="sucesso" style="display:none; text-align:center;">
+      <div style="font-size:36px; margin-bottom:10px;">🎉</div>
+      <div style="font-weight:700; margin-bottom:6px;">Conta criada!</div>
+      <p style="color:var(--text-dim); font-size:13px; margin-bottom:18px;">Já pode entrar no app normalmente.</p>
+      <a href="dashboard.html" class="btn btn-primary" style="display:block; text-align:center; text-decoration:none;">Ir pro app</a>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="cadastro.js"></script>
+</body>
+</html>
