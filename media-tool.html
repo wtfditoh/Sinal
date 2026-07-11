@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Media Tool</title>
+
+<title>SINAL</title>
 
 <link rel="stylesheet" href="media-tool.css">
 
@@ -13,53 +14,102 @@
 
 <div class="app">
 
-<header>
-  <div class="logo">MEDIA TOOL</div>
-  <p>Gerador de link direto para imagens</p>
+<header class="top">
+
+<div class="brand">
+
+<div class="brand-mark">
+</div>
+
+<div>
+<h1>SINAL</h1>
+<p>Gerenciador interno da mídia</p>
+</div>
+
+</div>
+
+<div class="status">
+<span></span>
+ONLINE
+</div>
+
 </header>
 
 
-<div class="card">
+
+<section class="card upload-card">
+
+
+<div class="section-title">
+UPLOAD DE IMAGEM
+</div>
+
 
 <label class="drop">
 
 <input type="file" id="file" accept="image/*">
 
-<div>
-<span>📤</span>
-<h2>Jogue sua imagem aqui</h2>
-<p>Clique para selecionar</p>
+
+<div class="drop-content">
+
+<div class="upload-icon">
+↑
 </div>
 
+<h2>Enviar arquivo</h2>
+
+<p>
+Arraste ou clique para selecionar
+</p>
+
+</div>
+
+
 </label>
+
 
 
 <div id="preview"></div>
 
 
+
 <button id="upload">
-Enviar imagem
+
+GERAR LINK
+
 </button>
 
 
-<div class="result hidden">
+</section>
 
-<p>Link direto:</p>
 
-<div class="link">
+
+
+
+<section class="card result hidden">
+
+
+<div class="section-title">
+LINK DIRETO
+</div>
+
+
+<div class="link-box">
 
 <span id="url"></span>
 
+
 <button id="copy">
-COPIAR LINK
+COPIAR
 </button>
 
-</div>
 
 </div>
 
 
-</div>
+</section>
+
+
 
 </div>
 
