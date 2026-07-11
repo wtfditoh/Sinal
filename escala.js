@@ -270,8 +270,16 @@ async function gerarImagemEscala() {
 
   const DIAS_ABREV = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
   const DIAS_MINI = ["D", "S", "T", "Q", "Q", "S", "S"];
-  const largura = 720;
-  const margem = 44;
+  const largura = 520;
+  const margem = 32;
+  const ESCALA_RESOLUCAO = 2.5; // renderiza em alta resolução pra não perder qualidade no zoom
+
+  const PALETA_FUNCAO = ["#FFB020", "#2EE896", "#5B9DFF", "#FF7AC6", "#B98CFF", "#38D9E0", "#FF5C5C"];
+  function corPorFuncao(funcao) {
+    let hash = 0;
+    for (let i = 0; i < funcao.length; i++) hash += funcao.charCodeAt(i);
+    return PALETA_FUNCAO[hash % PALETA_FUNCAO.length];
+  }
 
   const ano = mesAtual.getFullYear();
   const mesIdx = mesAtual.getMonth();
@@ -293,9 +301,10 @@ async function gerarImagemEscala() {
   const altura = topoLista + todos.length * alturaLinha + alturaFooter;
 
   const canvas = document.createElement("canvas");
-  canvas.width = largura;
-  canvas.height = altura;
+  canvas.width = largura * ESCALA_RESOLUCAO;
+  canvas.height = altura * ESCALA_RESOLUCAO;
   const ctx = canvas.getContext("2d");
+  ctx.scale(ESCALA_RESOLUCAO, ESCALA_RESOLUCAO); // a partir daqui, todas as coordenadas continuam "lógicas"
 
   function retanguloArredondado(x, y, w, h, r) {
     ctx.beginPath();
@@ -346,24 +355,31 @@ async function gerarImagemEscala() {
     const cy = topoCalendario + lin * celulaAltura + celulaAltura / 2;
 
     const chaveDia = `${ano}-${String(mesIdx + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
-    const temEscala = escalasPorDia.has(chaveDia);
+    const itensDoDia = escalasPorDia.get(chaveDia) || [];
+    const temEscala = itensDoDia.length > 0;
+    const corDia = temEscala ? corPorFuncao(itensDoDia[0].funcao) : null;
 
     if (temEscala) {
       ctx.beginPath();
       ctx.arc(cx, cy - 3, 15, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,176,32,0.08)";
+      ctx.fillStyle = corDia + "15"; // mesma cor, bem transparente
       ctx.fill();
     }
 
-    ctx.fillStyle = temEscala ? "#FFB020" : "#3A4152";
+    ctx.fillStyle = temEscala ? corDia : "#3A4152";
     ctx.font = temEscala ? "600 14px Arial, sans-serif" : "400 13px Arial, sans-serif";
     ctx.fillText(String(dia), cx, cy);
 
     if (temEscala) {
-      ctx.beginPath();
-      ctx.arc(cx, cy + 14, 2, 0, Math.PI * 2);
-      ctx.fillStyle = "#FFB020";
-      ctx.fill();
+      const funcoesUnicas = [...new Set(itensDoDia.map((it) => it.funcao))].slice(0, 3);
+      const espacoPontos = 7;
+      const inicioX = cx - ((funcoesUnicas.length - 1) * espacoPontos) / 2;
+      funcoesUnicas.forEach((funcao, p) => {
+        ctx.beginPath();
+        ctx.arc(inicioX + p * espacoPontos, cy + 14, 2, 0, Math.PI * 2);
+        ctx.fillStyle = corPorFuncao(funcao);
+        ctx.fill();
+      });
     }
   }
   ctx.textAlign = "left";
@@ -376,12 +392,13 @@ async function gerarImagemEscala() {
   ctx.lineTo(largura - margem, topoLista - 22);
   ctx.stroke();
 
-  // ---- Lista, hierarquia por tamanho/peso, não por cor ----
+  // ---- Lista: data e função na cor daquela função específica ----
   todos.forEach((item, i) => {
     const y = topoLista + i * alturaLinha;
     const d = item.data.toDate();
+    const cor = corPorFuncao(item.funcao);
 
-    ctx.fillStyle = "#E8E9ED";
+    ctx.fillStyle = cor;
     ctx.font = "600 17px Arial, sans-serif";
     ctx.fillText(`${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`, margem, y + 22);
 
@@ -389,7 +406,7 @@ async function gerarImagemEscala() {
     ctx.font = "400 11px Arial, sans-serif";
     ctx.fillText(DIAS_ABREV[d.getDay()], margem, y + 37);
 
-    ctx.fillStyle = "#FFB020";
+    ctx.fillStyle = cor;
     ctx.font = "600 11px Arial, sans-serif";
     ctx.fillText(item.funcao.toUpperCase(), margem + 100, y + 20);
 
