@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SINAL — Métricas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0B0D12">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <button class="avatar-btn" id="topbarAvatar"></button>
+      <div class="brand-name">SINAL</div>
+    </div>
+    <button class="icon-btn" id="logoutBtn" title="Sair">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
+  </div>
+
+  <main>
+    <div class="month-nav">
+      <div class="month-label">Métricas</div>
+    </div>
+
+    <div class="metrica-hero">
+      <div class="anel-progresso anel-grande">
+        <svg viewBox="0 0 120 120" class="anel-svg">
+          <circle cx="60" cy="60" r="52" class="anel-trilho"/>
+          <circle cx="60" cy="60" r="52" class="anel-preenchido" id="anelGeralPreenchido"/>
+        </svg>
+        <div class="anel-texto">
+          <div class="anel-pct" id="anelGeralPct">0%</div>
+          <div class="anel-label">geral</div>
+        </div>
+      </div>
+      <div class="metrica-hero-info">
+        <div class="metrica-hero-linha"><span id="metricaTotalCultos">0</span> cultos no total</div>
+        <div class="metrica-hero-linha green"><span id="metricaTotalPostados">0</span> postados</div>
+        <div class="metrica-hero-linha" id="metricaAtrasoLinha" style="display:none;">
+          ⏱ em média <span id="metricaAtrasoDias">—</span> dias após o culto
+        </div>
+      </div>
+    </div>
+
+    <div class="metrica-secao-titulo">Cumprimento por mês</div>
+    <div id="listaMeses"></div>
+
+    <div class="metrica-secao-titulo">Ranking da equipe</div>
+    <div id="listaRanking"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div style="font-size:32px;">📊</div>
+      <p>Ainda não tem dados suficientes.<br>As métricas aparecem conforme os cultos forem sendo postados.</p>
+    </div>
+  </main>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <a href="dashboard.html" class="nav-item">
+        <span>📋</span> Culto
+      </a>
+      <a href="escala.html" class="nav-item">
+        <span>🗓️</span> Escala
+      </a>
+      <a href="cartazes.html" class="nav-item">
+        <span>🖼️</span> Cartazes
+      </a>
+      <a href="logos.html" class="nav-item">
+        <span>🏷️</span> Logos
+      </a>
+      <a href="metricas.html" class="nav-item active">
+        <span>📊</span> Métricas
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="metricas.js"></script>
+</body>
+</html>
