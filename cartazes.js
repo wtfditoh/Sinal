@@ -1,6 +1,8 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
+import { confirmarExclusao } from "./confirm.js";
+import { baixarImagem } from "./baixar.js";
 import {
   collection, query, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -66,7 +68,7 @@ function renderCartazes(docs) {
       <div class="cartaz-body">
         <div class="cartaz-titulo">${escapeHtml(c.titulo)}</div>
         ${c.lembreteTexto ? `<div class="cartaz-lembrete">⏰ ${escapeHtml(c.lembreteTexto)}${c.lembreteData ? " · " + formatarDataCurta(c.lembreteData) : ""}</div>` : ""}
-        <a href="${escapeHtml(c.link)}" target="_blank" rel="noopener" class="cartaz-link">Abrir imagem ↗</a>
+        <button class="cartaz-link" data-baixar="${escapeHtml(c.link)}" data-nome="${escapeHtml(c.titulo)}">⬇ Baixar imagem</button>
         <div class="cartaz-actions">
           <div class="tally ${isPostado ? "postado" : "pendente"}" style="margin-right:2px;"></div>
           ${isPostado
@@ -79,6 +81,10 @@ function renderCartazes(docs) {
       </div>
     `;
     listaCartazes.appendChild(card);
+  });
+
+  listaCartazes.querySelectorAll("[data-baixar]").forEach((btn) => {
+    btn.addEventListener("click", () => baixarImagem(btn.dataset.baixar, btn.dataset.nome, btn));
   });
 
   listaCartazes.querySelectorAll("button[data-action]").forEach((btn) => {
@@ -112,7 +118,8 @@ async function toggleStatus(id, action) {
 }
 
 async function excluirCartaz(id) {
-  if (!window.confirm("Excluir esse cartaz? Essa ação não pode ser desfeita.")) return;
+  const confirmar = await confirmarExclusao("Excluir esse cartaz? Essa ação não pode ser desfeita.");
+  if (!confirmar) return;
   await deleteDoc(doc(db, "cartazes", id));
 }
 
