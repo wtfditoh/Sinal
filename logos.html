@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>SINAL — Logos</title>
+<title>SINAL — Recursos</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -30,18 +30,34 @@
 
   <main>
     <div class="month-nav">
-      <div class="month-label">Logos</div>
+      <div class="month-label">Recursos</div>
     </div>
 
-    <div class="field" style="margin-bottom:16px;">
-      <input type="text" id="buscaInput" placeholder="Pesquisar departamento (ex: umadep)" style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; padding:11px 12px; color:var(--text); width:100%; font-size:14px;">
+    <div class="sub-tabs">
+      <button class="sub-tab active" id="tabLogos">🏷️ Logos</button>
+      <button class="sub-tab" id="tabSenhas">🔒 Senhas</button>
     </div>
 
-    <div id="listaLogos"></div>
+    <div id="painelLogos">
+      <div class="field" style="margin-bottom:16px;">
+        <input type="text" id="buscaInput" placeholder="Pesquisar departamento (ex: umadep)" style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; padding:11px 12px; color:var(--text); width:100%; font-size:14px;">
+      </div>
 
-    <div class="empty-state" id="emptyState" style="display:none;">
-      <div style="font-size:32px;">🏷️</div>
-      <p>Nenhuma logo cadastrada ainda.<br>Toca no + pra adicionar a primeira.</p>
+      <div id="listaLogos"></div>
+
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div style="font-size:32px;">🏷️</div>
+        <p>Nenhuma logo cadastrada ainda.<br>Toca no + pra adicionar a primeira.</p>
+      </div>
+    </div>
+
+    <div id="painelSenhas" style="display:none;">
+      <div class="senha-aviso">⚠️ Guardado sem criptografia — só a equipe logada consegue ver. Não use pra dados muito sensíveis.</div>
+      <div id="listaSenhas"></div>
+      <div class="empty-state" id="emptyStateSenhas" style="display:none;">
+        <div style="font-size:32px;">🔒</div>
+        <p>Nenhuma senha cadastrada ainda.<br>Toca no + pra adicionar a primeira.</p>
+      </div>
     </div>
   </main>
 
@@ -59,7 +75,7 @@
         <span>🖼️</span> Cartazes
       </a>
       <a href="logos.html" class="nav-item active">
-        <span>🏷️</span> Logos
+        <span>🏷️</span> Recursos
       </a>
       <a href="metricas.html" class="nav-item">
         <span>📊</span> Métricas
@@ -89,6 +105,35 @@
       <div class="modal-actions">
         <button type="button" class="btn" id="cancelBtn">Cancelar</button>
         <button type="submit" class="btn btn-primary" id="logoSubmitBtn">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: nova senha -->
+<div class="modal-overlay" id="senhaModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title" id="senhaModalTitle">Nova senha</div>
+    <form id="senhaForm">
+      <div class="field">
+        <label for="szServico">Serviço / conta</label>
+        <input type="text" id="szServico" required placeholder="ex: Instagram da igreja, Canva">
+      </div>
+      <div class="field">
+        <label for="szUsuario">Usuário / e-mail</label>
+        <input type="text" id="szUsuario" placeholder="ex: igreja@email.com">
+      </div>
+      <div class="field">
+        <label for="szSenha">Senha</label>
+        <input type="text" id="szSenha" required placeholder="Senha de acesso">
+      </div>
+      <div class="field">
+        <label for="szObs">Observações (opcional)</label>
+        <textarea id="szObs" rows="2" placeholder="ex: trocar a cada 6 meses"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="senhaCancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="senhaSubmitBtn">Salvar</button>
       </div>
     </form>
   </div>
