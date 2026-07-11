@@ -269,11 +269,29 @@ async function gerarImagemEscala() {
   }
 
   const DIAS_ABREV = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
-  const largura = 900;
+  const DIAS_MINI = ["D", "S", "T", "Q", "Q", "S", "S"];
+  const largura = 760;
+  const margem = 40;
+
+  // ---- Cálculo do mini calendário ----
+  const ano = mesAtual.getFullYear();
+  const mesIdx = mesAtual.getMonth();
+  const primeiroDiaSemana = new Date(ano, mesIdx, 1).getDay();
+  const totalDiasMes = new Date(ano, mesIdx + 1, 0).getDate();
+  const totalCelulas = primeiroDiaSemana + totalDiasMes;
+  const totalLinhasCal = Math.ceil(totalCelulas / 7);
+
+  const celulaTam = (largura - margem * 2) / 7;
+  const alturaHeader = 130;
+  const alturaLabelsDias = 34;
+  const alturaCalendario = totalLinhasCal * celulaTam;
+  const alturaSeparadorCal = 50;
   const alturaLinha = 68;
-  const alturaHeader = 150;
   const alturaFooter = 50;
-  const altura = alturaHeader + todos.length * alturaLinha + alturaFooter;
+
+  const topoCalendario = alturaHeader + alturaLabelsDias;
+  const topoLista = topoCalendario + alturaCalendario + alturaSeparadorCal;
+  const altura = topoLista + todos.length * alturaLinha + alturaFooter;
 
   const canvas = document.createElement("canvas");
   canvas.width = largura;
@@ -287,10 +305,10 @@ async function gerarImagemEscala() {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, largura, altura);
 
-  // marca circular
+  // ---- Cabeçalho ----
   ctx.beginPath();
-  ctx.arc(56, 55, 18, 0, Math.PI * 2);
-  const anelGrad = ctx.createLinearGradient(38, 37, 74, 73);
+  ctx.arc(margem + 18, 50, 18, 0, Math.PI * 2);
+  const anelGrad = ctx.createLinearGradient(margem, 32, margem + 36, 68);
   anelGrad.addColorStop(0, "#2EE896");
   anelGrad.addColorStop(0.5, "#FFB020");
   anelGrad.addColorStop(1, "#FF5C5C");
@@ -298,64 +316,111 @@ async function gerarImagemEscala() {
   ctx.lineWidth = 6;
   ctx.stroke();
 
-  // título
   ctx.fillStyle = "#F5F6F8";
-  ctx.font = "bold 32px Arial, sans-serif";
-  ctx.fillText("SINAL — Escala", 92, 65);
+  ctx.font = "bold 30px Arial, sans-serif";
+  ctx.fillText("SINAL — Escala", margem + 52, 58);
 
   ctx.fillStyle = "#9CA3B5";
   ctx.font = "20px Arial, sans-serif";
-  ctx.fillText(`${MESES[mesAtual.getMonth()]} ${mesAtual.getFullYear()}`, 92, 95);
+  ctx.fillText(`${MESES[mesIdx]} ${ano}`, margem + 52, 86);
 
+  // ---- Mini calendário ----
+  ctx.font = "bold 13px Arial, sans-serif";
+  ctx.textAlign = "center";
+  DIAS_MINI.forEach((d, i) => {
+    ctx.fillStyle = "#5C6478";
+    ctx.fillText(d, margem + celulaTam * i + celulaTam / 2, alturaHeader + 22);
+  });
+
+  for (let dia = 1; dia <= totalDiasMes; dia++) {
+    const posicao = primeiroDiaSemana + dia - 1;
+    const col = posicao % 7;
+    const lin = Math.floor(posicao / 7);
+    const cx = margem + col * celulaTam + celulaTam / 2;
+    const cy = topoCalendario + lin * celulaTam + celulaTam / 2;
+
+    const chaveDia = `${ano}-${String(mesIdx + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+    const temEscala = escalasPorDia.has(chaveDia);
+    const raioCelula = celulaTam * 0.36;
+
+    if (temEscala) {
+      ctx.beginPath();
+      ctx.arc(cx, cy - 4, raioCelula, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,176,32,0.16)";
+      ctx.fill();
+      ctx.strokeStyle = "#FFB020";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = temEscala ? "#FFB020" : "#5C6478";
+    ctx.font = temEscala ? "bold 15px Arial, sans-serif" : "14px Arial, sans-serif";
+    ctx.fillText(String(dia), cx, cy);
+
+    if (temEscala) {
+      ctx.beginPath();
+      ctx.arc(cx, cy + raioCelula - 6, 3, 0, Math.PI * 2);
+      ctx.fillStyle = "#2EE896";
+      ctx.fill();
+    }
+  }
+  ctx.textAlign = "left";
+
+  // separador
   ctx.strokeStyle = "#2E3444";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(40, alturaHeader - 20);
-  ctx.lineTo(largura - 40, alturaHeader - 20);
+  ctx.moveTo(margem, topoLista - 25);
+  ctx.lineTo(largura - margem, topoLista - 25);
   ctx.stroke();
 
-  // linhas
+  ctx.fillStyle = "#9CA3B5";
+  ctx.font = "bold 14px Arial, sans-serif";
+  ctx.fillText("DETALHES DA ESCALA", margem, topoLista - 5);
+
+  // ---- Lista detalhada ----
   todos.forEach((item, i) => {
-    const y = alturaHeader + i * alturaLinha;
+    const y = topoLista + 15 + i * alturaLinha;
     const d = item.data.toDate();
 
     if (i % 2 === 0) {
       ctx.fillStyle = "rgba(255,255,255,0.025)";
-      ctx.fillRect(30, y, largura - 60, alturaLinha - 8);
+      ctx.fillRect(margem - 10, y, largura - margem * 2 + 20, alturaLinha - 8);
     }
 
     ctx.fillStyle = "#F5F6F8";
     ctx.font = "bold 22px Arial, sans-serif";
-    ctx.fillText(`${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`, 50, y + 32);
+    ctx.fillText(`${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`, margem, y + 32);
 
     ctx.fillStyle = "#5C6478";
     ctx.font = "13px Arial, sans-serif";
-    ctx.fillText(DIAS_ABREV[d.getDay()], 50, y + 52);
+    ctx.fillText(DIAS_ABREV[d.getDay()], margem, y + 52);
 
     ctx.fillStyle = "#FFB020";
     ctx.font = "bold 13px Arial, sans-serif";
-    ctx.fillText(item.funcao.toUpperCase(), 175, y + 26);
+    ctx.fillText(item.funcao.toUpperCase(), margem + 115, y + 26);
 
     ctx.fillStyle = "#2EE896";
     ctx.font = "bold 24px Arial, sans-serif";
-    ctx.fillText(item.pessoa, 175, y + 54);
+    ctx.fillText(item.pessoa, margem + 115, y + 54);
   });
 
   ctx.fillStyle = "#5C6478";
   ctx.font = "13px Arial, sans-serif";
-  ctx.fillText("Gerado pelo app SINAL", 40, altura - 18);
+  ctx.fillText("Gerado pelo app SINAL", margem, altura - 18);
 
   canvas.toBlob((blob) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `escala-${MESES[mesAtual.getMonth()]}-${mesAtual.getFullYear()}.png`;
+    a.download = `escala-${MESES[mesIdx]}-${ano}.png`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
   }, "image/png");
 }
+
 async function marcarVisita() {
   const visitaRef = doc(db, "visitas", usuarioAtual.uid);
   await setDoc(visitaRef, { ultimaVisitaEscalas: serverTimestamp() }, { merge: true });
