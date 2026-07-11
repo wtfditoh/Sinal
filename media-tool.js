@@ -3,30 +3,105 @@ const API_KEY = "5e3b2c6eae12635e0d9b00e9af54edb6";
 
 const fileInput = document.querySelector("#file");
 const preview = document.querySelector("#preview");
+const previewBox = document.querySelector("#previewBox");
+const emptyState = document.querySelector("#emptyState");
+
+const fileName = document.querySelector("#fileName");
+const removeBtn = document.querySelector("#remove");
+
 const uploadBtn = document.querySelector("#upload");
+
+const status = document.querySelector("#status");
+const statusDot = document.querySelector("#statusDot");
+
+const progress = document.querySelector(".progress");
+const progressBar = document.querySelector("#progressBar");
+
+const resultCard = document.querySelector("#resultCard");
+const urlBox = document.querySelector("#url");
+const copyBtn = document.querySelector("#copy");
+
 
 let selectedFile = null;
 
 
 
-fileInput.addEventListener("change",(event)=>{
+function setStatus(text,color){
 
+status.innerText = text;
 
-selectedFile = event.target.files[0];
+statusDot.style.background = color;
 
-
-if(selectedFile){
-
-preview.innerHTML = `
-
-<img src="${URL.createObjectURL(selectedFile)}">
-
-`;
+statusDot.style.boxShadow =
+`0 0 10px ${color}`;
 
 }
 
 
+
+
+fileInput.addEventListener("change",(e)=>{
+
+
+const file = e.target.files[0];
+
+
+if(!file) return;
+
+
+selectedFile = file;
+
+
+preview.src = URL.createObjectURL(file);
+
+
+fileName.innerText = file.name;
+
+
+emptyState.classList.add("hidden");
+
+previewBox.classList.remove("hidden");
+
+
+setStatus(
+"Imagem pronta para envio",
+"#FFB020"
+);
+
+
 });
+
+
+
+
+removeBtn.onclick = (e)=>{
+
+
+e.preventDefault();
+
+
+selectedFile = null;
+
+
+fileInput.value="";
+
+
+preview.src="";
+
+
+previewBox.classList.add("hidden");
+
+
+emptyState.classList.remove("hidden");
+
+
+setStatus(
+"Aguardando imagem",
+"#FFB020"
+);
+
+
+};
 
 
 
@@ -36,7 +111,7 @@ uploadBtn.onclick = async()=>{
 
 if(!selectedFile){
 
-alert("Escolha uma imagem primeiro");
+alert("Selecione uma imagem primeiro");
 
 return;
 
@@ -44,13 +119,46 @@ return;
 
 
 
-uploadBtn.innerText="ENVIANDO...";
+uploadBtn.innerText =
+"⏳ ENVIANDO...";
 
 
-const formData = new FormData();
+setStatus(
+"Enviando imagem...",
+"#FFB020"
+);
 
 
-formData.append(
+
+progress.classList.remove("hidden");
+
+
+
+let progressValue = 0;
+
+
+const animation = setInterval(()=>{
+
+
+if(progressValue < 90){
+
+progressValue += Math.random()*10;
+
+progressBar.style.width =
+progressValue+"%";
+
+}
+
+
+},200);
+
+
+
+
+const form = new FormData();
+
+
+form.append(
 "image",
 selectedFile
 );
@@ -68,7 +176,7 @@ const response = await fetch(
 
 method:"POST",
 
-body:formData
+body:form
 
 }
 
@@ -80,19 +188,34 @@ const data = await response.json();
 
 
 
-const directUrl = data.data.url;
+clearInterval(animation);
 
 
 
-document.querySelector("#url").innerText = directUrl;
-
-
-document.querySelector(".result")
-.classList.remove("hidden");
+progressBar.style.width="100%";
 
 
 
-uploadBtn.innerText="ENVIAR IMAGEM";
+const link = data.data.url;
+
+
+
+urlBox.innerText = link;
+
+
+resultCard.classList.remove("hidden");
+
+
+
+setStatus(
+"Upload concluído",
+"#2EE896"
+);
+
+
+
+uploadBtn.innerText =
+"✓ LINK GERADO";
 
 
 
@@ -101,14 +224,25 @@ uploadBtn.innerText="ENVIAR IMAGEM";
 catch(error){
 
 
-alert("Erro ao enviar imagem");
+clearInterval(animation);
 
 
-uploadBtn.innerText="ENVIAR IMAGEM";
+setStatus(
+"Erro no upload",
+"#FF5C5C"
+);
+
+
+uploadBtn.innerText =
+"⚡ GERAR LINK DIRETO";
+
+
+alert(
+"Não foi possível enviar a imagem"
+);
 
 
 }
-
 
 
 };
@@ -116,16 +250,25 @@ uploadBtn.innerText="ENVIAR IMAGEM";
 
 
 
-document.querySelector("#copy").onclick=()=>{
+
+copyBtn.onclick = ()=>{
 
 
-const link =
-document.querySelector("#url").innerText;
+navigator.clipboard.writeText(
+urlBox.innerText
+);
 
 
-navigator.clipboard.writeText(link);
+copyBtn.innerText =
+"✓ COPIADO";
 
 
-alert("Link copiado!");
+setTimeout(()=>{
+
+copyBtn.innerText =
+"📋 COPIAR LINK";
+
+},2000);
+
 
 };
