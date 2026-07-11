@@ -64,14 +64,28 @@
     </div>
 
     <div class="solicitacoes-section">
-      <div class="solicitacoes-header" id="solicitacoesToggle">
-        <span>🔗 Pedidos a líderes</span>
-        <span class="solicitacoes-badge" id="solicitacoesBadge" style="display:none;">0</span>
-        <span class="solicitacoes-seta" id="solicitacoesSeta">▾</span>
+      <div class="solicitacoes-header" id="pedidosSectionToggle">
+        <span>📨 Pedidos</span>
+        <span class="solicitacoes-badge" id="pedidosSectionBadge" style="display:none;">0</span>
+        <span class="solicitacoes-seta" id="pedidosSectionSeta">▾</span>
       </div>
-      <div class="solicitacoes-body" id="solicitacoesBody" style="display:none;">
-        <button class="btn btn-primary" id="novaSolicitacaoBtn" style="width:100%; margin-bottom:10px;">+ Gerar link pra líder</button>
-        <div id="listaSolicitacoes"></div>
+      <div class="solicitacoes-body" id="pedidosSectionBody" style="display:none;">
+
+        <div class="sub-tabs">
+          <button class="sub-tab active" id="tabLideres">🔗 Pra líderes</button>
+          <button class="sub-tab" id="tabAjuda">🆘 Ajuda interna</button>
+        </div>
+
+        <div id="painelLideres">
+          <button class="btn btn-primary" id="novaSolicitacaoBtn" style="width:100%; margin-bottom:10px;">+ Gerar link pra líder</button>
+          <div id="listaSolicitacoes"></div>
+        </div>
+
+        <div id="painelAjuda" style="display:none;">
+          <button class="btn btn-primary" id="novoPedidoBtn" style="width:100%; margin-bottom:10px;">+ Novo pedido</button>
+          <div id="listaPedidos"></div>
+        </div>
+
       </div>
     </div>
 
@@ -100,7 +114,7 @@
         <span class="notif-dot" id="dotCartazes"></span>
       </a>
       <a href="logos.html" class="nav-item">
-        <span>🏷️</span> Logos
+        <span>🏷️</span> Recursos
       </a>
       <a href="metricas.html" class="nav-item">
         <span>📊</span> Métricas
@@ -193,6 +207,31 @@
       <button type="button" class="btn" id="respostaFecharBtn">Fechar</button>
       <button type="button" class="btn btn-primary" id="respostaAplicarBtn">Aplicar ao culto</button>
     </div>
+  </div>
+</div>
+
+<!-- Modal: novo pedido de ajuda -->
+<div class="modal-overlay" id="pedidoModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title">Novo pedido</div>
+    <form id="pedidoForm">
+      <div class="field">
+        <label for="pdTitulo">O que precisa</label>
+        <input type="text" id="pdTitulo" required placeholder='ex: Cartaz pra evento de jovens'>
+      </div>
+      <div class="field">
+        <label for="pdDescricao">Detalhes</label>
+        <textarea id="pdDescricao" rows="3" placeholder="Informações que ajudam quem for fazer"></textarea>
+      </div>
+      <div class="field">
+        <label for="pdSolicitante">Quem pediu (opcional)</label>
+        <input type="text" id="pdSolicitante" placeholder="ex: Irmã Marta">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="pedidoCancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Publicar pedido</button>
+      </div>
+    </form>
   </div>
 </div>
 
