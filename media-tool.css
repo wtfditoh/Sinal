@@ -504,6 +504,145 @@ cursor:pointer;
 
 
 
+/* DIVIDER */
+
+.divider{
+
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
+margin-top:18px;
+
+font-family:var(--mono);
+
+font-size:10px;
+
+letter-spacing:1px;
+
+color:var(--faint);
+
+}
+
+.divider::before,
+.divider::after{
+
+content:"";
+
+flex:1;
+
+height:1px;
+
+background:var(--border);
+
+}
+
+
+/* URL BOX */
+
+.url-box{
+
+margin-top:18px;
+
+}
+
+.url-box label{
+
+display:block;
+
+font-family:var(--mono);
+
+font-size:10px;
+
+letter-spacing:1px;
+
+text-transform:uppercase;
+
+color:var(--dim);
+
+margin-bottom:7px;
+
+}
+
+.url-box input{
+
+width:100%;
+
+padding:12px;
+
+background:var(--bg);
+
+border:1px solid var(--border);
+
+border-radius:9px;
+
+color:var(--text);
+
+font-family:var(--mono);
+
+font-size:12px;
+
+}
+
+.url-box input:focus{
+
+outline:none;
+
+border-color:var(--amber);
+
+}
+
+#uploadUrlBtn{
+
+width:100%;
+
+margin-top:10px;
+
+padding:12px;
+
+border-radius:9px;
+
+border:1px solid rgba(255,176,32,.35);
+
+background:rgba(255,176,32,.1);
+
+color:var(--amber);
+
+font-weight:700;
+
+cursor:pointer;
+
+transition:.15s;
+
+}
+
+#uploadUrlBtn:hover{
+
+background:rgba(255,176,32,.18);
+
+}
+
+#uploadUrlBtn:active{
+
+transform:scale(.97);
+
+}
+
+#urlHint{
+
+font-size:11px;
+
+color:var(--faint);
+
+margin-top:8px;
+
+line-height:1.5;
+
+}
+
+
 /* RENOMEAR */
 
 
