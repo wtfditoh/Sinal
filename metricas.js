@@ -6,6 +6,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const MESES_ABREV = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+let cultosGlobal = [];
+let rankingGlobal = [];
 
 function escapeHtml(texto) {
   if (!texto) return "";
@@ -24,6 +26,9 @@ document.getElementById("logoutBtn").addEventListener("click", sair);
 async function carregarMetricas() {
   const snap = await getDocs(query(collection(db, "cultos"), orderBy("data", "asc")));
   const cultos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  cultosGlobal = cultos;
+
+  await renderEquipe();
 
   if (cultos.length === 0) {
     document.getElementById("emptyState").style.display = "block";
@@ -102,6 +107,7 @@ function renderRanking(cultos) {
   });
 
   const ranking = [...contagem.entries()].sort((a, b) => b[1] - a[1]);
+  rankingGlobal = ranking;
   const container = document.getElementById("listaRanking");
   container.innerHTML = "";
 
@@ -128,3 +134,53 @@ function renderRanking(cultos) {
     container.appendChild(linha);
   });
 }
+
+// ---------- Equipe (perfis) ----------
+async function renderEquipe() {
+  const snap = await getDocs(collection(db, "usuarios"));
+  const container = document.getElementById("equipeGrid");
+  container.innerHTML = "";
+
+  snap.docs.forEach((docSnap, index) => {
+    const u = docSnap.data();
+    const iniciais = (u.nome || "?").trim().charAt(0).toUpperCase();
+
+    const item = document.createElement("button");
+    item.className = "equipe-membro";
+    item.style.animationDelay = `${index * 0.03}s`;
+    item.innerHTML = `
+      <div class="equipe-avatar">
+        ${u.fotoUrl ? `<img src="${escapeHtml(u.fotoUrl)}" alt="">` : `<span>${iniciais}</span>`}
+      </div>
+      <div class="equipe-nome">${escapeHtml(u.nome) || "—"}</div>
+    `;
+    item.addEventListener("click", () => abrirPerfilMembro(u));
+    container.appendChild(item);
+  });
+}
+
+function abrirPerfilMembro(u) {
+  const iniciais = (u.nome || "?").trim().charAt(0).toUpperCase();
+  document.getElementById("perfilMembroAvatar").innerHTML = u.fotoUrl
+    ? `<img src="${escapeHtml(u.fotoUrl)}" alt="">`
+    : `<span>${iniciais}</span>`;
+  document.getElementById("perfilMembroNome").textContent = u.nome || "—";
+  document.getElementById("perfilMembroPapel").textContent = u.papel === "admin" ? "administrador" : "membro da equipe";
+
+  const postadosPorEla = cultosGlobal.filter((c) => c.status === "postado" && c.postadoPor === u.nome).length;
+  document.getElementById("perfilMembroPostados").textContent = postadosPorEla;
+
+  const posicao = rankingGlobal.findIndex(([nome]) => nome === u.nome);
+  document.getElementById("perfilMembroPosicao").textContent = posicao >= 0 ? `${posicao + 1}º` : "—";
+
+  document.getElementById("perfilMembroOverlay").classList.add("active");
+}
+
+document.getElementById("perfilMembroFecharBtn").addEventListener("click", () => {
+  document.getElementById("perfilMembroOverlay").classList.remove("active");
+});
+document.getElementById("perfilMembroOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("perfilMembroOverlay")) {
+    document.getElementById("perfilMembroOverlay").classList.remove("active");
+  }
+});
