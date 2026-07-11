@@ -29,6 +29,7 @@ exigirLogin((usuario) => {
   carregarCultosDoMes();
   checarNotificacoes();
   carregarSolicitacoes();
+  carregarPedidos();
 });
 
 document.getElementById("logoutBtn").addEventListener("click", sair);
@@ -300,17 +301,52 @@ function checarColecao(nomeColecao, ultimaVisita, idBolinha) {
   });
 }
 
-// ---------- Solicitações a líderes ----------
-const solicitacoesToggle = document.getElementById("solicitacoesToggle");
-const solicitacoesBody = document.getElementById("solicitacoesBody");
-const solicitacoesSeta = document.getElementById("solicitacoesSeta");
-const listaSolicitacoes = document.getElementById("listaSolicitacoes");
+// ---------- Seção unificada "Pedidos" (líderes + ajuda interna) ----------
+let contagemLideresRespondidos = 0;
+let contagemPedidosAbertos = 0;
 
-solicitacoesToggle.addEventListener("click", () => {
-  const aberta = solicitacoesBody.style.display !== "none";
-  solicitacoesBody.style.display = aberta ? "none" : "block";
-  solicitacoesSeta.classList.toggle("aberta", !aberta);
+const pedidosSectionToggle = document.getElementById("pedidosSectionToggle");
+const pedidosSectionBody = document.getElementById("pedidosSectionBody");
+const pedidosSectionSeta = document.getElementById("pedidosSectionSeta");
+
+pedidosSectionToggle.addEventListener("click", () => {
+  const aberta = pedidosSectionBody.style.display !== "none";
+  pedidosSectionBody.style.display = aberta ? "none" : "block";
+  pedidosSectionSeta.classList.toggle("aberta", !aberta);
 });
+
+function atualizarBadgePedidos() {
+  const badge = document.getElementById("pedidosSectionBadge");
+  const total = contagemLideresRespondidos + contagemPedidosAbertos;
+  if (total > 0) {
+    badge.textContent = total;
+    badge.style.display = "inline-block";
+  } else {
+    badge.style.display = "none";
+  }
+}
+
+const tabLideres = document.getElementById("tabLideres");
+const tabAjuda = document.getElementById("tabAjuda");
+const painelLideres = document.getElementById("painelLideres");
+const painelAjuda = document.getElementById("painelAjuda");
+
+tabLideres.addEventListener("click", () => {
+  tabLideres.classList.add("active");
+  tabAjuda.classList.remove("active");
+  painelLideres.style.display = "block";
+  painelAjuda.style.display = "none";
+});
+tabAjuda.addEventListener("click", () => {
+  tabAjuda.classList.add("active");
+  tabLideres.classList.remove("active");
+  painelAjuda.style.display = "block";
+  painelLideres.style.display = "none";
+});
+
+// ---------- Solicitações a líderes ----------
+// (o toggle de abrir/fechar agora é único, ver seção "Pedidos" unificada mais abaixo)
+const listaSolicitacoes = document.getElementById("listaSolicitacoes");
 
 function carregarSolicitacoes() {
   const q = query(collection(db, "solicitacoes"), orderBy("criadoEm", "desc"));
@@ -344,13 +380,8 @@ function carregarSolicitacoes() {
       listaSolicitacoes.innerHTML = `<p style="color:var(--text-faint); font-size:13px;">Nenhum pedido gerado ainda.</p>`;
     }
 
-    const badge = document.getElementById("solicitacoesBadge");
-    if (pendentesRespondidos > 0) {
-      badge.textContent = pendentesRespondidos;
-      badge.style.display = "inline-block";
-    } else {
-      badge.style.display = "none";
-    }
+    contagemLideresRespondidos = pendentesRespondidos;
+    atualizarBadgePedidos();
 
     listaSolicitacoes.querySelectorAll("button[data-acao]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -482,4 +513,145 @@ document.getElementById("respostaAplicarBtn").addEventListener("click", async ()
   document.getElementById("cEventoParte").value = s.resposta.eventoParte || "";
 
   await updateDoc(doc(db, "solicitacoes", respostaAtualId), { status: "aplicado" });
+});
+
+// ---------- Pedidos de ajuda entre a equipe ----------
+let pedidosCache = new Map();
+const listaPedidos = document.getElementById("listaPedidos");
+
+function carregarPedidos() {
+  const q = query(collection(db, "pedidos"), orderBy("criadoEm", "desc"));
+  onSnapshot(q, (snapshot) => {
+    pedidosCache.clear();
+    listaPedidos.innerHTML = "";
+    let abertosCount = 0;
+
+    if (snapshot.empty) {
+      listaPedidos.innerHTML = `<p style="color:var(--text-faint); font-size:13px;">Nenhum pedido no momento.</p>`;
+    }
+
+    snapshot.docs.forEach((docSnap) => {
+      const p = docSnap.data();
+      const id = docSnap.id;
+      pedidosCache.set(id, p);
+      if (p.status === "aberto") abertosCount++;
+
+      const statusLabel = {
+        aberto: "aberto",
+        andamento: `com ${p.assumidoPorNome || "alguém"}`,
+        feito: p.enviado ? "concluído e enviado" : "feito, falta enviar"
+      };
+
+      const item = document.createElement("div");
+      item.className = "solicitacao-item";
+      item.style.alignItems = "flex-start";
+      item.innerHTML = `
+        <div class="solicitacao-info">
+          <div class="solicitacao-titulo">${escapeHtml(p.titulo)}</div>
+          ${p.descricao ? `<div style="font-size:12px; color:var(--text-dim); margin-top:2px;">${escapeHtml(p.descricao)}</div>` : ""}
+          ${p.solicitante ? `<div style="font-size:11px; color:var(--text-faint); margin-top:2px;">pedido por ${escapeHtml(p.solicitante)}</div>` : ""}
+          <div class="solicitacao-status ${p.status === "feito" ? "aplicado" : p.status === "andamento" ? "respondido" : "aguardando"}" style="margin-top:4px;">
+            ${statusLabel[p.status] || p.status}
+          </div>
+        </div>
+      `;
+
+      const acoes = document.createElement("div");
+      acoes.style.display = "flex";
+      acoes.style.flexDirection = "column";
+      acoes.style.gap = "6px";
+
+      if (p.status === "aberto") {
+        acoes.innerHTML += `<button class="btn btn-mark" data-id="${id}" data-acao="assumir">Assumir</button>`;
+      }
+      if (p.status === "andamento") {
+        acoes.innerHTML += `<button class="btn btn-mark" data-id="${id}" data-acao="feito">✓ Feito</button>`;
+      }
+      if (p.status === "feito" && !p.enviado) {
+        acoes.innerHTML += `<button class="btn btn-primary" data-id="${id}" data-acao="enviado">📨 Marcar enviado</button>`;
+      }
+      acoes.innerHTML += `<button class="btn btn-excluir" data-id="${id}" data-acao="excluir">🗑</button>`;
+
+      item.appendChild(acoes);
+      listaPedidos.appendChild(item);
+    });
+
+    contagemPedidosAbertos = abertosCount;
+    atualizarBadgePedidos();
+
+    listaPedidos.querySelectorAll("button[data-acao]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        const acao = btn.dataset.acao;
+        if (acao === "assumir") assumirPedido(id);
+        else if (acao === "feito") marcarPedidoFeito(id);
+        else if (acao === "enviado") marcarPedidoEnviado(id);
+        else if (acao === "excluir") excluirPedido(id);
+      });
+    });
+  });
+}
+
+async function assumirPedido(id) {
+  await updateDoc(doc(db, "pedidos", id), {
+    status: "andamento",
+    assumidoPor: usuarioAtual.uid,
+    assumidoPorNome: usuarioAtual.nome,
+    atualizadoEm: serverTimestamp()
+  });
+}
+
+async function marcarPedidoFeito(id) {
+  await updateDoc(doc(db, "pedidos", id), {
+    status: "feito",
+    feitoEm: serverTimestamp(),
+    atualizadoEm: serverTimestamp()
+  });
+}
+
+async function marcarPedidoEnviado(id) {
+  await updateDoc(doc(db, "pedidos", id), {
+    enviado: true,
+    enviadoPor: usuarioAtual.nome,
+    atualizadoEm: serverTimestamp()
+  });
+}
+
+async function excluirPedido(id) {
+  const confirmar = await confirmarExclusao("Excluir esse pedido?");
+  if (!confirmar) return;
+  await deleteDoc(doc(db, "pedidos", id));
+}
+
+// ---------- Modal: novo pedido ----------
+const pedidoModalOverlay = document.getElementById("pedidoModalOverlay");
+const pedidoForm = document.getElementById("pedidoForm");
+
+document.getElementById("novoPedidoBtn").addEventListener("click", () => {
+  pedidoForm.reset();
+  pedidoModalOverlay.classList.add("active");
+});
+document.getElementById("pedidoCancelBtn").addEventListener("click", () => {
+  pedidoModalOverlay.classList.remove("active");
+});
+pedidoModalOverlay.addEventListener("click", (e) => {
+  if (e.target === pedidoModalOverlay) pedidoModalOverlay.classList.remove("active");
+});
+
+pedidoForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  await addDoc(collection(db, "pedidos"), {
+    titulo: document.getElementById("pdTitulo").value,
+    descricao: document.getElementById("pdDescricao").value,
+    solicitante: document.getElementById("pdSolicitante").value,
+    status: "aberto",
+    assumidoPor: null,
+    assumidoPorNome: null,
+    enviado: false,
+    criadoPor: usuarioAtual.uid,
+    criadoEm: serverTimestamp(),
+    atualizadoEm: serverTimestamp()
+  });
+  pedidoForm.reset();
+  pedidoModalOverlay.classList.remove("active");
 });
