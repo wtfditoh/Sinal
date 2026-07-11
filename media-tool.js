@@ -279,6 +279,85 @@ alert(
 
 
 
+const urlInput = document.querySelector("#urlInput");
+const uploadUrlBtn = document.querySelector("#uploadUrlBtn");
+const urlHint = document.querySelector("#urlHint");
+
+
+uploadUrlBtn.onclick = async () => {
+
+
+  const link = urlInput.value.trim();
+
+  if (!link) {
+    alert("Cola um link de imagem primeiro");
+    return;
+  }
+
+  uploadUrlBtn.innerText = "⏳ BUSCANDO IMAGEM...";
+  uploadUrlBtn.disabled = true;
+  urlHint.style.color = "var(--faint)";
+  urlHint.innerText = "Isso pode levar alguns segundos...";
+
+  setStatus("Buscando imagem pelo link...", "#FFB020");
+
+
+  const form = new FormData();
+
+  let nomeFinal = "";
+  if (renameInput.value.trim()) {
+    nomeFinal = renameInput.value.trim();
+  }
+
+  form.append("image", link);
+  if (nomeFinal) form.append("name", nomeFinal);
+
+
+  try {
+
+    const response = await fetch(
+      `https://api.imgbb.com/1/upload?key=${API_KEY}`,
+      {
+        method: "POST",
+        body: form
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) throw new Error(data.error?.message || "Falha ao gerar link");
+
+    const novoLink = data.data.url;
+
+    urlBox.innerText = novoLink;
+    resultCard.classList.remove("hidden");
+
+    setStatus("Upload concluído", "#2EE896");
+
+    uploadUrlBtn.innerText = "✓ LINK GERADO";
+    urlHint.style.color = "var(--faint)";
+    urlHint.innerText = "Se o site de origem bloquear, baixa a imagem e usa o upload de arquivo acima.";
+
+  } catch (error) {
+
+    setStatus("Não deu pra buscar pelo link", "#FF5C5C");
+
+    uploadUrlBtn.innerText = "🔗 GERAR A PARTIR DO LINK";
+    uploadUrlBtn.disabled = false;
+
+    urlHint.style.color = "var(--red)";
+    urlHint.innerText = "Esse site bloqueou o acesso automático. Baixa a imagem no aparelho e usa o upload de arquivo acima — esse sempre funciona.";
+
+    return;
+  }
+
+  uploadUrlBtn.disabled = false;
+
+};
+
+
+
+
 copyBtn.onclick = ()=>{
 
 
