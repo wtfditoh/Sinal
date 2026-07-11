@@ -47,6 +47,10 @@ function criarModalSeNaoExiste() {
         <label>Link da foto (opcional)</label>
         <input type="url" id="perfilFotoInput" value="${usuarioRef.fotoUrl || ""}" placeholder="Link de imagem do Drive, Google Fotos, etc.">
       </div>
+      <div class="field-hint">Dica pra por imagem direta: <code>sinalpv.netlify.app/media-tool.html</code></div>
+        <div class="upload-box" id="logoPreviewBox" style="display:none; margin-top:8px;">
+          <img id="logoPreviewImg">
+        </div>
       <div class="modal-actions">
         <button type="button" class="btn" id="perfilCancelBtn">Cancelar</button>
         <button type="button" class="btn btn-primary" id="perfilSalvarBtn">Salvar</button>
