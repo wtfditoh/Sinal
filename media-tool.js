@@ -8,7 +8,6 @@ const emptyState = document.querySelector("#emptyState");
 
 const fileName = document.querySelector("#fileName");
 const removeBtn = document.querySelector("#remove");
-const renameInput = document.querySelector("#renameInput");
 
 const uploadBtn = document.querySelector("#upload");
 
@@ -22,6 +21,7 @@ const resultCard = document.querySelector("#resultCard");
 const urlBox = document.querySelector("#url");
 const copyBtn = document.querySelector("#copy");
 
+const renameInput = document.querySelector("#renameInput");
 
 let selectedFile = null;
 
