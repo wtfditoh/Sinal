@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Media Tool</title>
+
+<link rel="stylesheet" href="media-tool.css">
+
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <div class="logo">MEDIA TOOL</div>
+  <p>Gerador de link direto para imagens</p>
+</header>
+
+
+<div class="card">
+
+<label class="drop">
+
+<input type="file" id="file" accept="image/*">
+
+<div>
+<span>📤</span>
+<h2>Jogue sua imagem aqui</h2>
+<p>Clique para selecionar</p>
+</div>
+
+</label>
+
+
+<div id="preview"></div>
+
+
+<button id="upload">
+Enviar imagem
+</button>
+
+
+<div class="result hidden">
+
+<p>Link direto:</p>
+
+<div class="link">
+
+<span id="url"></span>
+
+<button id="copy">
+COPIAR LINK
+</button>
+
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<script src="media-tool.js"></script>
+
+</body>
+</html>
