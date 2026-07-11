@@ -311,14 +311,24 @@ async function gerarImagemEscala() {
   ctx.fillStyle = "#0E1016";
   ctx.fillRect(0, 0, largura, altura);
 
-  // ---- Cabeçalho, discreto ----
+  // ---- Cabeçalho, com a marca de volta, discreta ----
+  ctx.beginPath();
+  ctx.arc(margem + 14, 44, 14, 0, Math.PI * 2);
+  const anelGrad = ctx.createLinearGradient(margem, 30, margem + 28, 58);
+  anelGrad.addColorStop(0, "#2EE896");
+  anelGrad.addColorStop(0.5, "#FFB020");
+  anelGrad.addColorStop(1, "#FF5C5C");
+  ctx.strokeStyle = anelGrad;
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
   ctx.fillStyle = "#E8E9ED";
   ctx.font = "600 22px Arial, sans-serif";
-  ctx.fillText("Escala", margem, 52);
+  ctx.fillText("SINAL — Escala", margem + 38, 50);
 
   ctx.fillStyle = "#6B7280";
   ctx.font = "15px Arial, sans-serif";
-  ctx.fillText(`${MESES[mesIdx]} ${ano}`, margem, 76);
+  ctx.fillText(`${MESES[mesIdx]} ${ano}`, margem + 38, 74);
 
   // ---- Mini calendário ----
   ctx.font = "500 11px Arial, sans-serif";
@@ -341,11 +351,11 @@ async function gerarImagemEscala() {
     if (temEscala) {
       ctx.beginPath();
       ctx.arc(cx, cy - 3, 15, 0, Math.PI * 2);
-      ctx.fillStyle = "#1B1F2A";
+      ctx.fillStyle = "rgba(255,176,32,0.08)";
       ctx.fill();
     }
 
-    ctx.fillStyle = temEscala ? "#F5F6F8" : "#3A4152";
+    ctx.fillStyle = temEscala ? "#FFB020" : "#3A4152";
     ctx.font = temEscala ? "600 14px Arial, sans-serif" : "400 13px Arial, sans-serif";
     ctx.fillText(String(dia), cx, cy);
 
@@ -379,13 +389,13 @@ async function gerarImagemEscala() {
     ctx.font = "400 11px Arial, sans-serif";
     ctx.fillText(DIAS_ABREV[d.getDay()], margem, y + 37);
 
-    ctx.fillStyle = "#E8E9ED";
-    ctx.font = "600 16px Arial, sans-serif";
-    ctx.fillText(item.pessoa, margem + 100, y + 22);
+    ctx.fillStyle = "#FFB020";
+    ctx.font = "600 11px Arial, sans-serif";
+    ctx.fillText(item.funcao.toUpperCase(), margem + 100, y + 20);
 
-    ctx.fillStyle = "#6B7280";
-    ctx.font = "400 12px Arial, sans-serif";
-    ctx.fillText(item.funcao, margem + 100, y + 37);
+    ctx.fillStyle = "#E8E9ED";
+    ctx.font = "600 17px Arial, sans-serif";
+    ctx.fillText(item.pessoa, margem + 100, y + 40);
 
     if (i < todos.length - 1) {
       ctx.strokeStyle = "#181B23";
