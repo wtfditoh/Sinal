@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -10,27 +12,42 @@
 
 </head>
 
+
 <body>
+
 
 <div class="app">
 
+
+<!-- CABEÇALHO -->
+
 <header class="header">
+
 
 <div class="brand">
 
 <div class="brand-mark"></div>
 
+
 <div>
+
 <h1>SINAL Studio</h1>
+
 <p>Gerenciador interno da mídia</p>
-</div>
 
 </div>
+
+
+</div>
+
 
 
 <div class="online">
+
 <span></span>
+
 ONLINE
+
 </div>
 
 
@@ -38,41 +55,68 @@ ONLINE
 
 
 
+
+
+<!-- CARD PRINCIPAL -->
+
 <section class="card">
 
 
 <div class="title">
+
 UPLOAD DE IMAGEM
+
 </div>
 
 
 
-<label class="upload-area" id="dropArea">
+
+<label class="upload-area" for="file">
+
 
 
 <input 
-type="file" 
-id="file" 
+type="file"
+id="file"
 accept="image/*"
 >
 
 
 
+<!-- ESTADO VAZIO -->
+
 <div id="emptyState">
 
+
 <div class="upload-icon">
+
 ↑
+
 </div>
 
-<h2>Enviar imagem</h2>
+
+<h2>
+
+Enviar imagem
+
+</h2>
+
 
 <p>
-Clique ou arraste um arquivo
+
+Clique ou arraste uma imagem
+
 </p>
+
 
 </div>
 
 
+
+
+
+
+<!-- PREVIEW -->
 
 <div id="previewBox" class="hidden">
 
@@ -80,65 +124,125 @@ Clique ou arraste um arquivo
 <img id="preview">
 
 
+
 <div class="file-info">
 
+
 <span id="fileName">
+
 imagem.png
+
 </span>
 
 
-<button id="remove">
+
+<button 
+id="remove"
+type="button">
+
 ✕
+
 </button>
 
+
+
 </div>
 
 
 </div>
+
+
+
+</label>
+
+
+
+
+
+
+
+<!-- RENOMEAR -->
+
 
 <div class="rename-box">
 
+
 <label>
-Nome personalizado (opcional)
+
+Nome personalizado
+
 </label>
+
 
 <input 
 id="renameInput"
+type="text"
 placeholder="ex: cartaz-retiro-2026"
 >
 
+
 <p>
-Se deixar vazio, mantém o nome original.
+
+Opcional. Se vazio mantém o nome original.
+
 </p>
+
 
 </div>
 
-</label>
 
 
+
+
+
+
+
+<!-- STATUS -->
 
 
 <div class="status-box">
 
+
 <span id="statusDot"></span>
 
+
 <span id="status">
+
 Aguardando imagem
+
 </span>
+
 
 </div>
 
+
+
+
+
+
+
+<!-- BARRA -->
 
 
 <div class="progress hidden">
 
+
 <div id="progressBar"></div>
+
 
 </div>
 
 
 
-<button id="upload">
+
+
+
+<!-- BOTÃO -->
+
+
+<button 
+id="upload"
+type="button">
 
 ⚡ GERAR LINK DIRETO
 
@@ -146,43 +250,75 @@ Aguardando imagem
 
 
 
+
+
 </section>
 
 
 
 
 
-<section class="card hidden" id="resultCard">
+
+
+<!-- RESULTADO -->
+
+
+<section 
+class="card hidden"
+id="resultCard">
+
 
 
 <div class="title">
+
 LINK GERADO ✓
+
 </div>
+
+
 
 
 
 <div class="link-box">
 
-<span id="url"></span>
+
+<span id="url">
+
+</span>
 
 
-<button id="copy">
+
+<button 
+id="copy"
+type="button">
+
 📋 COPIAR LINK
+
 </button>
 
 
+
 </div>
+
+
 
 
 </section>
 
 
 
+
+
 </div>
+
+
+
 
 
 <script src="media-tool.js"></script>
 
+
 </body>
+
 
 </html>
