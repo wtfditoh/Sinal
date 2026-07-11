@@ -30,10 +30,22 @@
 
   <main>
 
-    <div class="month-nav">
-      <button class="month-arrow" id="prevMonth">‹</button>
-      <div class="month-label" id="monthLabel">—</div>
-      <button class="month-arrow" id="nextMonth">›</button>
+    <div class="hero-mes">
+      <div class="hero-mes-nav">
+        <button class="month-arrow" id="prevMonth">‹</button>
+        <div class="month-label" id="monthLabel">—</div>
+        <button class="month-arrow" id="nextMonth">›</button>
+      </div>
+      <div class="anel-progresso">
+        <svg viewBox="0 0 120 120" class="anel-svg">
+          <circle cx="60" cy="60" r="52" class="anel-trilho"/>
+          <circle cx="60" cy="60" r="52" class="anel-preenchido" id="anelPreenchido"/>
+        </svg>
+        <div class="anel-texto">
+          <div class="anel-pct" id="anelPct">0%</div>
+          <div class="anel-label">no ar</div>
+        </div>
+      </div>
     </div>
 
     <div class="summary-strip">
@@ -49,10 +61,6 @@
         <div class="summary-num red" id="totalPendentes">0</div>
         <div class="summary-tag">pendentes</div>
       </div>
-    </div>
-
-    <div class="progress-strip">
-      <div class="progress-fill" id="progressFill" style="width:0%;"></div>
     </div>
 
     <div class="solicitacoes-section">
@@ -93,6 +101,9 @@
       </a>
       <a href="logos.html" class="nav-item">
         <span>🏷️</span> Logos
+      </a>
+      <a href="metricas.html" class="nav-item">
+        <span>📊</span> Métricas
       </a>
     </div>
   </div>
