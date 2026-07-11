@@ -270,26 +270,23 @@ async function gerarImagemEscala() {
 
   const DIAS_ABREV = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
   const DIAS_MINI = ["D", "S", "T", "Q", "Q", "S", "S"];
-  const largura = 760;
-  const margem = 40;
+  const largura = 720;
+  const margem = 44;
 
-  // ---- Cálculo do mini calendário ----
   const ano = mesAtual.getFullYear();
   const mesIdx = mesAtual.getMonth();
   const primeiroDiaSemana = new Date(ano, mesIdx, 1).getDay();
   const totalDiasMes = new Date(ano, mesIdx + 1, 0).getDate();
-  const totalCelulas = primeiroDiaSemana + totalDiasMes;
-  const totalLinhasCal = Math.ceil(totalCelulas / 7);
+  const totalLinhasCal = Math.ceil((primeiroDiaSemana + totalDiasMes) / 7);
 
   const celulaLargura = (largura - margem * 2) / 7;
-  const celulaAltura = 46;
-  const espacoCelula = 4;
-  const alturaHeader = 130;
-  const alturaLabelsDias = 30;
+  const celulaAltura = celulaLargura * 0.86; // proporção mais quadrada, sem achatar
+  const alturaHeader = 116;
+  const alturaLabelsDias = 28;
   const alturaCalendario = totalLinhasCal * celulaAltura;
-  const alturaSeparadorCal = 44;
-  const alturaLinha = 68;
-  const alturaFooter = 50;
+  const alturaSeparadorCal = 46;
+  const alturaLinha = 58;
+  const alturaFooter = 46;
 
   const topoCalendario = alturaHeader + alturaLabelsDias;
   const topoLista = topoCalendario + alturaCalendario + alturaSeparadorCal;
@@ -310,126 +307,99 @@ async function gerarImagemEscala() {
     ctx.closePath();
   }
 
-  // fundo
-  const grad = ctx.createLinearGradient(0, 0, largura, altura);
-  grad.addColorStop(0, "#181C26");
-  grad.addColorStop(1, "#08090D");
-  ctx.fillStyle = grad;
+  // fundo liso, sem gradiente chamativo
+  ctx.fillStyle = "#0E1016";
   ctx.fillRect(0, 0, largura, altura);
 
-  // ---- Cabeçalho ----
-  ctx.beginPath();
-  ctx.arc(margem + 18, 50, 18, 0, Math.PI * 2);
-  const anelGrad = ctx.createLinearGradient(margem, 32, margem + 36, 68);
-  anelGrad.addColorStop(0, "#2EE896");
-  anelGrad.addColorStop(0.5, "#FFB020");
-  anelGrad.addColorStop(1, "#FF5C5C");
-  ctx.strokeStyle = anelGrad;
-  ctx.lineWidth = 6;
-  ctx.stroke();
+  // ---- Cabeçalho, discreto ----
+  ctx.fillStyle = "#E8E9ED";
+  ctx.font = "600 22px Arial, sans-serif";
+  ctx.fillText("Escala", margem, 52);
 
-  ctx.fillStyle = "#F5F6F8";
-  ctx.font = "bold 30px Arial, sans-serif";
-  ctx.fillText("SINAL — Escala", margem + 52, 58);
-
-  ctx.fillStyle = "#9CA3B5";
-  ctx.font = "20px Arial, sans-serif";
-  ctx.fillText(`${MESES[mesIdx]} ${ano}`, margem + 52, 86);
+  ctx.fillStyle = "#6B7280";
+  ctx.font = "15px Arial, sans-serif";
+  ctx.fillText(`${MESES[mesIdx]} ${ano}`, margem, 76);
 
   // ---- Mini calendário ----
-  ctx.font = "bold 11px Arial, sans-serif";
+  ctx.font = "500 11px Arial, sans-serif";
   ctx.textAlign = "center";
   DIAS_MINI.forEach((d, i) => {
-    ctx.fillStyle = "#5C6478";
-    ctx.fillText(d, margem + celulaLargura * i + celulaLargura / 2, alturaHeader + 18);
+    ctx.fillStyle = "#4A5163";
+    ctx.fillText(d, margem + celulaLargura * i + celulaLargura / 2, alturaHeader + 16);
   });
 
   for (let dia = 1; dia <= totalDiasMes; dia++) {
     const posicao = primeiroDiaSemana + dia - 1;
     const col = posicao % 7;
     const lin = Math.floor(posicao / 7);
-    const x = margem + col * celulaLargura + espacoCelula / 2;
-    const y = topoCalendario + lin * celulaAltura + espacoCelula / 2;
-    const w = celulaLargura - espacoCelula;
-    const h = celulaAltura - espacoCelula;
+    const cx = margem + col * celulaLargura + celulaLargura / 2;
+    const cy = topoCalendario + lin * celulaAltura + celulaAltura / 2;
 
     const chaveDia = `${ano}-${String(mesIdx + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
-    const qtdPessoas = escalasPorDia.get(chaveDia)?.length || 0;
-    const temEscala = qtdPessoas > 0;
+    const temEscala = escalasPorDia.has(chaveDia);
 
-    retanguloArredondado(x, y, w, h, 8);
     if (temEscala) {
-      ctx.fillStyle = "rgba(255,176,32,0.10)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,176,32,0.55)";
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-    } else {
-      ctx.fillStyle = "rgba(255,255,255,0.02)";
+      ctx.beginPath();
+      ctx.arc(cx, cy - 3, 15, 0, Math.PI * 2);
+      ctx.fillStyle = "#1B1F2A";
       ctx.fill();
     }
 
-    ctx.fillStyle = temEscala ? "#FFB020" : "#4A5163";
-    ctx.font = temEscala ? "bold 15px Arial, sans-serif" : "13px Arial, sans-serif";
-    ctx.fillText(String(dia), x + w / 2, y + h / 2 - (temEscala ? 3 : 0));
+    ctx.fillStyle = temEscala ? "#F5F6F8" : "#3A4152";
+    ctx.font = temEscala ? "600 14px Arial, sans-serif" : "400 13px Arial, sans-serif";
+    ctx.fillText(String(dia), cx, cy);
 
     if (temEscala) {
-      const raioPonto = 2.4;
-      const espacoPontos = 7;
-      const qtdPontos = Math.min(qtdPessoas, 3);
-      const inicioX = x + w / 2 - ((qtdPontos - 1) * espacoPontos) / 2;
-      for (let p = 0; p < qtdPontos; p++) {
-        ctx.beginPath();
-        ctx.arc(inicioX + p * espacoPontos, y + h - 9, raioPonto, 0, Math.PI * 2);
-        ctx.fillStyle = "#2EE896";
-        ctx.fill();
-      }
+      ctx.beginPath();
+      ctx.arc(cx, cy + 14, 2, 0, Math.PI * 2);
+      ctx.fillStyle = "#FFB020";
+      ctx.fill();
     }
   }
   ctx.textAlign = "left";
 
-  // separador
-  ctx.strokeStyle = "#2E3444";
+  // separador fino
+  ctx.strokeStyle = "#20242E";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(margem, topoLista - 25);
-  ctx.lineTo(largura - margem, topoLista - 25);
+  ctx.moveTo(margem, topoLista - 22);
+  ctx.lineTo(largura - margem, topoLista - 22);
   ctx.stroke();
 
-  ctx.fillStyle = "#9CA3B5";
-  ctx.font = "bold 14px Arial, sans-serif";
-  ctx.fillText("DETALHES DA ESCALA", margem, topoLista - 5);
-
-  // ---- Lista detalhada ----
+  // ---- Lista, hierarquia por tamanho/peso, não por cor ----
   todos.forEach((item, i) => {
-    const y = topoLista + 15 + i * alturaLinha;
+    const y = topoLista + i * alturaLinha;
     const d = item.data.toDate();
 
-    if (i % 2 === 0) {
-      ctx.fillStyle = "rgba(255,255,255,0.025)";
-      ctx.fillRect(margem - 10, y, largura - margem * 2 + 20, alturaLinha - 8);
+    ctx.fillStyle = "#E8E9ED";
+    ctx.font = "600 17px Arial, sans-serif";
+    ctx.fillText(`${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`, margem, y + 22);
+
+    ctx.fillStyle = "#4A5163";
+    ctx.font = "400 11px Arial, sans-serif";
+    ctx.fillText(DIAS_ABREV[d.getDay()], margem, y + 37);
+
+    ctx.fillStyle = "#E8E9ED";
+    ctx.font = "600 16px Arial, sans-serif";
+    ctx.fillText(item.pessoa, margem + 100, y + 22);
+
+    ctx.fillStyle = "#6B7280";
+    ctx.font = "400 12px Arial, sans-serif";
+    ctx.fillText(item.funcao, margem + 100, y + 37);
+
+    if (i < todos.length - 1) {
+      ctx.strokeStyle = "#181B23";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(margem, y + alturaLinha - 12);
+      ctx.lineTo(largura - margem, y + alturaLinha - 12);
+      ctx.stroke();
     }
-
-    ctx.fillStyle = "#F5F6F8";
-    ctx.font = "bold 22px Arial, sans-serif";
-    ctx.fillText(`${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`, margem, y + 32);
-
-    ctx.fillStyle = "#5C6478";
-    ctx.font = "13px Arial, sans-serif";
-    ctx.fillText(DIAS_ABREV[d.getDay()], margem, y + 52);
-
-    ctx.fillStyle = "#FFB020";
-    ctx.font = "bold 13px Arial, sans-serif";
-    ctx.fillText(item.funcao.toUpperCase(), margem + 115, y + 26);
-
-    ctx.fillStyle = "#2EE896";
-    ctx.font = "bold 24px Arial, sans-serif";
-    ctx.fillText(item.pessoa, margem + 115, y + 54);
   });
 
-  ctx.fillStyle = "#5C6478";
-  ctx.font = "13px Arial, sans-serif";
-  ctx.fillText("Gerado pelo app SINAL", margem, altura - 18);
+  ctx.fillStyle = "#3A4152";
+  ctx.font = "11px Arial, sans-serif";
+  ctx.fillText("Gerado pelo app SINAL", margem, altura - 16);
 
   canvas.toBlob((blob) => {
     const url = URL.createObjectURL(blob);
