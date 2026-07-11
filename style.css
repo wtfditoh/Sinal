@@ -624,6 +624,81 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   color: var(--text-faint);
 }
 
+/* ---------- Equipe (perfis) ---------- */
+.equipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 12px;
+}
+.equipe-membro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 6px;
+  animation: slideFadeIn 0.3s ease backwards;
+}
+.equipe-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--bg-elevated), var(--bg-elevated)) padding-box,
+    conic-gradient(from 180deg, var(--green), var(--amber), var(--red), var(--green)) border-box;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+.equipe-membro:active .equipe-avatar { transform: scale(0.92); }
+.equipe-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.equipe-avatar span {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--amber);
+}
+.equipe-nome {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 78px;
+}
+
+.perfil-stats-grid {
+  display: flex;
+  gap: 10px;
+}
+.perfil-stat {
+  flex: 1;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.perfil-stat-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--amber);
+}
+.perfil-stat-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
 /* ---------- Sub-abas (Recursos: Logos / Senhas) ---------- */
 .sub-tabs {
   display: flex;
@@ -968,6 +1043,30 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   margin-top: 8px;
   letter-spacing: 0.3px;
 }
+
+.checklist-dia {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.checklist-item {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-faint);
+  transition: all 0.15s ease;
+}
+.checklist-item.feito {
+  background: rgba(46, 232, 150, 0.15);
+  border-color: rgba(46, 232, 150, 0.4);
+  color: var(--green);
+}
+.checklist-item:active { transform: scale(0.94); }
 
 /* ---------- Solicitações a líderes ---------- */
 .solicitacoes-section {
