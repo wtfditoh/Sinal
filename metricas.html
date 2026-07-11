@@ -59,6 +59,9 @@
     <div class="metrica-secao-titulo">Ranking da equipe</div>
     <div id="listaRanking"></div>
 
+    <div class="metrica-secao-titulo">👥 Equipe</div>
+    <div class="equipe-grid" id="equipeGrid"></div>
+
     <div class="empty-state" id="emptyState" style="display:none;">
       <div style="font-size:32px;">📊</div>
       <p>Ainda não tem dados suficientes.<br>As métricas aparecem conforme os cultos forem sendo postados.</p>
@@ -85,6 +88,30 @@
     </div>
   </div>
 
+</div>
+
+<!-- Modal: perfil do membro -->
+<div class="modal-overlay" id="perfilMembroOverlay">
+  <div class="modal-sheet" style="text-align:center;">
+    <div class="avatar-grande" id="perfilMembroAvatar" style="margin:0 auto 14px;"></div>
+    <div class="modal-title" id="perfilMembroNome" style="text-align:center;">Nome</div>
+    <div id="perfilMembroPapel" style="font-family:var(--font-mono); font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:1px; margin-bottom:18px;"></div>
+
+    <div class="perfil-stats-grid">
+      <div class="perfil-stat">
+        <div class="perfil-stat-num" id="perfilMembroPostados">0</div>
+        <div class="perfil-stat-tag">cultos postados</div>
+      </div>
+      <div class="perfil-stat">
+        <div class="perfil-stat-num" id="perfilMembroPosicao">—</div>
+        <div class="perfil-stat-tag">posição no ranking</div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn" id="perfilMembroFecharBtn" style="width:100%;">Fechar</button>
+    </div>
+  </div>
 </div>
 
 <script type="module" src="metricas.js"></script>
