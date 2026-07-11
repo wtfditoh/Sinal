@@ -281,11 +281,13 @@ async function gerarImagemEscala() {
   const totalCelulas = primeiroDiaSemana + totalDiasMes;
   const totalLinhasCal = Math.ceil(totalCelulas / 7);
 
-  const celulaTam = (largura - margem * 2) / 7;
+  const celulaLargura = (largura - margem * 2) / 7;
+  const celulaAltura = 46;
+  const espacoCelula = 4;
   const alturaHeader = 130;
-  const alturaLabelsDias = 34;
-  const alturaCalendario = totalLinhasCal * celulaTam;
-  const alturaSeparadorCal = 50;
+  const alturaLabelsDias = 30;
+  const alturaCalendario = totalLinhasCal * celulaAltura;
+  const alturaSeparadorCal = 44;
   const alturaLinha = 68;
   const alturaFooter = 50;
 
@@ -297,6 +299,16 @@ async function gerarImagemEscala() {
   canvas.width = largura;
   canvas.height = altura;
   const ctx = canvas.getContext("2d");
+
+  function retanguloArredondado(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
 
   // fundo
   const grad = ctx.createLinearGradient(0, 0, largura, altura);
@@ -325,43 +337,53 @@ async function gerarImagemEscala() {
   ctx.fillText(`${MESES[mesIdx]} ${ano}`, margem + 52, 86);
 
   // ---- Mini calendário ----
-  ctx.font = "bold 13px Arial, sans-serif";
+  ctx.font = "bold 11px Arial, sans-serif";
   ctx.textAlign = "center";
   DIAS_MINI.forEach((d, i) => {
     ctx.fillStyle = "#5C6478";
-    ctx.fillText(d, margem + celulaTam * i + celulaTam / 2, alturaHeader + 22);
+    ctx.fillText(d, margem + celulaLargura * i + celulaLargura / 2, alturaHeader + 18);
   });
 
   for (let dia = 1; dia <= totalDiasMes; dia++) {
     const posicao = primeiroDiaSemana + dia - 1;
     const col = posicao % 7;
     const lin = Math.floor(posicao / 7);
-    const cx = margem + col * celulaTam + celulaTam / 2;
-    const cy = topoCalendario + lin * celulaTam + celulaTam / 2;
+    const x = margem + col * celulaLargura + espacoCelula / 2;
+    const y = topoCalendario + lin * celulaAltura + espacoCelula / 2;
+    const w = celulaLargura - espacoCelula;
+    const h = celulaAltura - espacoCelula;
 
     const chaveDia = `${ano}-${String(mesIdx + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
-    const temEscala = escalasPorDia.has(chaveDia);
-    const raioCelula = celulaTam * 0.36;
+    const qtdPessoas = escalasPorDia.get(chaveDia)?.length || 0;
+    const temEscala = qtdPessoas > 0;
 
+    retanguloArredondado(x, y, w, h, 8);
     if (temEscala) {
-      ctx.beginPath();
-      ctx.arc(cx, cy - 4, raioCelula, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,176,32,0.16)";
+      ctx.fillStyle = "rgba(255,176,32,0.10)";
       ctx.fill();
-      ctx.strokeStyle = "#FFB020";
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(255,176,32,0.55)";
+      ctx.lineWidth = 1.2;
       ctx.stroke();
+    } else {
+      ctx.fillStyle = "rgba(255,255,255,0.02)";
+      ctx.fill();
     }
 
-    ctx.fillStyle = temEscala ? "#FFB020" : "#5C6478";
-    ctx.font = temEscala ? "bold 15px Arial, sans-serif" : "14px Arial, sans-serif";
-    ctx.fillText(String(dia), cx, cy);
+    ctx.fillStyle = temEscala ? "#FFB020" : "#4A5163";
+    ctx.font = temEscala ? "bold 15px Arial, sans-serif" : "13px Arial, sans-serif";
+    ctx.fillText(String(dia), x + w / 2, y + h / 2 - (temEscala ? 3 : 0));
 
     if (temEscala) {
-      ctx.beginPath();
-      ctx.arc(cx, cy + raioCelula - 6, 3, 0, Math.PI * 2);
-      ctx.fillStyle = "#2EE896";
-      ctx.fill();
+      const raioPonto = 2.4;
+      const espacoPontos = 7;
+      const qtdPontos = Math.min(qtdPessoas, 3);
+      const inicioX = x + w / 2 - ((qtdPontos - 1) * espacoPontos) / 2;
+      for (let p = 0; p < qtdPontos; p++) {
+        ctx.beginPath();
+        ctx.arc(inicioX + p * espacoPontos, y + h - 9, raioPonto, 0, Math.PI * 2);
+        ctx.fillStyle = "#2EE896";
+        ctx.fill();
+      }
     }
   }
   ctx.textAlign = "left";
