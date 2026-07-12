@@ -275,10 +275,14 @@ async function gerarImagemEscala() {
   const ESCALA_RESOLUCAO = 2.5; // renderiza em alta resolução pra não perder qualidade no zoom
 
   const PALETA_FUNCAO = ["#FFB020", "#2EE896", "#5B9DFF", "#FF7AC6", "#B98CFF", "#38D9E0", "#FF5C5C"];
-  function corPorFuncao(funcao) {
-    let hash = 0;
-    for (let i = 0; i < funcao.length; i++) hash += funcao.charCodeAt(i);
-    return PALETA_FUNCAO[hash % PALETA_FUNCAO.length];
+
+  // Cada dia (não cada função) recebe uma cor diferente do vizinho, em ordem cíclica
+  const coresPorDia = new Map();
+  [...escalasPorDia.keys()].sort().forEach((chave, i) => {
+    coresPorDia.set(chave, PALETA_FUNCAO[i % PALETA_FUNCAO.length]);
+  });
+  function corDoDia(chaveDia) {
+    return coresPorDia.get(chaveDia) || "#FFB020";
   }
 
   const ano = mesAtual.getFullYear();
@@ -357,7 +361,7 @@ async function gerarImagemEscala() {
     const chaveDia = `${ano}-${String(mesIdx + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
     const itensDoDia = escalasPorDia.get(chaveDia) || [];
     const temEscala = itensDoDia.length > 0;
-    const corDia = temEscala ? corPorFuncao(itensDoDia[0].funcao) : null;
+    const corDia = temEscala ? corDoDia(chaveDia) : null;
 
     if (temEscala) {
       ctx.beginPath();
@@ -371,15 +375,10 @@ async function gerarImagemEscala() {
     ctx.fillText(String(dia), cx, cy);
 
     if (temEscala) {
-      const funcoesUnicas = [...new Set(itensDoDia.map((it) => it.funcao))].slice(0, 3);
-      const espacoPontos = 7;
-      const inicioX = cx - ((funcoesUnicas.length - 1) * espacoPontos) / 2;
-      funcoesUnicas.forEach((funcao, p) => {
-        ctx.beginPath();
-        ctx.arc(inicioX + p * espacoPontos, cy + 14, 2, 0, Math.PI * 2);
-        ctx.fillStyle = corPorFuncao(funcao);
-        ctx.fill();
-      });
+      ctx.beginPath();
+      ctx.arc(cx, cy + 14, 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = corDia;
+      ctx.fill();
     }
   }
   ctx.textAlign = "left";
@@ -392,11 +391,12 @@ async function gerarImagemEscala() {
   ctx.lineTo(largura - margem, topoLista - 22);
   ctx.stroke();
 
-  // ---- Lista: data e função na cor daquela função específica ----
+  // ---- Lista: data na mesma cor do dia correspondente no calendário ----
   todos.forEach((item, i) => {
     const y = topoLista + i * alturaLinha;
     const d = item.data.toDate();
-    const cor = corPorFuncao(item.funcao);
+    const chaveItem = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const cor = corDoDia(chaveItem);
 
     ctx.fillStyle = cor;
     ctx.font = "600 17px Arial, sans-serif";
