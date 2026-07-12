@@ -542,63 +542,149 @@ document.getElementById("respostaAplicarBtn").addEventListener("click", async ()
   await updateDoc(doc(db, "solicitacoes", respostaAtualId), { status: "aplicado" });
 });
 
-// ---------- Compartilhar pendências no zap ----------
+// ---------- Compartilhar pendências no zap (como imagem) ----------
 document.getElementById("compartilharPendenciasBtn").addEventListener("click", compartilharPendencias);
 
 async function compartilharPendencias() {
   const btn = document.getElementById("compartilharPendenciasBtn");
-  btn.textContent = "Preparando...";
+  btn.textContent = "Gerando imagem...";
   btn.disabled = true;
 
-  const hoje = new Date();
-  const dataFormatada = `${String(hoje.getDate()).padStart(2,"0")}/${String(hoje.getMonth()+1).padStart(2,"0")}`;
-
-  let mensagem = `📋 *Pendências SINAL* — ${dataFormatada}\n`;
-
-  // Cultos pendentes do mês em exibição
-  const cultosPendentes = [...cultosCache.values()].filter((c) => c.status !== "postado");
-  if (cultosPendentes.length > 0) {
-    mensagem += `\n🎥 *Cultos pendentes:*\n`;
-    cultosPendentes.forEach((c) => {
-      const d = c.data.toDate();
-      mensagem += `• ${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")} — ${c.tipo || "Culto"}\n`;
-    });
-  }
-
-  // Cartazes pendentes (busca avulsa, só na hora de gerar)
   try {
+    const cultosPendentes = [...cultosCache.values()]
+      .filter((c) => c.status !== "postado")
+      .sort((a, b) => a.data.toMillis() - b.data.toMillis());
+
     const snapCartazes = await getDocs(query(collection(db, "cartazes")));
+    const hoje0h = new Date(); hoje0h.setHours(0, 0, 0, 0);
     const cartazesPendentes = snapCartazes.docs
       .map((d) => d.data())
-      .filter((c) => c.status !== "postado");
-    if (cartazesPendentes.length > 0) {
-      mensagem += `\n🖼️ *Cartazes pendentes:*\n`;
-      cartazesPendentes.forEach((c) => {
-        mensagem += `• ${c.titulo}\n`;
-      });
+      .filter((c) => c.status !== "postado")
+      .map((c) => ({ ...c, atrasado: c.lembreteData ? c.lembreteData.toDate() < hoje0h : false }));
+
+    const pedidosAbertos = [...pedidosCache.values()].filter((p) => p.status === "aberto");
+
+    const blob = await gerarImagemPendencias(cultosPendentes, cartazesPendentes, pedidosAbertos);
+    const arquivo = new File([blob], "pendencias-sinal.png", { type: "image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
+      await navigator.share({ files: [arquivo], title: "Pendências SINAL" });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "pendencias-sinal.png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      alert("Imagem baixada! Agora é só anexar no WhatsApp.");
     }
   } catch (e) {
-    console.error("Erro ao buscar cartazes pendentes:", e);
+    if (e.name !== "AbortError") console.error("Erro ao gerar pendências:", e);
   }
-
-  // Pedidos de ajuda em aberto
-  const pedidosAbertos = [...pedidosCache.values()].filter((p) => p.status === "aberto");
-  if (pedidosAbertos.length > 0) {
-    mensagem += `\n🆘 *Pedidos em aberto:*\n`;
-    pedidosAbertos.forEach((p) => {
-      mensagem += `• ${p.titulo}\n`;
-    });
-  }
-
-  if (cultosPendentes.length === 0 && pedidosAbertos.length === 0) {
-    mensagem += `\n✅ Tudo em dia por aqui!`;
-  }
-
-  const link = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
-  window.open(link, "_blank");
 
   btn.textContent = "📤 Compartilhar pendências no zap";
   btn.disabled = false;
+}
+
+function gerarImagemPendencias(cultos, cartazes, pedidos) {
+  return new Promise((resolve) => {
+    const largura = 520;
+    const margem = 32;
+    const ESCALA = 2.5;
+    const totalItens = cultos.length + cartazes.length + pedidos.length;
+
+    const alturaHeader = 100;
+    const alturaSecaoTitulo = 34;
+    const alturaLinha = 40;
+    const alturaFooter = 40;
+
+    let numSecoes = 0;
+    if (cultos.length) numSecoes++;
+    if (cartazes.length) numSecoes++;
+    if (pedidos.length) numSecoes++;
+
+    const altura = totalItens === 0
+      ? alturaHeader + 100 + alturaFooter
+      : alturaHeader + numSecoes * alturaSecaoTitulo + totalItens * alturaLinha + alturaFooter + 10;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = largura * ESCALA;
+    canvas.height = altura * ESCALA;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(ESCALA, ESCALA);
+
+    ctx.fillStyle = "#0E1016";
+    ctx.fillRect(0, 0, largura, altura);
+
+    // cabeçalho
+    ctx.beginPath();
+    ctx.arc(margem + 14, 44, 14, 0, Math.PI * 2);
+    const anelGrad = ctx.createLinearGradient(margem, 30, margem + 28, 58);
+    anelGrad.addColorStop(0, "#2EE896");
+    anelGrad.addColorStop(0.5, "#FFB020");
+    anelGrad.addColorStop(1, "#FF5C5C");
+    ctx.strokeStyle = anelGrad;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    ctx.fillStyle = "#E8E9ED";
+    ctx.font = "600 22px Arial, sans-serif";
+    ctx.fillText("SINAL — Pendências", margem + 38, 50);
+
+    const hoje = new Date();
+    ctx.fillStyle = "#6B7280";
+    ctx.font = "15px Arial, sans-serif";
+    ctx.fillText(`${String(hoje.getDate()).padStart(2,"0")}/${String(hoje.getMonth()+1).padStart(2,"0")}`, margem + 38, 74);
+
+    let y = alturaHeader;
+
+    if (totalItens === 0) {
+      ctx.fillStyle = "#2EE896";
+      ctx.font = "600 20px Arial, sans-serif";
+      ctx.fillText("✓ Tudo em dia por aqui", margem, y + 40);
+    } else {
+      const secoes = [
+        { titulo: "CULTOS PENDENTES", itens: cultos.map((c) => {
+            const d = c.data.toDate();
+            return { texto: c.tipo || "Culto", sub: `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`, urgente: false };
+          }) },
+        { titulo: "CARTAZES PENDENTES", itens: cartazes.map((c) => ({ texto: c.titulo, sub: c.atrasado ? "atrasado" : null, urgente: c.atrasado })) },
+        { titulo: "PEDIDOS EM ABERTO", itens: pedidos.map((p) => ({ texto: p.titulo, sub: null, urgente: false })) }
+      ];
+
+      secoes.forEach((secao) => {
+        if (secao.itens.length === 0) return;
+
+        ctx.fillStyle = "#4A5163";
+        ctx.font = "600 11px Arial, sans-serif";
+        ctx.fillText(secao.titulo, margem, y + 16);
+        y += alturaSecaoTitulo;
+
+        secao.itens.forEach((item) => {
+          ctx.fillStyle = item.urgente ? "#FF5C5C" : "#E8E9ED";
+          ctx.font = "500 15px Arial, sans-serif";
+          ctx.fillText(`•  ${item.texto}`, margem, y + 16);
+
+          if (item.sub) {
+            ctx.fillStyle = item.urgente ? "#FF5C5C" : "#6B7280";
+            ctx.font = "400 11px Arial, sans-serif";
+            ctx.textAlign = "right";
+            ctx.fillText(item.sub, largura - margem, y + 16);
+            ctx.textAlign = "left";
+          }
+          y += alturaLinha;
+        });
+      });
+    }
+
+    ctx.fillStyle = "#3A4152";
+    ctx.font = "11px Arial, sans-serif";
+    ctx.fillText("Gerado pelo app SINAL", margem, altura - 16);
+
+    canvas.toBlob((blob) => resolve(blob), "image/png");
+  });
 }
 let pedidosCache = new Map();
 const listaPedidos = document.getElementById("listaPedidos");
