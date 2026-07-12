@@ -32,7 +32,6 @@ async function carregarMetricas() {
   const usuarios = snapUsuarios.docs.map((d) => d.data());
 
   renderEquipe(usuarios);
-  renderAniversarios(usuarios);
 
   if (cultos.length === 0) {
     document.getElementById("emptyState").style.display = "block";
@@ -193,52 +192,7 @@ function renderEquipe(usuarios) {
   });
 }
 
-// ---------- Aniversários ----------
-function renderAniversarios(usuarios) {
-  const hoje = new Date();
-  const hojeDia = hoje.getDate();
-  const hojeMes = hoje.getMonth() + 1;
-
-  const comAniversario = usuarios
-    .filter((u) => u.aniversarioDia && u.aniversarioMes)
-    .map((u) => {
-      // calcula quantos dias faltam pro próximo aniversário, dando a volta no ano se preciso
-      let diasRestantes = diferencaEmDias(hojeDia, hojeMes, u.aniversarioDia, u.aniversarioMes);
-      return { ...u, diasRestantes };
-    })
-    .sort((a, b) => a.diasRestantes - b.diasRestantes)
-    .slice(0, 5);
-
-  const container = document.getElementById("listaAniversarios");
-  container.innerHTML = "";
-
-  if (comAniversario.length === 0) {
-    container.innerHTML = `<p style="color:var(--text-faint); font-size:13px;">Ninguém cadastrou aniversário ainda.</p>`;
-    return;
-  }
-
-  const MESES_NOME = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
-
-  comAniversario.forEach((u, index) => {
-    const iniciais = (u.nome || "?").trim().charAt(0).toUpperCase();
-    const ehHoje = u.diasRestantes === 0;
-    const label = ehHoje ? "🎉 hoje!" : u.diasRestantes === 1 ? "amanhã" : `em ${u.diasRestantes} dias`;
-
-    const item = document.createElement("div");
-    item.className = `aniversario-item ${ehHoje ? "hoje" : ""}`;
-    item.style.animationDelay = `${index * 0.05}s`;
-    item.innerHTML = `
-      <div class="aniversario-avatar">
-        ${u.fotoUrl ? `<img src="${escapeHtml(u.fotoUrl)}" alt="">` : `<span>${iniciais}</span>`}
-      </div>
-      <div class="aniversario-info">
-        <div class="aniversario-nome">${escapeHtml(u.nome)}</div>
-        <div class="aniversario-data">${String(u.aniversarioDia).padStart(2,"0")} de ${MESES_NOME[u.aniversarioMes-1]} · ${label}</div>
-      </div>
-    `;
-    container.appendChild(item);
-  });
-}
+// ---------- Aniversário (exibido dentro do perfil do membro) ----------
 
 function diferencaEmDias(hojeDia, hojeMes, aniDia, aniMes) {
   const anoBase = 2024; // ano bissexto neutro, só pra calcular a diferença de datas
@@ -261,6 +215,18 @@ function abrirPerfilMembro(u) {
 
   const posicao = rankingGlobal.findIndex(([nome]) => nome === u.nome);
   document.getElementById("perfilMembroPosicao").textContent = posicao >= 0 ? `${posicao + 1}º` : "—";
+
+  const aniversarioBox = document.getElementById("perfilMembroAniversario");
+  if (u.aniversarioDia && u.aniversarioMes) {
+    const MESES_NOME = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+    const hoje = new Date();
+    const diasRestantes = diferencaEmDias(hoje.getDate(), hoje.getMonth() + 1, u.aniversarioDia, u.aniversarioMes);
+    const label = diasRestantes === 0 ? "🎉 é hoje!" : diasRestantes === 1 ? "falta 1 dia" : `faltam ${diasRestantes} dias`;
+    aniversarioBox.textContent = `🎂 ${u.aniversarioDia} de ${MESES_NOME[u.aniversarioMes - 1]} · ${label}`;
+    aniversarioBox.style.display = "block";
+  } else {
+    aniversarioBox.style.display = "none";
+  }
 
   document.getElementById("perfilMembroOverlay").classList.add("active");
 }
