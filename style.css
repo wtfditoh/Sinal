@@ -673,6 +673,38 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   max-width: 78px;
 }
 
+.aniversario-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  animation: slideFadeIn 0.3s ease backwards;
+}
+.aniversario-item.hoje {
+  border-color: rgba(255, 176, 32, 0.5);
+  background: rgba(255, 176, 32, 0.08);
+}
+.aniversario-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.aniversario-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.aniversario-avatar span { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--amber); }
+.aniversario-info { flex: 1; }
+.aniversario-nome { font-weight: 600; font-size: 14px; }
+.aniversario-data { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+
 .perfil-stats-grid {
   display: flex;
   gap: 10px;
@@ -1295,6 +1327,23 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 .cartaz-card:hover { border-color: #333a49; transform: translateY(-1px); }
+.cartaz-card.atrasado {
+  border-color: rgba(255, 92, 92, 0.45);
+  box-shadow: 0 12px 24px -16px rgba(255, 92, 92, 0.3);
+}
+.cartaz-atrasado-tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--red);
+  background: rgba(255, 92, 92, 0.15);
+  border: 1px solid rgba(255, 92, 92, 0.3);
+  padding: 2px 7px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-bottom: 5px;
+}
 .cartaz-thumb {
   width: 64px;
   height: 64px;
@@ -1326,6 +1375,7 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   color: var(--amber);
   margin-bottom: 6px;
 }
+.cartaz-lembrete.urgente { color: var(--red); font-weight: 700; }
 .cartaz-link {
   font-size: 12px;
   color: var(--amber);
