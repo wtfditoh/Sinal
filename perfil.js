@@ -47,10 +47,19 @@ function criarModalSeNaoExiste() {
         <label>Link da foto (opcional)</label>
         <input type="url" id="perfilFotoInput" value="${usuarioRef.fotoUrl || ""}" placeholder="Link de imagem do Drive, Google Fotos, etc.">
       </div>
-      <div class="field-hint">Dica pra foto aparecer corretamente: <code>sinalpv.netlify.app/media-tool.html</code></div>
-        <div class="upload-box" id="logoPreviewBox" style="display:none; margin-top:8px;">
-          <img id="logoPreviewImg">
+      <div class="field">
+        <label>Aniversário (opcional, só dia e mês)</label>
+        <div style="display:flex; gap:8px;">
+          <select id="perfilAniversarioDia" style="flex:1; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; padding:11px; color:var(--text); font-size:14px;">
+            <option value="">Dia</option>
+            ${Array.from({length:31}, (_,i)=>`<option value="${i+1}" ${usuarioRef.aniversarioDia===i+1?"selected":""}>${i+1}</option>`).join("")}
+          </select>
+          <select id="perfilAniversarioMes" style="flex:1; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; padding:11px; color:var(--text); font-size:14px;">
+            <option value="">Mês</option>
+            ${["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"].map((m,i)=>`<option value="${i+1}" ${usuarioRef.aniversarioMes===i+1?"selected":""}>${m}</option>`).join("")}
+          </select>
         </div>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn" id="perfilCancelBtn">Cancelar</button>
         <button type="button" class="btn btn-primary" id="perfilSalvarBtn">Salvar</button>
@@ -76,6 +85,8 @@ function criarModalSeNaoExiste() {
 function abrirModalPerfil() {
   document.getElementById("perfilNomeInput").value = usuarioRef.nome || "";
   document.getElementById("perfilFotoInput").value = usuarioRef.fotoUrl || "";
+  document.getElementById("perfilAniversarioDia").value = usuarioRef.aniversarioDia || "";
+  document.getElementById("perfilAniversarioMes").value = usuarioRef.aniversarioMes || "";
   const preview = document.getElementById("avatarPreview");
   preview.innerHTML = usuarioRef.fotoUrl
     ? `<img src="${usuarioRef.fotoUrl}" alt="">`
@@ -94,11 +105,20 @@ async function salvarPerfil() {
 
   const novoNome = document.getElementById("perfilNomeInput").value.trim() || usuarioRef.nome;
   const novaFoto = document.getElementById("perfilFotoInput").value.trim();
+  const diaVal = document.getElementById("perfilAniversarioDia").value;
+  const mesVal = document.getElementById("perfilAniversarioMes").value;
 
-  await setDoc(doc(db, "usuarios", usuarioRef.uid), { nome: novoNome, fotoUrl: novaFoto || null }, { merge: true });
+  await setDoc(doc(db, "usuarios", usuarioRef.uid), {
+    nome: novoNome,
+    fotoUrl: novaFoto || null,
+    aniversarioDia: diaVal ? Number(diaVal) : null,
+    aniversarioMes: mesVal ? Number(mesVal) : null
+  }, { merge: true });
 
   usuarioRef.nome = novoNome;
   usuarioRef.fotoUrl = novaFoto || null;
+  usuarioRef.aniversarioDia = diaVal ? Number(diaVal) : null;
+  usuarioRef.aniversarioMes = mesVal ? Number(mesVal) : null;
 
   renderAvatar();
   btn.textContent = "Salvar";
