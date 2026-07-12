@@ -6,7 +6,7 @@ import { atualizarBadgeApp } from "./badge.js";
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
-  getDoc, setDoc
+  getDoc, getDocs, setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
@@ -542,7 +542,64 @@ document.getElementById("respostaAplicarBtn").addEventListener("click", async ()
   await updateDoc(doc(db, "solicitacoes", respostaAtualId), { status: "aplicado" });
 });
 
-// ---------- Pedidos de ajuda entre a equipe ----------
+// ---------- Compartilhar pendências no zap ----------
+document.getElementById("compartilharPendenciasBtn").addEventListener("click", compartilharPendencias);
+
+async function compartilharPendencias() {
+  const btn = document.getElementById("compartilharPendenciasBtn");
+  btn.textContent = "Preparando...";
+  btn.disabled = true;
+
+  const hoje = new Date();
+  const dataFormatada = `${String(hoje.getDate()).padStart(2,"0")}/${String(hoje.getMonth()+1).padStart(2,"0")}`;
+
+  let mensagem = `📋 *Pendências SINAL* — ${dataFormatada}\n`;
+
+  // Cultos pendentes do mês em exibição
+  const cultosPendentes = [...cultosCache.values()].filter((c) => c.status !== "postado");
+  if (cultosPendentes.length > 0) {
+    mensagem += `\n🎥 *Cultos pendentes:*\n`;
+    cultosPendentes.forEach((c) => {
+      const d = c.data.toDate();
+      mensagem += `• ${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")} — ${c.tipo || "Culto"}\n`;
+    });
+  }
+
+  // Cartazes pendentes (busca avulsa, só na hora de gerar)
+  try {
+    const snapCartazes = await getDocs(query(collection(db, "cartazes")));
+    const cartazesPendentes = snapCartazes.docs
+      .map((d) => d.data())
+      .filter((c) => c.status !== "postado");
+    if (cartazesPendentes.length > 0) {
+      mensagem += `\n🖼️ *Cartazes pendentes:*\n`;
+      cartazesPendentes.forEach((c) => {
+        mensagem += `• ${c.titulo}\n`;
+      });
+    }
+  } catch (e) {
+    console.error("Erro ao buscar cartazes pendentes:", e);
+  }
+
+  // Pedidos de ajuda em aberto
+  const pedidosAbertos = [...pedidosCache.values()].filter((p) => p.status === "aberto");
+  if (pedidosAbertos.length > 0) {
+    mensagem += `\n🆘 *Pedidos em aberto:*\n`;
+    pedidosAbertos.forEach((p) => {
+      mensagem += `• ${p.titulo}\n`;
+    });
+  }
+
+  if (cultosPendentes.length === 0 && pedidosAbertos.length === 0) {
+    mensagem += `\n✅ Tudo em dia por aqui!`;
+  }
+
+  const link = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+  window.open(link, "_blank");
+
+  btn.textContent = "📤 Compartilhar pendências no zap";
+  btn.disabled = false;
+}
 let pedidosCache = new Map();
 const listaPedidos = document.getElementById("listaPedidos");
 
