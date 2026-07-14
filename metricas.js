@@ -8,6 +8,7 @@ import {
 const MESES_ABREV = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 let cultosGlobal = [];
 let rankingGlobal = [];
+let escalasGlobal = [];
 
 function escapeHtml(texto) {
   if (!texto) return "";
@@ -30,6 +31,9 @@ async function carregarMetricas() {
 
   const snapUsuarios = await getDocs(collection(db, "usuarios"));
   const usuarios = snapUsuarios.docs.map((d) => d.data());
+
+  const snapEscalas = await getDocs(query(collection(db, "escalas"), orderBy("data", "asc")));
+  escalasGlobal = snapEscalas.docs.map((d) => ({ id: d.id, ...d.data() }));
 
   renderEquipe(usuarios);
 
@@ -215,6 +219,28 @@ function abrirPerfilMembro(u) {
 
   const posicao = rankingGlobal.findIndex(([nome]) => nome === u.nome);
   document.getElementById("perfilMembroPosicao").textContent = posicao >= 0 ? `${posicao + 1}º` : "—";
+
+  // Presença: escalas dela que já passaram (não faz sentido cobrar presença de dia futuro)
+  const hojeData = new Date();
+  const escalasDela = escalasGlobal.filter((e) => e.pessoa === u.nome && e.data && e.data.toDate() <= hojeData);
+  const presencaBox = document.getElementById("perfilMembroPresenca");
+  if (escalasDela.length > 0) {
+    const confirmadas = escalasDela.filter((e) => e.confirmado).length;
+    const pctPresenca = Math.round((confirmadas / escalasDela.length) * 100);
+    document.getElementById("perfilMembroPresencaPct").textContent = `${pctPresenca}%`;
+
+    // sequência: conta a partir da escala mais recente pra trás, enquanto tiver confirmado
+    const ordenadasDesc = [...escalasDela].sort((a, b) => b.data.toMillis() - a.data.toMillis());
+    let streakPessoal = 0;
+    for (const e of ordenadasDesc) {
+      if (e.confirmado) streakPessoal++;
+      else break;
+    }
+    document.getElementById("perfilMembroStreak").textContent = streakPessoal;
+    presencaBox.style.display = "flex";
+  } else {
+    presencaBox.style.display = "none";
+  }
 
   const aniversarioBox = document.getElementById("perfilMembroAniversario");
   if (u.aniversarioDia && u.aniversarioMes) {
