@@ -93,6 +93,12 @@ function formatarDataInput(timestamp) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
+function formatarHorarioEdicao(timestamp) {
+  if (!timestamp) return "";
+  const d = timestamp.toDate();
+  return ` · ${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")} às ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+
 function renderChecklistItem(cultoId, chave, label, feito) {
   return `<button class="checklist-item ${feito ? "feito" : ""}" data-culto="${cultoId}" data-chave="${chave}">${label}</button>`;
 }
@@ -149,7 +155,12 @@ function renderCultos(docs) {
         <button class="btn" data-id="${id}" data-action="editar">Editar</button>
         <button class="btn btn-excluir" data-id="${id}" data-action="excluir">🗑</button>
       </div>
-      ${isPostado ? `<div class="culto-postado-por">postado por ${escapeHtml(c.postadoPor) || "—"}</div>` : ""}
+      ${isPostado || c.editadoPor ? `
+        <div class="culto-detalhes-audit">
+          ${isPostado ? `<div class="culto-postado-por">✓ postado por ${escapeHtml(c.postadoPor) || "—"}</div>` : ""}
+          ${c.editadoPor ? `<div class="culto-postado-por">✎ editado por ${escapeHtml(c.editadoPor)}${formatarHorarioEdicao(c.editadoEm)}</div>` : ""}
+        </div>
+      ` : ""}
     `;
     listaCultos.appendChild(card);
   });
@@ -281,7 +292,11 @@ cultoForm.addEventListener("submit", async (e) => {
   };
 
   if (editandoId) {
-    await updateDoc(doc(db, "cultos", editandoId), payload);
+    await updateDoc(doc(db, "cultos", editandoId), {
+      ...payload,
+      editadoPor: usuarioAtual.nome,
+      editadoEm: serverTimestamp()
+    });
   } else {
     await addDoc(collection(db, "cultos"), {
       ...payload,
