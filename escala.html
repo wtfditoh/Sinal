@@ -30,6 +30,17 @@
 
   <main>
 
+    <div class="solicitacoes-section">
+      <div class="solicitacoes-header" id="rotacoesToggle">
+        <span>🔁 Escalas automáticas</span>
+        <span class="solicitacoes-seta" id="rotacoesSeta">▾</span>
+      </div>
+      <div class="solicitacoes-body" id="rotacoesBody" style="display:none;">
+        <button class="btn btn-primary" id="novaRotacaoBtn" style="width:100%; margin-bottom:10px;">+ Nova rotação</button>
+        <div id="listaRotacoes"></div>
+      </div>
+    </div>
+
     <div class="month-nav">
       <button class="month-arrow" id="prevMonth">‹</button>
       <div class="month-label" id="monthLabel">—</div>
@@ -114,6 +125,52 @@
       <div class="modal-actions">
         <button type="button" class="btn" id="cancelBtn">Cancelar</button>
         <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: nova rotação automática -->
+<div class="modal-overlay" id="rotacaoModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title">Nova rotação automática</div>
+    <form id="rotacaoForm">
+      <div class="field">
+        <label for="rNome">Nome da rotina</label>
+        <input type="text" id="rNome" required placeholder='ex: Fotos - Domingos'>
+      </div>
+      <div class="field">
+        <label for="rFuncao">Função</label>
+        <select id="rFuncao" required>
+          <option value="Câmera">Câmera</option>
+          <option value="Transmissão/Live">Transmissão / Live</option>
+          <option value="Fotos">Fotos</option>
+          <option value="Stories/Redes">Stories / Redes sociais</option>
+          <option value="Datashow">Datashow / Projeção</option>
+          <option value="Som">Som</option>
+          <option value="Edição">Edição</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="rDiaSemana">Dia da semana</label>
+        <select id="rDiaSemana" required>
+          <option value="0">Domingo</option>
+          <option value="1">Segunda-feira</option>
+          <option value="2">Terça-feira</option>
+          <option value="3">Quarta-feira</option>
+          <option value="4">Quinta-feira</option>
+          <option value="5">Sexta-feira</option>
+          <option value="6">Sábado</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="rPessoas">Pessoas, em ordem de rodízio</label>
+        <input type="text" id="rPessoas" required placeholder="ex: Ryan, Milcah, Rayane">
+        <div class="field-hint">Separa por vírgula. O app vai alternando entre elas, um dia pra cada, sem repetir a ordem toda hora — continua de onde parou mês a mês.</div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="rotacaoCancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar rotação</button>
       </div>
     </form>
   </div>
