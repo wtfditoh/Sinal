@@ -1065,7 +1065,12 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-faint);
+}
+.culto-detalhes-audit {
   margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .culto-origem-form {
@@ -1312,6 +1317,25 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   padding: 4px 8px;
 }
 .escala-del:hover { color: var(--red); }
+
+.escala-presenca {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-faint);
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.escala-presenca.confirmado {
+  background: rgba(46, 232, 150, 0.15);
+  border-color: rgba(46, 232, 150, 0.4);
+  color: var(--green);
+}
+.escala-presenca:active { transform: scale(0.94); }
 
 /* ---------- Cartazes ---------- */
 .cartaz-card {
