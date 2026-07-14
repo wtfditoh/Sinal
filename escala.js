@@ -1,6 +1,7 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
+import { aplicarModoVisitante } from "./visitante.js";
 import { confirmarExclusao } from "./confirm.js";
 import {
   collection, query, where, orderBy, onSnapshot,
@@ -34,8 +35,10 @@ function chaveDia(d) {
 exigirLogin((usuario) => {
   usuarioAtual = usuario;
   initPerfil(usuario);
+  aplicarModoVisitante(usuario);
   carregarEscalaDoMes();
   marcarVisita();
+  carregarRotacoes();
 });
 
 document.getElementById("logoutBtn").addEventListener("click", sair);
@@ -481,3 +484,148 @@ async function marcarVisita() {
     }
   });
 }
+
+// ---------- Escalas automáticas (rotação) ----------
+let rotacoesCache = new Map();
+const DIAS_SEMANA_NOME = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+
+const rotacoesToggle = document.getElementById("rotacoesToggle");
+const rotacoesBody = document.getElementById("rotacoesBody");
+const rotacoesSeta = document.getElementById("rotacoesSeta");
+const listaRotacoes = document.getElementById("listaRotacoes");
+
+rotacoesToggle.addEventListener("click", () => {
+  const aberta = rotacoesBody.style.display !== "none";
+  rotacoesBody.style.display = aberta ? "none" : "block";
+  rotacoesSeta.classList.toggle("aberta", !aberta);
+});
+
+function carregarRotacoes() {
+  const q = query(collection(db, "rotacoes"), orderBy("criadoEm", "desc"));
+  onSnapshot(q, (snapshot) => {
+    rotacoesCache.clear();
+    listaRotacoes.innerHTML = "";
+
+    if (snapshot.empty) {
+      listaRotacoes.innerHTML = `<p style="color:var(--text-faint); font-size:13px;">Nenhuma rotação cadastrada ainda.</p>`;
+    }
+
+    snapshot.docs.forEach((docSnap) => {
+      const r = docSnap.data();
+      const id = docSnap.id;
+      rotacoesCache.set(id, r);
+
+      const proximaPessoa = r.pessoas[(r.proximoIndice || 0) % r.pessoas.length];
+
+      const item = document.createElement("div");
+      item.className = "solicitacao-item";
+      item.innerHTML = `
+        <div class="solicitacao-info">
+          <div class="solicitacao-titulo">${escapeHtml(r.nome)}</div>
+          <div class="solicitacao-status aguardando">${DIAS_SEMANA_NOME[r.diaSemana]} · próxima: ${escapeHtml(proximaPessoa)}</div>
+        </div>
+        <button class="btn btn-mark" data-id="${id}" data-acao="gerar">▶ Gerar mês</button>
+        <button class="btn btn-excluir" data-id="${id}" data-acao="excluir">🗑</button>
+      `;
+      listaRotacoes.appendChild(item);
+    });
+
+    listaRotacoes.querySelectorAll("button[data-acao]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        if (btn.dataset.acao === "gerar") gerarRotacaoParaMes(id, btn);
+        else if (btn.dataset.acao === "excluir") excluirRotacao(id);
+      });
+    });
+  });
+}
+
+async function excluirRotacao(id) {
+  const confirmar = await confirmarExclusao("Excluir essa rotação? As escalas já geradas continuam, só a regra é removida.");
+  if (!confirmar) return;
+  await deleteDoc(doc(db, "rotacoes", id));
+}
+
+async function gerarRotacaoParaMes(id, btn) {
+  const rot = rotacoesCache.get(id);
+  if (!rot) return;
+
+  btn.textContent = "Gerando...";
+  btn.disabled = true;
+
+  const ano = mesAtual.getFullYear();
+  const mes = mesAtual.getMonth();
+  const totalDias = new Date(ano, mes + 1, 0).getDate();
+
+let indice = rot.proximoIndice || 0;
+  let geradas = 0;
+
+  for (let dia = 1; dia <= totalDias; dia++) {
+    const d = new Date(ano, mes, dia);
+    if (d.getDay() !== rot.diaSemana) continue;
+
+    const chave = chaveDia(d);
+    const jaTemEssaFuncao = (escalasPorDia.get(chave) || []).some((it) => it.funcao === rot.funcao);
+    if (jaTemEssaFuncao) continue; // não sobrescreve o que já tá escalado manualmente
+
+    const pessoa = rot.pessoas[indice % rot.pessoas.length];
+    await addDoc(collection(db, "escalas"), {
+      data: Timestamp.fromDate(new Date(ano, mes, dia, 12, 0)),
+      funcao: rot.funcao,
+      pessoa,
+      criadoPor: usuarioAtual.uid,
+      viaRotacao: id,
+      atualizadoEm: serverTimestamp()
+    });
+    indice++;
+    geradas++;
+  }
+
+  await updateDoc(doc(db, "rotacoes", id), { proximoIndice: indice, atualizadoEm: serverTimestamp() });
+
+  btn.textContent = "▶ Gerar mês";
+  btn.disabled = false;
+  alert(geradas > 0 ? `${geradas} escala(s) gerada(s) pra esse mês!` : "Já tava tudo preenchido pra esse dia da semana nesse mês.");
+}
+
+// ---------- Modal: nova rotação ----------
+const rotacaoModalOverlay = document.getElementById("rotacaoModalOverlay");
+const rotacaoForm = document.getElementById("rotacaoForm");
+
+document.getElementById("novaRotacaoBtn").addEventListener("click", () => {
+  rotacaoForm.reset();
+  rotacaoModalOverlay.classList.add("active");
+});
+document.getElementById("rotacaoCancelBtn").addEventListener("click", () => {
+  rotacaoModalOverlay.classList.remove("active");
+});
+rotacaoModalOverlay.addEventListener("click", (e) => {
+  if (e.target === rotacaoModalOverlay) rotacaoModalOverlay.classList.remove("active");
+});
+
+rotacaoForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const pessoas = document.getElementById("rPessoas").value
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  if (pessoas.length === 0) {
+    alert("Coloca pelo menos uma pessoa na lista.");
+    return;
+  }
+
+  await addDoc(collection(db, "rotacoes"), {
+    nome: document.getElementById("rNome").value,
+    funcao: document.getElementById("rFuncao").value,
+    diaSemana: Number(document.getElementById("rDiaSemana").value),
+    pessoas,
+    proximoIndice: 0,
+    criadoPor: usuarioAtual.uid,
+    criadoEm: serverTimestamp(),
+    atualizadoEm: serverTimestamp()
+  });
+
+  rotacaoForm.reset();
+  rotacaoModalOverlay.classList.remove("active");
+});
