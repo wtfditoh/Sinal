@@ -16,6 +16,11 @@ function nomeParaEmail(nome) {
   return `${limpo}${AUTH_DOMAIN_SUFFIX}`;
 }
 
+const ehVisitante = new URLSearchParams(window.location.search).get("papel") === "visitante";
+if (ehVisitante) {
+  document.querySelector(".login-sub").textContent = "Acesso de visitante — só visualização, sem poder editar nada";
+}
+
 const form = document.getElementById("cadastroForm");
 const errorBox = document.getElementById("cadastroError");
 const btn = document.getElementById("cadastroBtn");
@@ -39,12 +44,13 @@ form.addEventListener("submit", async (e) => {
   btn.disabled = true;
 
   const email = nomeParaEmail(nome);
+  const papel = new URLSearchParams(window.location.search).get("papel") === "visitante" ? "visitante" : "membro";
 
   try {
     const credencial = await createUserWithEmailAndPassword(auth, email, senha);
     await setDoc(doc(db, "usuarios", credencial.user.uid), {
       nome,
-      papel: "membro",
+      papel,
       criadoEm: serverTimestamp()
     });
 
