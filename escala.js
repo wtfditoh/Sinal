@@ -4,7 +4,7 @@ import { initPerfil } from "./perfil.js";
 import { confirmarExclusao } from "./confirm.js";
 import {
   collection, query, where, orderBy, onSnapshot,
-  addDoc, deleteDoc, doc, serverTimestamp, Timestamp,
+  addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
   setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -113,11 +113,18 @@ function renderListaMes() {
       linha.innerHTML = `
         <span class="escala-funcao-tag">${escapeHtml(item.funcao)}</span>
         <span class="escala-pessoa">${escapeHtml(item.pessoa)}</span>
+        <button class="escala-presenca ${item.confirmado ? "confirmado" : ""}" data-id="${item.id}" title="Confirmar presença">
+          ${item.confirmado ? "✓ presente" : "confirmar"}
+        </button>
         <button class="escala-del" data-id="${item.id}" title="Remover">✕</button>
       `;
       bloco.appendChild(linha);
     });
     container.appendChild(bloco);
+  });
+
+  container.querySelectorAll(".escala-presenca").forEach((btn) => {
+    btn.addEventListener("click", () => toggleConfirmacao(btn.dataset.id, btn.classList.contains("confirmado")));
   });
 
   container.querySelectorAll(".escala-del").forEach((btn) => {
@@ -126,6 +133,14 @@ function renderListaMes() {
       if (!confirmar) return;
       await deleteDoc(doc(db, "escalas", btn.dataset.id));
     });
+  });
+}
+
+async function toggleConfirmacao(id, jaConfirmado) {
+  await updateDoc(doc(db, "escalas", id), {
+    confirmado: !jaConfirmado,
+    confirmadoEm: !jaConfirmado ? serverTimestamp() : null,
+    atualizadoEm: serverTimestamp()
   });
 }
 
@@ -190,9 +205,16 @@ function renderModalDia(dataObj) {
         <div class="dia-item">
           <span class="escala-funcao-tag">${escapeHtml(it.funcao)}</span>
           <span class="escala-pessoa">${escapeHtml(it.pessoa)}</span>
+          <button class="escala-presenca ${it.confirmado ? "confirmado" : ""}" data-id="${it.id}" title="Confirmar presença">
+            ${it.confirmado ? "✓ presente" : "confirmar"}
+          </button>
           <button class="escala-del" data-id="${it.id}" title="Remover">✕</button>
         </div>
       `).join("");
+
+  diaModalLista.querySelectorAll(".escala-presenca").forEach((btn) => {
+    btn.addEventListener("click", () => toggleConfirmacao(btn.dataset.id, btn.classList.contains("confirmado")));
+  });
 
   diaModalLista.querySelectorAll(".escala-del").forEach((btn) => {
     btn.addEventListener("click", async () => {
