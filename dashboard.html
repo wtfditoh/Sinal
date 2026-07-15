@@ -69,13 +69,32 @@
 
     <button class="btn" id="compartilharPendenciasBtn" style="width:100%; margin-bottom:16px;">📤 Compartilhar pendências no zap</button>
 
+    <a href="tv.html" target="_blank" class="btn" style="width:100%; margin-bottom:16px; display:block; text-align:center; text-decoration:none; box-sizing:border-box;">📺 Abrir Modo TV</a>
+
     <div class="solicitacoes-section">
       <div class="solicitacoes-header" id="feedToggle">
-        <span>📢 Atividade recente</span>
+        <span>💬 Comunidade</span>
         <span class="solicitacoes-seta" id="feedSeta">▾</span>
       </div>
       <div class="solicitacoes-body" id="feedBody" style="display:none;">
-        <div id="listaFeed"></div>
+
+        <div class="sub-tabs">
+          <button class="sub-tab active" id="tabAtividade">📢 Atividade</button>
+          <button class="sub-tab" id="tabMural">📌 Mural</button>
+        </div>
+
+        <div id="painelAtividade">
+          <div id="listaFeed"></div>
+        </div>
+
+        <div id="painelMural" style="display:none;">
+          <form id="muralForm" style="display:flex; gap:8px; margin-bottom:12px;">
+            <input type="text" id="muralInput" maxlength="140" placeholder="Deixa um recado pra galera..." style="flex:1; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-size:13px;">
+            <button type="submit" class="btn btn-primary" style="flex-shrink:0;">Postar</button>
+          </form>
+          <div id="listaMural"></div>
+        </div>
+
       </div>
     </div>
 
@@ -129,12 +148,9 @@
         <span>🖼️</span> Cartazes
         <span class="notif-dot" id="dotCartazes"></span>
       </a>
-      <a href="logos.html" class="nav-item">
-        <span>🏷️</span> Recursos
-      </a>
-      <a href="metricas.html" class="nav-item">
-        <span>📊</span> Métricas
-      </a>
+      <button class="nav-item" id="btnMais">
+        <span>⋯</span> Mais
+      </button>
     </div>
   </div>
 
