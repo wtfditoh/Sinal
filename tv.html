@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SINAL — Modo TV</title>
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#08090D">
+<link rel="stylesheet" href="style.css">
+<style>
+  body { overflow: hidden; }
+  .tv-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 60px;
+    position: relative;
+    z-index: 1;
+  }
+  .tv-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+  .tv-marca {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .tv-anel {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: conic-gradient(from 180deg, var(--green), var(--amber), var(--red), var(--green));
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .tv-anel::after { content:''; width:30px; height:30px; border-radius:50%; background: var(--bg); }
+  .tv-marca-nome { font-family: var(--font-display); font-weight: 700; font-size: 24px; }
+  .tv-relogio { font-family: var(--font-mono); font-size: 22px; color: var(--text-dim); }
+
+  .tv-vazio {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-faint);
+  }
+  .tv-vazio-emoji { font-size: 64px; margin-bottom: 20px; }
+  .tv-vazio-titulo { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--text-dim); }
+  .tv-vazio-sub { font-size: 18px; margin-top: 10px; }
+
+  .tv-conteudo {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 50px;
+  }
+  .tv-tipo { font-family: var(--font-display); font-weight: 700; font-size: 56px; line-height: 1.1; margin-bottom: 20px; }
+  .tv-tema { font-size: 26px; color: var(--amber); margin-bottom: 14px; }
+  .tv-pregador { font-size: 20px; color: var(--text-dim); margin-bottom: 20px; }
+  .tv-versiculo {
+    font-size: 22px; font-style: italic; color: var(--text-dim);
+    border-left: 4px solid var(--border); padding-left: 20px; line-height: 1.6;
+    max-width: 620px;
+  }
+
+  .tv-checklist { display: flex; gap: 16px; margin-top: 40px; }
+  .tv-check-item {
+    flex: 1; text-align: center; padding: 24px 12px; border-radius: 16px;
+    border: 2px solid var(--border); background: var(--card);
+    font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.15s ease;
+  }
+  .tv-check-item .emoji { font-size: 34px; display:block; margin-bottom: 10px; }
+  .tv-check-item.feito { border-color: var(--green); background: rgba(46,232,150,0.12); color: var(--green); }
+
+  .tv-lateral { display: flex; flex-direction: column; gap: 20px; }
+  .tv-secao-titulo {
+    font-family: var(--font-mono); font-size: 13px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px;
+  }
+  .tv-escalado {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 18px;
+  }
+  .tv-escalado-funcao { font-family: var(--font-mono); font-size: 12px; color: var(--amber); }
+  .tv-escalado-nome { font-size: 20px; font-weight: 700; }
+  .tv-escalado.confirmado { border-color: var(--green); }
+
+  .tv-status-geral {
+    text-align: center; font-family: var(--font-mono); font-size: 16px;
+    padding: 16px; border-radius: 12px; margin-top: auto;
+  }
+  .tv-status-geral.pendente { background: rgba(255,92,92,0.12); color: var(--red); border: 1px solid rgba(255,92,92,0.3); }
+  .tv-status-geral.postado { background: rgba(46,232,150,0.12); color: var(--green); border: 1px solid rgba(46,232,150,0.3); }
+</style>
+</head>
+<body>
+
+<div class="tv-shell">
+  <div class="tv-topo">
+    <div class="tv-marca">
+      <div class="tv-anel"></div>
+      <div class="tv-marca-nome">SINAL — Modo TV</div>
+    </div>
+    <div class="tv-relogio" id="tvRelogio">--:--</div>
+  </div>
+
+  <div id="tvVazio" class="tv-vazio" style="display:none;">
+    <div class="tv-vazio-emoji">📴</div>
+    <div class="tv-vazio-titulo">Sem culto hoje</div>
+    <div class="tv-vazio-sub" id="tvProximoTexto"></div>
+  </div>
+
+  <div id="tvConteudo" class="tv-conteudo" style="display:none;">
+    <div>
+      <div class="tv-tipo" id="tvTipo">—</div>
+      <div class="tv-tema" id="tvTema" style="display:none;"></div>
+      <div class="tv-pregador" id="tvPregador" style="display:none;"></div>
+      <div class="tv-versiculo" id="tvVersiculo" style="display:none;"></div>
+
+      <div class="tv-checklist">
+        <div class="tv-check-item" data-chave="foto" id="tvCheckFoto"><span class="emoji">📸</span>Foto</div>
+        <div class="tv-check-item" data-chave="story" id="tvCheckStory"><span class="emoji">📱</span>Story</div>
+        <div class="tv-check-item" data-chave="feed" id="tvCheckFeed"><span class="emoji">📰</span>Feed</div>
+      </div>
+    </div>
+
+    <div class="tv-lateral">
+      <div class="tv-secao-titulo">Escalados hoje</div>
+      <div id="tvEscala"></div>
+      <div class="tv-status-geral pendente" id="tvStatusGeral">PENDENTE</div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="tv.js"></script>
+</body>
+</html>
