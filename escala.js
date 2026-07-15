@@ -3,6 +3,7 @@ import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
 import { aplicarModoVisitante } from "./visitante.js";
 import { confirmarExclusao } from "./confirm.js";
+import { registrarAtividade } from "./atividade.js";
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -145,6 +146,11 @@ async function toggleConfirmacao(id, jaConfirmado) {
     confirmadoEm: !jaConfirmado ? serverTimestamp() : null,
     atualizadoEm: serverTimestamp()
   });
+
+  if (!jaConfirmado) {
+    const item = [...escalasPorDia.values()].flat().find((it) => it.id === id);
+    if (item) registrarAtividade(usuarioAtual, `confirmou presença em ${item.funcao} (${item.pessoa})`);
+  }
 }
 
 function renderCalendario() {
@@ -557,7 +563,7 @@ async function gerarRotacaoParaMes(id, btn) {
   const mes = mesAtual.getMonth();
   const totalDias = new Date(ano, mes + 1, 0).getDate();
 
-let indice = rot.proximoIndice || 0;
+  let indice = rot.proximoIndice || 0;
   let geradas = 0;
 
   for (let dia = 1; dia <= totalDias; dia++) {
