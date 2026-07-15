@@ -32,6 +32,11 @@ async function iniciar() {
 
     document.getElementById("tituloSolicitacao").textContent = s.titulo;
     mostrar(conteudo);
+
+    // Marca que o link foi aberto (sem mudar status, só pra equipe saber que já foi visto)
+    if (!s.visualizadoEm) {
+      updateDoc(doc(db, "solicitacoes", id), { visualizadoEm: serverTimestamp() }).catch(() => {});
+    }
   } catch (erro) {
     console.error("Erro ao carregar solicitação:", erro);
     mostrar(naoEncontrado);
