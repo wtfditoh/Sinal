@@ -2,6 +2,7 @@ import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
 import { aplicarModoVisitante } from "./visitante.js";
+import { iniciarMenuMais } from "./menu-mais.js";
 import { confirmarExclusao } from "./confirm.js";
 import { registrarAtividade } from "./atividade.js";
 import {
@@ -33,6 +34,7 @@ function chaveDia(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
+iniciarMenuMais();
 exigirLogin((usuario) => {
   usuarioAtual = usuario;
   initPerfil(usuario);
