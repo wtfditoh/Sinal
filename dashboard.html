@@ -30,6 +30,10 @@
 
   <main>
 
+    <div class="proximo-culto" id="proximoCultoBox" style="display:none;">
+      <span id="proximoCultoTexto"></span>
+    </div>
+
     <div class="hero-mes">
       <div class="hero-mes-nav">
         <button class="month-arrow" id="prevMonth">‹</button>
@@ -64,6 +68,16 @@
     </div>
 
     <button class="btn" id="compartilharPendenciasBtn" style="width:100%; margin-bottom:16px;">📤 Compartilhar pendências no zap</button>
+
+    <div class="solicitacoes-section">
+      <div class="solicitacoes-header" id="feedToggle">
+        <span>📢 Atividade recente</span>
+        <span class="solicitacoes-seta" id="feedSeta">▾</span>
+      </div>
+      <div class="solicitacoes-body" id="feedBody" style="display:none;">
+        <div id="listaFeed"></div>
+      </div>
+    </div>
 
     <div class="solicitacoes-section">
       <div class="solicitacoes-header" id="pedidosSectionToggle">
