@@ -4,8 +4,10 @@ import { initPerfil } from "./perfil.js";
 import { aplicarModoVisitante } from "./visitante.js";
 import { confirmarExclusao } from "./confirm.js";
 import { atualizarBadgeApp } from "./badge.js";
+import { registrarAtividade } from "./atividade.js";
+import { iniciarFeedAtividades } from "./feed.js";
 import {
-  collection, query, where, orderBy, onSnapshot,
+  collection, query, where, orderBy, onSnapshot, limit,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
   getDoc, getDocs, setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -32,8 +34,10 @@ exigirLogin((usuario) => {
   aplicarModoVisitante(usuario);
   carregarCultosDoMes();
   checarNotificacoes();
+  carregarProximoCulto();
   carregarSolicitacoes();
   carregarPedidos();
+  iniciarFeedAtividades("listaFeed");
 });
 
 document.getElementById("logoutBtn").addEventListener("click", sair);
@@ -93,6 +97,39 @@ function formatarData(timestamp) {
 function formatarDataInput(timestamp) {
   const d = timestamp.toDate();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function carregarProximoCulto() {
+  const agora = Timestamp.fromDate(new Date());
+  const q = query(
+    collection(db, "cultos"),
+    where("data", ">=", agora),
+    orderBy("data", "asc"),
+    limit(1)
+  );
+
+  onSnapshot(q, (snapshot) => {
+    const box = document.getElementById("proximoCultoBox");
+    const texto = document.getElementById("proximoCultoTexto");
+    if (snapshot.empty) {
+      box.style.display = "none";
+      return;
+    }
+
+    const c = snapshot.docs[0].data();
+    const dataCulto = c.data.toDate();
+    const hoje0h = new Date(); hoje0h.setHours(0,0,0,0);
+    const alvo0h = new Date(dataCulto); alvo0h.setHours(0,0,0,0);
+    const diffDias = Math.round((alvo0h - hoje0h) / (1000 * 60 * 60 * 24));
+
+    let label;
+    if (diffDias === 0) { label = `🔴 É HOJE: ${c.tipo || "Culto"}`; box.classList.add("hoje"); }
+    else if (diffDias === 1) { label = `⏳ Amanhã: ${c.tipo || "Culto"}`; box.classList.remove("hoje"); }
+    else { label = `⏳ Em ${diffDias} dias: ${c.tipo || "Culto"}`; box.classList.remove("hoje"); }
+
+    texto.textContent = label;
+    box.style.display = "block";
+  });
 }
 
 function formatarHorarioEdicao(timestamp) {
@@ -209,6 +246,7 @@ async function toggleChecklistItem(cultoId, chave, btn) {
 
 async function toggleStatus(id, action) {
   const ref = doc(db, "cultos", id);
+  const tipoCulto = cultosCache.get(id)?.tipo || "um culto";
   if (action === "marcar") {
     await updateDoc(ref, {
       status: "postado",
@@ -216,6 +254,7 @@ async function toggleStatus(id, action) {
       postadoEm: serverTimestamp(),
       atualizadoEm: serverTimestamp()
     });
+    registrarAtividade(usuarioAtual, `postou "${tipoCulto}" ✅`);
   } else {
     await updateDoc(ref, {
       status: "pendente",
@@ -223,6 +262,7 @@ async function toggleStatus(id, action) {
       postadoEm: null,
       atualizadoEm: serverTimestamp()
     });
+    registrarAtividade(usuarioAtual, `desmarcou "${tipoCulto}"`);
   }
 }
 
@@ -344,6 +384,14 @@ function checarColecao(nomeColecao, ultimaVisita, idBolinha) {
   });
 }
 
+document.getElementById("feedToggle").addEventListener("click", () => {
+  const body = document.getElementById("feedBody");
+  const seta = document.getElementById("feedSeta");
+  const aberta = body.style.display !== "none";
+  body.style.display = aberta ? "none" : "block";
+  seta.classList.toggle("aberta", !aberta);
+});
+
 // ---------- Seção unificada "Pedidos" (líderes + ajuda interna) ----------
 let contagemLideresRespondidos = 0;
 let contagemPedidosAbertos = 0;
@@ -407,7 +455,11 @@ function carregarSolicitacoes() {
 
       const item = document.createElement("div");
       item.className = "solicitacao-item";
-      const statusLabel = { aguardando: "aguardando resposta", respondido: "respondido, revisar", aplicado: "já aplicado" };
+      const statusLabel = {
+        aguardando: s.visualizadoEm ? "👁️ visualizado, aguardando resposta" : "aguardando resposta",
+        respondido: "respondido, revisar",
+        aplicado: "já aplicado"
+      };
       item.innerHTML = `
         <div class="solicitacao-info">
           <div class="solicitacao-titulo">${escapeHtml(s.titulo)}</div>
@@ -786,6 +838,7 @@ async function assumirPedido(id) {
     assumidoPorNome: usuarioAtual.nome,
     atualizadoEm: serverTimestamp()
   });
+  registrarAtividade(usuarioAtual, `assumiu o pedido "${pedidosCache.get(id)?.titulo || ""}"`);
 }
 
 async function marcarPedidoFeito(id) {
@@ -794,6 +847,7 @@ async function marcarPedidoFeito(id) {
     feitoEm: serverTimestamp(),
     atualizadoEm: serverTimestamp()
   });
+  registrarAtividade(usuarioAtual, `concluiu o pedido "${pedidosCache.get(id)?.titulo || ""}" ✅`);
 }
 
 async function marcarPedidoEnviado(id) {
