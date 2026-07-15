@@ -1,6 +1,7 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
+import { aplicarModoVisitante } from "./visitante.js";
 import { confirmarExclusao } from "./confirm.js";
 import { baixarImagem } from "./baixar.js";
 import {
@@ -25,6 +26,7 @@ function escapeHtml(texto) {
 exigirLogin((usuario) => {
   usuarioAtual = usuario;
   initPerfil(usuario);
+  aplicarModoVisitante(usuario);
   carregarCartazes();
   marcarVisita();
 });
@@ -47,27 +49,74 @@ function formatarDataCurta(timestamp) {
   return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
 }
 
-function renderCartazes(docs) {
+function formatarDataRelativa(timestamp) {
+  if (!timestamp) return null;
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const alvo = timestamp.toDate();
+  alvo.setHours(0, 0, 0, 0);
+  const diffDias = Math.round((alvo - hoje) / (1000 * 60 * 60 * 24));
+
+  if (diffDias === 0) return { texto: "hoje", urgente: true };
+  if (diffDias === 1) return { texto: "amanhã", urgente: false };
+  if (diffDias === -1) return { texto: "atrasado há 1 dia", urgente: true };
+  if (diffDias < -1) return { texto: `atrasado há ${Math.abs(diffDias)} dias`, urgente: true };
+  if (diffDias > 1 && diffDias <= 6) return { texto: `em ${diffDias} dias`, urgente: false };
+  return { texto: formatarDataCurta(timestamp), urgente: false };
+}
+
+function estaAtrasado(c) {
+  if (c.status === "postado" || !c.lembreteData) return false;
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  return c.lembreteData.toDate() < hoje;
+}
+
+function renderCartazes(docsOriginais) {
   listaCartazes.innerHTML = "";
   cartazesCache.clear();
-  emptyState.style.display = docs.length === 0 ? "block" : "none";
+  emptyState.style.display = docsOriginais.length === 0 ? "block" : "none";
+
+  // Ordena por urgência: atrasados primeiro, depois por data de lembrete mais próxima,
+  // sem lembrete no meio, e os já postados sempre no final.
+  const docs = [...docsOriginais].sort((a, b) => {
+    const ca = a.data(), cb = b.data();
+    const aPostado = ca.status === "postado", bPostado = cb.status === "postado";
+    if (aPostado !== bPostado) return aPostado ? 1 : -1;
+
+    const aAtrasado = estaAtrasado(ca), bAtrasado = estaAtrasado(cb);
+    if (aAtrasado !== bAtrasado) return aAtrasado ? -1 : 1;
+
+    if (ca.lembreteData && cb.lembreteData) return ca.lembreteData.toMillis() - cb.lembreteData.toMillis();
+    if (ca.lembreteData) return -1;
+    if (cb.lembreteData) return 1;
+    return 0;
+  });
+
+  let totalAtrasados = 0, totalPostados = 0;
 
   docs.forEach((docSnap, index) => {
     const c = docSnap.data();
     const id = docSnap.id;
     cartazesCache.set(id, c);
     const isPostado = c.status === "postado";
+    const atrasado = estaAtrasado(c);
+    if (atrasado) totalAtrasados++;
+    if (isPostado) totalPostados++;
+
+    const relativa = formatarDataRelativa(c.lembreteData);
 
     const card = document.createElement("div");
-    card.className = "cartaz-card";
+    card.className = `cartaz-card ${atrasado ? "atrasado" : ""}`;
     card.style.animationDelay = `${index * 0.04}s`;
     card.innerHTML = `
       <div class="cartaz-thumb">
         <img src="${escapeHtml(c.link)}" alt="" onerror="this.parentElement.textContent='🖼️'">
       </div>
       <div class="cartaz-body">
+        ${atrasado ? `<div class="cartaz-atrasado-tag">⚠️ ATRASADO</div>` : ""}
         <div class="cartaz-titulo">${escapeHtml(c.titulo)}</div>
-        ${c.lembreteTexto ? `<div class="cartaz-lembrete">⏰ ${escapeHtml(c.lembreteTexto)}${c.lembreteData ? " · " + formatarDataCurta(c.lembreteData) : ""}</div>` : ""}
+        ${c.lembreteTexto ? `<div class="cartaz-lembrete ${relativa?.urgente ? "urgente" : ""}">⏰ ${escapeHtml(c.lembreteTexto)}${relativa ? " · " + relativa.texto : ""}</div>` : ""}
         <button class="cartaz-link" data-baixar="${escapeHtml(c.link)}" data-nome="${escapeHtml(c.titulo)}">⬇ Baixar imagem</button>
         <div class="cartaz-actions">
           <div class="tally ${isPostado ? "postado" : "pendente"}" style="margin-right:2px;"></div>
@@ -82,6 +131,10 @@ function renderCartazes(docs) {
     `;
     listaCartazes.appendChild(card);
   });
+
+  document.getElementById("totalCartazes").textContent = docs.length;
+  document.getElementById("totalAtrasados").textContent = totalAtrasados;
+  document.getElementById("totalPostadosCartaz").textContent = totalPostados;
 
   listaCartazes.querySelectorAll("[data-baixar]").forEach((btn) => {
     btn.addEventListener("click", () => baixarImagem(btn.dataset.baixar, btn.dataset.nome, btn));
