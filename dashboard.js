@@ -1,6 +1,7 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
+import { aplicarModoVisitante } from "./visitante.js";
 import { confirmarExclusao } from "./confirm.js";
 import { atualizarBadgeApp } from "./badge.js";
 import {
@@ -28,6 +29,7 @@ const monthLabel = document.getElementById("monthLabel");
 exigirLogin((usuario) => {
   usuarioAtual = usuario;
   initPerfil(usuario);
+  aplicarModoVisitante(usuario);
   carregarCultosDoMes();
   checarNotificacoes();
   carregarSolicitacoes();
