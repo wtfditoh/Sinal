@@ -2,6 +2,7 @@ import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
 import { aplicarModoVisitante } from "./visitante.js";
+import { iniciarMenuMais } from "./menu-mais.js";
 import { confirmarExclusao } from "./confirm.js";
 import { baixarImagem } from "./baixar.js";
 import {
@@ -24,6 +25,7 @@ function escapeHtml(texto) {
   return div.innerHTML;
 }
 
+iniciarMenuMais();
 exigirLogin((usuario) => {
   usuarioAtual = usuario;
   initPerfil(usuario);
