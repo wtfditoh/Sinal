@@ -2,6 +2,7 @@ import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
 import { initPerfil } from "./perfil.js";
 import { aplicarModoVisitante } from "./visitante.js";
+import { iniciarMenuMais } from "./menu-mais.js";
 import { confirmarExclusao } from "./confirm.js";
 import { atualizarBadgeApp } from "./badge.js";
 import { registrarAtividade } from "./atividade.js";
@@ -28,6 +29,7 @@ const emptyState = document.getElementById("emptyState");
 const monthLabel = document.getElementById("monthLabel");
 
 // ---------- Sessão ----------
+iniciarMenuMais();
 exigirLogin((usuario) => {
   usuarioAtual = usuario;
   initPerfil(usuario);
@@ -38,6 +40,7 @@ exigirLogin((usuario) => {
   carregarSolicitacoes();
   carregarPedidos();
   iniciarFeedAtividades("listaFeed");
+  carregarMural();
 });
 
 document.getElementById("logoutBtn").addEventListener("click", sair);
@@ -895,4 +898,75 @@ pedidoForm.addEventListener("submit", async (e) => {
   });
   pedidoForm.reset();
   pedidoModalOverlay.classList.remove("active");
+});
+
+// ---------- Mural da equipe (sub-aba dentro de Comunidade) ----------
+document.getElementById("tabAtividade").addEventListener("click", () => {
+  document.getElementById("tabAtividade").classList.add("active");
+  document.getElementById("tabMural").classList.remove("active");
+  document.getElementById("painelAtividade").style.display = "block";
+  document.getElementById("painelMural").style.display = "none";
+});
+document.getElementById("tabMural").addEventListener("click", () => {
+  document.getElementById("tabMural").classList.add("active");
+  document.getElementById("tabAtividade").classList.remove("active");
+  document.getElementById("painelMural").style.display = "block";
+  document.getElementById("painelAtividade").style.display = "none";
+});
+
+function tempoRelativoMural(timestamp) {
+  if (!timestamp) return "agora";
+  const diffMin = Math.round((Date.now() - timestamp.toDate().getTime()) / 60000);
+  if (diffMin < 1) return "agora mesmo";
+  if (diffMin < 60) return `há ${diffMin} min`;
+  const diffHoras = Math.round(diffMin / 60);
+  if (diffHoras < 24) return `há ${diffHoras}h`;
+  return `há ${Math.round(diffHoras / 24)}d`;
+}
+
+function carregarMural() {
+  const q = query(collection(db, "mural"), orderBy("criadoEm", "desc"), limit(20));
+  onSnapshot(q, (snapshot) => {
+    const container = document.getElementById("listaMural");
+    if (snapshot.empty) {
+      container.innerHTML = `<p style="color:var(--text-faint); font-size:13px;">Nenhum recado ainda. Seja o primeiro!</p>`;
+      return;
+    }
+    container.innerHTML = snapshot.docs.map((docSnap) => {
+      const m = docSnap.data();
+      return `
+        <div class="mural-item">
+          <div class="mural-texto">${escapeHtml(m.texto)}</div>
+          <div class="mural-meta">
+            <span>${escapeHtml(m.autor)} · ${tempoRelativoMural(m.criadoEm)}</span>
+            <button class="mural-del" data-id="${docSnap.id}">remover</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    container.querySelectorAll(".mural-del").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const confirmar = await confirmarExclusao("Remover esse recado do mural?");
+        if (!confirmar) return;
+        await deleteDoc(doc(db, "mural", btn.dataset.id));
+      });
+    });
+  });
+}
+
+document.getElementById("muralForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const input = document.getElementById("muralInput");
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  await addDoc(collection(db, "mural"), {
+    texto,
+    autor: usuarioAtual.nome,
+    criadoPor: usuarioAtual.uid,
+    criadoEm: serverTimestamp()
+  });
+
+  input.value = "";
 });
