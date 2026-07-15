@@ -181,7 +181,9 @@ function renderEquipe(usuarios) {
   const container = document.getElementById("equipeGrid");
   container.innerHTML = "";
 
-  usuarios.forEach((u, index) => {
+  const equipeReal = usuarios.filter((u) => u.papel !== "visitante");
+
+  equipeReal.forEach((u, index) => {
     const iniciais = (u.nome || "?").trim().charAt(0).toUpperCase();
 
     const item = document.createElement("button");
