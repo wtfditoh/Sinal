@@ -4,6 +4,7 @@ import { initPerfil } from "./perfil.js";
 import { aplicarModoVisitante } from "./visitante.js";
 import { confirmarExclusao } from "./confirm.js";
 import { baixarImagem } from "./baixar.js";
+import { registrarAtividade } from "./atividade.js";
 import {
   collection, query, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -153,6 +154,7 @@ function renderCartazes(docsOriginais) {
 
 async function toggleStatus(id, action) {
   const ref = doc(db, "cartazes", id);
+  const tituloCartaz = cartazesCache.get(id)?.titulo || "um cartaz";
   if (action === "marcar") {
     await updateDoc(ref, {
       status: "postado",
@@ -160,6 +162,7 @@ async function toggleStatus(id, action) {
       postadoEm: serverTimestamp(),
       atualizadoEm: serverTimestamp()
     });
+    registrarAtividade(usuarioAtual, `postou o cartaz "${tituloCartaz}" ✅`);
   } else {
     await updateDoc(ref, {
       status: "pendente",
