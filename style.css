@@ -832,6 +832,25 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   margin-top: 10px;
 }
 
+/* ---------- Menu "Mais" ---------- */
+.mais-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 10px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s ease;
+}
+.mais-item:last-child { border-bottom: none; }
+.mais-item:hover { background: var(--bg-elevated); }
+.mais-item small { color: var(--text-faint); font-weight: 400; font-size: 12px; }
+.mais-icone { font-size: 22px; }
+
 /* ---------- Modo visitante (somente leitura) ---------- */
 .banner-visitante {
   background: rgba(255, 176, 32, 0.1);
@@ -1008,16 +1027,18 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  font-size: 8.5px;
+  gap: 4px;
+  font-size: 10px;
   font-family: var(--font-mono);
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
   color: var(--text-faint);
   position: relative;
-  padding: 4px 3px;
+  padding: 4px 10px;
+  background: none;
+  border: none;
 }
-.nav-item span:first-child { font-size: 15px; }
+.nav-item span:first-child { font-size: 16px; }
 .nav-item.active {
   color: var(--amber);
   position: relative;
@@ -1218,6 +1239,43 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
 .solicitacao-status.aguardando { color: var(--text-faint); }
 .solicitacao-status.respondido { color: var(--green); }
 .solicitacao-status.aplicado { color: var(--text-faint); }
+
+.mural-section {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.mural-item {
+  background: linear-gradient(160deg, var(--card), #14171F);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  animation: slideFadeIn 0.3s ease backwards;
+}
+.mural-item:nth-child(3n+2) { border-left-color: var(--green); }
+.mural-item:nth-child(3n+3) { border-left-color: var(--red); }
+.mural-texto { font-size: 13px; color: var(--text); line-height: 1.4; }
+.mural-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+}
+.mural-del {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 12px;
+  padding: 2px 6px;
+}
+.mural-del:hover { color: var(--red); }
 
 .link-box {
   background: var(--bg-elevated);
