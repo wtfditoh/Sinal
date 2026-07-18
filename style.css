@@ -292,7 +292,12 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   background: transparent;
   color: var(--text-dim);
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
+.btn svg { flex-shrink: 0; }
 .btn:hover { color: var(--text); border-color: #3a4152; }
 
 .btn-mark {
@@ -501,6 +506,9 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   text-decoration: none;
   transition: all 0.15s ease;
   box-shadow: 0 6px 14px -10px rgba(0,0,0,0.5);
+  margin-bottom: 18px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .acao-rapida:hover { border-color: var(--amber); color: var(--amber); }
 .acao-rapida:active { transform: scale(0.97); }
@@ -841,7 +849,8 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   border: none;
   color: var(--text-faint);
   font-size: 12px;
-  padding: 2px 6px;
+  padding: 8px 10px;
+  min-height: 34px;
 }
 .senha-copiar:hover { color: var(--amber); }
 .senha-obs {
@@ -922,6 +931,37 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 .summary-chip:active { transform: scale(0.97); }
+/* ---------- Esqueleto de carregamento (shimmer) ---------- */
+@keyframes shimmer {
+  0% { background-position: -300% 0; }
+  100% { background-position: 300% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%);
+  background-size: 300% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.skeleton-culto { height: 130px; margin-bottom: 14px; }
+.skeleton-cartaz { height: 92px; margin-bottom: 12px; }
+.skeleton-circulo {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%);
+  background-size: 300% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ---------- Shimmer nas imagens enquanto carregam ---------- */
+.cartaz-thumb.carregando,
+.equipe-avatar.carregando {
+  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--card-hover) 50%, var(--bg-elevated) 75%);
+  background-size: 300% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+.cartaz-thumb img, .equipe-avatar img { opacity: 1; transition: opacity 0.25s ease; }
+.cartaz-thumb.carregando img, .equipe-avatar.carregando img { opacity: 0; }
+
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -1033,6 +1073,23 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
 }
 .login-error.active { display: block; }
 
+.campo-senha { position: relative; }
+.campo-senha input { padding-right: 42px; }
+.toggle-senha {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.toggle-senha:hover { color: var(--text-dim); }
+
 /* ---------- Bottom nav ---------- */
 .bottom-nav {
   position: fixed;
@@ -1044,7 +1101,7 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: center;
-  padding: 10px 0;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
   z-index: 10;
   box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.5);
 }
@@ -1314,7 +1371,8 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   border: none;
   color: var(--text-faint);
   font-size: 12px;
-  padding: 2px 6px;
+  padding: 8px 8px;
+  min-height: 34px;
 }
 .mural-del:hover { color: var(--red); }
 
@@ -1495,7 +1553,8 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   border: none;
   color: var(--text-faint);
   font-size: 16px;
-  padding: 4px 8px;
+  padding: 8px 10px;
+  min-height: 34px;
 }
 .escala-del:hover { color: var(--red); }
 
@@ -1510,7 +1569,11 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   color: var(--text-faint);
   white-space: nowrap;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
+.escala-presenca svg { flex-shrink: 0; }
 .escala-presenca.confirmado {
   background: rgba(46, 232, 150, 0.15);
   border-color: rgba(46, 232, 150, 0.4);
