@@ -192,8 +192,8 @@ function renderEquipe(usuarios) {
     item.className = "equipe-membro";
     item.style.animationDelay = `${index * 0.03}s`;
     item.innerHTML = `
-      <div class="equipe-avatar">
-        ${u.fotoUrl ? `<img src="${escapeHtml(u.fotoUrl)}" alt="">` : `<span>${iniciais}</span>`}
+      <div class="equipe-avatar ${u.fotoUrl ? "carregando" : ""}">
+        ${u.fotoUrl ? `<img src="${escapeHtml(u.fotoUrl)}" alt="" onload="this.parentElement.classList.remove('carregando')" onerror="this.parentElement.classList.remove('carregando')">` : `<span>${iniciais}</span>`}
       </div>
       <div class="equipe-nome">${escapeHtml(u.nome) || "—"}</div>
     `;
