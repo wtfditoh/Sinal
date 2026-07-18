@@ -64,8 +64,8 @@ function renderLogos() {
     card.className = "cartaz-card";
     card.style.animationDelay = `${index * 0.03}s`;
     card.innerHTML = `
-      <div class="cartaz-thumb">
-        <img src="${escapeHtml(l.link)}" alt="" onerror="this.parentElement.textContent='🏷️'">
+      <div class="cartaz-thumb carregando">
+        <img src="${escapeHtml(l.link)}" alt="" onload="this.parentElement.classList.remove('carregando')" onerror="this.parentElement.textContent='🏷️'; this.parentElement.classList.remove('carregando')">
       </div>
       <div class="cartaz-body">
         <div class="cartaz-titulo">${escapeHtml(l.departamento)}</div>
@@ -73,7 +73,7 @@ function renderLogos() {
           <button class="btn btn-icone" data-baixar="${escapeHtml(l.link)}" data-nome="${escapeHtml(l.departamento)}" title="Baixar imagem">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
           </button>
-          <button class="btn" data-id="${id}" data-action="editar">Editar</button>
+          <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
           <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           </button>
@@ -242,7 +242,7 @@ function renderSenhas() {
       </div>
       ${s.observacao ? `<div class="senha-obs">${escapeHtml(s.observacao)}</div>` : ""}
       <div class="senha-actions">
-        <button class="btn" data-id="${id}" data-action="editar">Editar</button>
+        <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
         <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
       </div>
     `;
