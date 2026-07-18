@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>SINAL — Escala</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
@@ -55,7 +55,10 @@
     <button class="btn" id="baixarEscalaBtn" style="width:100%; margin-top:16px;">⬇ Baixar escala do mês (pra mandar no zap)</button>
 
     <div class="metrica-secao-titulo">Escala completa do mês</div>
-    <div id="listaEscalaMes"></div>
+    <div id="listaEscalaMes">
+      <div class="skeleton skeleton-cartaz"></div>
+      <div class="skeleton skeleton-cartaz"></div>
+    </div>
     <div class="empty-state" id="emptyStateMes" style="display:none;">
       <div style="font-size:28px;">🗓️</div>
       <p>Nenhuma escala cadastrada nesse mês ainda.</p>
@@ -63,7 +66,7 @@
 
   </main>
 
-  <button class="fab-inner" id="addBtn" title="Nova escala">+</button>
+  <button class="fab-inner" id="addBtn" title="Nova escala"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 
   <div class="bottom-nav">
     <div class="bottom-nav-inner">
