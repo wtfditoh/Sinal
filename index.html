@@ -25,7 +25,10 @@
       </div>
       <div class="field">
         <label for="senha">Senha</label>
-        <input type="password" id="senha" autocomplete="current-password" required placeholder="••••••••">
+        <div class="campo-senha">
+          <input type="password" id="senha" autocomplete="current-password" required placeholder="••••••••">
+          <button type="button" class="toggle-senha" data-alvo="senha" aria-label="Mostrar senha"></button>
+        </div>
       </div>
       <button type="submit" class="login-btn" id="loginBtn">Entrar</button>
       <div class="login-error" id="loginError">Nome ou senha incorretos.</div>
@@ -34,5 +37,9 @@
 </div>
 
 <script type="module" src="auth.js"></script>
+<script type="module">
+  import { iniciarToggleSenha } from "./toggle-senha.js";
+  iniciarToggleSenha();
+</script>
 </body>
 </html>
