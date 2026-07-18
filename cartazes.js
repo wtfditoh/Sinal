@@ -113,13 +113,13 @@ function renderCartazes(docsOriginais) {
     card.className = `cartaz-card ${atrasado ? "atrasado" : ""}`;
     card.style.animationDelay = `${index * 0.04}s`;
     card.innerHTML = `
-      <div class="cartaz-thumb">
-        <img src="${escapeHtml(c.link)}" alt="" onerror="this.parentElement.textContent='🖼️'">
+      <div class="cartaz-thumb carregando">
+        <img src="${escapeHtml(c.link)}" alt="" onload="this.parentElement.classList.remove('carregando')" onerror="this.parentElement.textContent='🖼️'; this.parentElement.classList.remove('carregando')">
       </div>
       <div class="cartaz-body">
         ${atrasado ? `<div class="cartaz-atrasado-tag">⚠️ ATRASADO</div>` : ""}
         <div class="cartaz-titulo">${escapeHtml(c.titulo)}</div>
-        ${c.lembreteTexto ? `<div class="cartaz-lembrete ${relativa?.urgente ? "urgente" : ""}">⏰ ${escapeHtml(c.lembreteTexto)}${relativa ? " · " + relativa.texto : ""}</div>` : ""}
+        ${c.lembreteTexto ? `<div class="cartaz-lembrete ${relativa?.urgente ? "urgente" : ""}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${escapeHtml(c.lembreteTexto)}${relativa ? " · " + relativa.texto : ""}</div>` : ""}
         <div class="cartaz-actions">
           <div class="tally ${isPostado ? "postado" : "pendente"}" style="margin-right:2px;"></div>
           <button class="btn btn-icone" data-baixar="${escapeHtml(c.link)}" data-nome="${escapeHtml(c.titulo)}" title="Baixar imagem">
@@ -127,9 +127,9 @@ function renderCartazes(docsOriginais) {
           </button>
           ${isPostado
             ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
-            : `<button class="btn btn-mark" data-id="${id}" data-action="marcar">✓ Postado</button>`
+            : `<button class="btn btn-mark" data-id="${id}" data-action="marcar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Postado</button>`
           }
-          <button class="btn" data-id="${id}" data-action="editar">Editar</button>
+          <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
           <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           </button>
