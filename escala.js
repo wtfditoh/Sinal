@@ -120,7 +120,7 @@ function renderListaMes() {
         <span class="escala-funcao-tag">${escapeHtml(item.funcao)}</span>
         <span class="escala-pessoa">${escapeHtml(item.pessoa)}</span>
         <button class="escala-presenca ${item.confirmado ? "confirmado" : ""}" data-id="${item.id}" title="Confirmar presença">
-          ${item.confirmado ? "✓ presente" : "confirmar"}
+          ${item.confirmado ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> presente' : "confirmar"}
         </button>
         <button class="escala-del" data-id="${item.id}" title="Remover">✕</button>
       `;
@@ -217,7 +217,7 @@ function renderModalDia(dataObj) {
           <span class="escala-funcao-tag">${escapeHtml(it.funcao)}</span>
           <span class="escala-pessoa">${escapeHtml(it.pessoa)}</span>
           <button class="escala-presenca ${it.confirmado ? "confirmado" : ""}" data-id="${it.id}" title="Confirmar presença">
-            ${it.confirmado ? "✓ presente" : "confirmar"}
+            ${it.confirmado ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> presente' : "confirmar"}
           </button>
           <button class="escala-del" data-id="${it.id}" title="Remover">✕</button>
         </div>
@@ -532,7 +532,7 @@ function carregarRotacoes() {
           <div class="solicitacao-titulo">${escapeHtml(r.nome)}</div>
           <div class="solicitacao-status aguardando">${DIAS_SEMANA_NOME[r.diaSemana]} · próxima: ${escapeHtml(proximaPessoa)}</div>
         </div>
-        <button class="btn btn-mark" data-id="${id}" data-acao="gerar">▶ Gerar mês</button>
+        <button class="btn btn-mark" data-id="${id}" data-acao="gerar"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Gerar mês</button>
         <button class="btn btn-excluir" data-id="${id}" data-acao="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
       `;
       listaRotacoes.appendChild(item);
@@ -591,7 +591,7 @@ async function gerarRotacaoParaMes(id, btn) {
 
   await updateDoc(doc(db, "rotacoes", id), { proximoIndice: indice, atualizadoEm: serverTimestamp() });
 
-  btn.textContent = "▶ Gerar mês";
+  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Gerar mês';
   btn.disabled = false;
   alert(geradas > 0 ? `${geradas} escala(s) gerada(s) pra esse mês!` : "Já tava tudo preenchido pra esse dia da semana nesse mês.");
 }
