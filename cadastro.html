@@ -23,11 +23,17 @@
       </div>
       <div class="field">
         <label for="senha">Crie uma senha</label>
-        <input type="password" id="senha" required placeholder="mínimo 6 caracteres" minlength="6">
+        <div class="campo-senha">
+          <input type="password" id="senha" required placeholder="mínimo 6 caracteres" minlength="6">
+          <button type="button" class="toggle-senha" data-alvo="senha" aria-label="Mostrar senha"></button>
+        </div>
       </div>
       <div class="field">
         <label for="senhaConfirma">Confirme a senha</label>
-        <input type="password" id="senhaConfirma" required placeholder="repete a senha">
+        <div class="campo-senha">
+          <input type="password" id="senhaConfirma" required placeholder="repete a senha">
+          <button type="button" class="toggle-senha" data-alvo="senhaConfirma" aria-label="Mostrar senha"></button>
+        </div>
       </div>
       <button type="submit" class="login-btn" id="cadastroBtn">Criar conta</button>
       <div class="login-error" id="cadastroError">Não foi possível criar a conta.</div>
@@ -43,5 +49,9 @@
 </div>
 
 <script type="module" src="cadastro.js"></script>
+<script type="module">
+  import { iniciarToggleSenha } from "./toggle-senha.js";
+  iniciarToggleSenha();
+</script>
 </body>
 </html>
