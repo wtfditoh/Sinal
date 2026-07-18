@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>SINAL — Métricas</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
@@ -63,10 +63,15 @@
     <div id="listaRanking"></div>
 
     <div class="metrica-secao-titulo">👥 Equipe</div>
-    <div class="equipe-grid" id="equipeGrid"></div>
+    <div class="equipe-grid" id="equipeGrid">
+      <div class="skeleton skeleton-circulo"></div>
+      <div class="skeleton skeleton-circulo"></div>
+      <div class="skeleton skeleton-circulo"></div>
+      <div class="skeleton skeleton-circulo"></div>
+    </div>
 
     <div class="empty-state" id="emptyState" style="display:none;">
-      <div style="font-size:32px;">📊</div>
+      <div><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto;"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></div>
       <p>Ainda não tem dados suficientes.<br>As métricas aparecem conforme os cultos forem sendo postados.</p>
     </div>
   </main>
