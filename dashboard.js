@@ -192,9 +192,9 @@ function renderCultos(docs) {
       <div class="culto-actions">
         ${isPostado
           ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
-          : `<button class="btn btn-mark" data-id="${id}" data-action="marcar">✓ Marcar como postado</button>`
+          : `<button class="btn btn-mark" data-id="${id}" data-action="marcar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Marcar como postado</button>`
         }
-        <button class="btn" data-id="${id}" data-action="editar">Editar</button>
+        <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
         <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
       </div>
       ${isPostado || c.editadoPor ? `
@@ -468,8 +468,8 @@ function carregarSolicitacoes() {
           <div class="solicitacao-titulo">${escapeHtml(s.titulo)}</div>
           <div class="solicitacao-status ${s.status}">${statusLabel[s.status] || s.status}</div>
         </div>
-        ${s.status === "aguardando" ? `<button class="btn" data-id="${id}" data-acao="link">🔗 Link</button>` : ""}
-        ${s.status === "respondido" ? `<button class="btn btn-mark" data-id="${id}" data-acao="ver">Ver</button>` : ""}
+        ${s.status === "aguardando" ? `<button class="btn" data-id="${id}" data-acao="link"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Link</button>` : ""}
+        ${s.status === "respondido" ? `<button class="btn btn-mark" data-id="${id}" data-acao="ver"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg> Ver</button>` : ""}
         <button class="btn btn-excluir" data-id="${id}" data-acao="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
       `;
       listaSolicitacoes.appendChild(item);
@@ -804,10 +804,10 @@ function carregarPedidos() {
       acoes.style.gap = "6px";
 
       if (p.status === "aberto") {
-        acoes.innerHTML += `<button class="btn btn-mark" data-id="${id}" data-acao="assumir">Assumir</button>`;
+        acoes.innerHTML += `<button class="btn btn-mark" data-id="${id}" data-acao="assumir"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Assumir</button>`;
       }
       if (p.status === "andamento") {
-        acoes.innerHTML += `<button class="btn btn-mark" data-id="${id}" data-acao="feito">✓ Feito</button>`;
+        acoes.innerHTML += `<button class="btn btn-mark" data-id="${id}" data-acao="feito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Feito</button>`;
       }
       if (p.status === "feito" && !p.enviado) {
         acoes.innerHTML += `<button class="btn btn-primary" data-id="${id}" data-acao="enviado">📨 Marcar enviado</button>`;
