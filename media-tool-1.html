@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SINAL Studio</title>
+
+<link rel="stylesheet" href="media-tool.css">
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+<!-- CABEÇALHO -->
+
+<header class="header">
+
+
+<div class="brand">
+
+<div class="brand-mark"></div>
+
+
+<div>
+
+<h1>SINAL Studio</h1>
+
+<p>Gerenciador interno da mídia</p>
+
+</div>
+
+
+</div>
+
+
+
+<div class="online">
+
+<span></span>
+
+ONLINE
+
+</div>
+
+
+</header>
+
+
+
+
+
+<!-- CARD PRINCIPAL -->
+
+<section class="card">
+
+
+<div class="title">
+
+UPLOAD DE IMAGEM
+
+</div>
+
+
+
+
+<label class="upload-area" for="file">
+
+
+
+<input 
+type="file"
+id="file"
+accept="image/*"
+>
+
+
+
+<!-- ESTADO VAZIO -->
+
+<div id="emptyState">
+
+
+<div class="upload-icon">
+
+↑
+
+</div>
+
+
+<h2>
+
+Enviar imagem
+
+</h2>
+
+
+<p>
+
+Clique ou arraste uma imagem
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+<!-- PREVIEW -->
+
+<div id="previewBox" class="hidden">
+
+
+<img id="preview">
+
+
+
+<div class="file-info">
+
+
+<span id="fileName">
+
+imagem.png
+
+</span>
+
+
+
+<button 
+id="remove"
+type="button">
+
+✕
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</label>
+
+
+
+
+
+
+
+<!-- RENOMEAR -->
+
+
+<div class="rename-box">
+
+
+<label>
+
+Nome personalizado
+
+</label>
+
+
+<input 
+id="renameInput"
+type="text"
+placeholder="ex: cartaz-retiro-2026"
+>
+
+
+<p>
+
+Opcional. Se vazio mantém o nome original.
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- STATUS -->
+
+
+<div class="status-box">
+
+
+<span id="statusDot"></span>
+
+
+<span id="status">
+
+Aguardando imagem
+
+</span>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- BARRA -->
+
+
+<div class="progress hidden">
+
+
+<div id="progressBar"></div>
+
+
+</div>
+
+
+
+
+
+
+<!-- BOTÃO -->
+
+
+<button 
+id="upload"
+type="button">
+
+⚡ GERAR LINK DIRETO
+
+</button>
+
+
+
+
+
+</section>
+
+
+
+
+
+
+
+<!-- RESULTADO -->
+
+
+<section 
+class="card hidden"
+id="resultCard">
+
+
+
+<div class="title">
+
+LINK GERADO ✓
+
+</div>
+
+
+
+
+
+<div class="link-box">
+
+
+<span id="url">
+
+</span>
+
+
+
+<button 
+id="copy"
+type="button">
+
+📋 COPIAR LINK
+
+</button>
+
+
+
+</div>
+
+
+
+
+</section>
+
+
+<!-- IA DO SINAL -->
+
+<section class="card" id="iaCard">
+
+<div class="ia-header">
+  <div class="ia-titulo">✨ IA do SINAL</div>
+  <div class="ia-subtitulo">Assistente para mídia da igreja.</div>
+</div>
+
+<div class="ia-sugestoes">
+  <button type="button" class="ia-chip" data-texto="Crie uma legenda para o culto de jovens">📝 Legenda</button>
+  <button type="button" class="ia-chip" data-texto="Escreva um aviso pra equipe">📢 Aviso</button>
+  <button type="button" class="ia-chip" data-texto="Crie um convite pro culto">🙏 Convite</button>
+  <button type="button" class="ia-chip" data-texto="Crie um roteiro de reel curto">🎬 Reel</button>
+  <button type="button" class="ia-chip" data-texto="Sugira ideias de carrossel pro Instagram">📷 Carrossel</button>
+  <button type="button" class="ia-chip" data-texto="Faça hashtags pra esse post">🏷️ Hashtags</button>
+</div>
+
+<textarea
+  id="iaInput"
+  class="ia-textarea"
+  rows="4"
+  placeholder="Descreva o que deseja..."
+></textarea>
+
+<button id="iaGerarBtn" type="button" class="ia-btn-gerar">
+  <span id="iaGerarTexto">✨ Gerar</span>
+</button>
+
+<div id="iaErro" class="ia-erro hidden"></div>
+
+<div id="iaResultado" class="ia-resultado hidden">
+  <div class="title">RESULTADO</div>
+  <div id="iaResultadoTexto" class="ia-resultado-texto"></div>
+  <button id="iaCopiarBtn" type="button" class="ia-btn-copiar">📋 Copiar</button>
+</div>
+
+</section>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+<script src="media-tool.js"></script>
+
+
+</body>
+
+
+</html>
