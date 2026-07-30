@@ -31,8 +31,11 @@ const monthLabel = document.getElementById("monthLabel");
 
 // ---------- Sessão ----------
 iniciarMenuMais();
-exigirLogin((usuario) => {
+exigirLogin(async (usuario) => {
   usuarioAtual = usuario;
+
+  await iniciarPush(usuario);
+  
   initPerfil(usuario);
   aplicarModoVisitante(usuario);
   carregarCultosDoMes();
