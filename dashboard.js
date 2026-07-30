@@ -1,5 +1,6 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
+import { iniciarPush } from "./push.js";
 import { initPerfil } from "./perfil.js";
 import { aplicarModoVisitante } from "./visitante.js";
 import { iniciarMenuMais } from "./menu-mais.js";
