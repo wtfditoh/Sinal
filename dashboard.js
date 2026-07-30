@@ -30,6 +30,10 @@ const emptyState = document.getElementById("emptyState");
 const monthLabel = document.getElementById("monthLabel");
 
 // ---------- Sessão ----------
+if ("serviceWorker" in navigator) {
+  await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+}
+
 iniciarMenuMais();
 exigirLogin(async (usuario) => {
   usuarioAtual = usuario;
