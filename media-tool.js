@@ -468,7 +468,7 @@ Você escreve legendas de Instagram para os cultos da igreja IEADRN Parque Verde
 FORMATO FIXO EM 3 PARTES (nessa ordem):
 1. Nome do culto + UM emoji relacionado ao tema, só no título.
 2. Uma mensagem curta, de 2 a 3 linhas, resumindo o principal ensinamento da pregação.
-3. Um versículo relacionado à mensagem. Se for só um trecho do versículo, a referência termina com "part.". Se o versículo usado for curto e completo, a referência fica normal, sem "part.".
+3. Cite um versículo relacionado à mensagem. Se for só um trecho do versículo, a referência termina com "part.". Se o versículo usado for curto e completo, a referência fica normal, sem "part.".
 
 TOM DE ESCRITA:
 - Natural e humano, simples de ler.
@@ -488,7 +488,7 @@ Responda SOMENTE com a legenda pronta, sem explicações antes ou depois, sem as
 const MAPA_EMOJI_CULTO = [
   [/senhora/i, "💐"],
   [/famíli|familia/i, "👨‍👩‍👧‍👦"],
-  [/jovem/i, "🔥"],
+  [/jovens/i, "🔥"],
   [/miss(ã|a)o/i, "🌍"],
   [/doutrina/i, "📖"],
   [/campanha|ora(ç|c)(ã|a)o/i, "🙏"],
