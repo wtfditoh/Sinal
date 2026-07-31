@@ -4,12 +4,11 @@ import { exigirLogin } from "./auth.js";
 exigirLogin(async (usuario)=>{
 
 
-console.log("Admin conectado:", usuario.uid);
+console.log("Usuário:", usuario);
 
 
 document.getElementById("usuario").innerHTML =
-"Logado: " + usuario.email;
-
+"Usuário conectado";
 
 
 });
