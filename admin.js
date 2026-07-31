@@ -194,48 +194,30 @@ function atualizarPreview(){
 
 const chips = document.querySelectorAll(".chip");
 
-
 chips.forEach((chip)=>{
-
 
     chip.addEventListener("click",()=>{
 
-
-        const titulo =
-        chip.dataset.title;
-
-
-        const mensagem =
-        chip.dataset.message;
+        const titulo = chip.dataset.title;
+        const mensagem = chip.dataset.message;
 
 
+        document.getElementById("titulo").value = titulo;
 
-        tituloInput.value = titulo;
-
-        mensagemInput.value = mensagem;
-
+        document.getElementById("mensagem").value = mensagem;
 
 
-        tituloAtual = titulo;
+        document.getElementById("tituloCount").textContent = titulo.length;
 
-        mensagemAtual = mensagem;
-
-
-
-        tituloCount.textContent =
-        titulo.length;
+        document.getElementById("mensagemCount").textContent = mensagem.length;
 
 
-        mensagemCount.textContent =
-        mensagem.length;
+        document.getElementById("previewTitulo").textContent = titulo;
 
-
-
-        atualizarPreview();
+        document.getElementById("previewMensagem").textContent = mensagem;
 
 
     });
-
 
 });
 
