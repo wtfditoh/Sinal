@@ -6,8 +6,6 @@
 
 // Firebase
 
-alert("TESTE ADMIN");
-
 import { 
   auth, 
   db 
@@ -22,10 +20,13 @@ import {
 import {
   collection,
   addDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-alert("Admin JS carregou");
 
 // ===============================
 // VARIÁVEIS
@@ -620,20 +621,6 @@ async function enviarNotificacao(){
 // ===============================
 // HISTÓRICO DE NOTIFICAÇÕES
 // ===============================
-
-
-import {
-
-  getDocs,
-
-  query,
-
-  orderBy,
-
-  limit
-
-} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-
 
 
 
