@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<title>SINAL — Estúdio</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#08090D">
+<link rel="stylesheet" href="estudio.css">
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+<!-- CABEÇALHO -->
+
+<header class="header">
+
+
+<div class="brand">
+
+<div class="brand-mark"></div>
+
+
+<div>
+
+<h1>SINAL Studio</h1>
+
+<p>Gerenciador interno da mídia</p>
+
+</div>
+
+
+</div>
+
+
+
+<div class="online">
+
+<span></span>
+
+ONLINE
+
+</div>
+
+<button type="button" id="estudioSairBtn" class="estudio-sair" title="Sair">Sair</button>
+
+</header>
+
+
+<!-- ABAS -->
+
+<div class="top-tabs">
+  <button type="button" class="top-tab active" id="tabUploadBtn">📤 Upload</button>
+  <button type="button" class="top-tab" id="tabIABtn">✨ IA</button>
+</div>
+
+<div id="painelUpload">
+
+
+
+
+
+
+<!-- CARD PRINCIPAL -->
+
+<section class="card">
+
+
+<div class="title">
+
+UPLOAD DE IMAGEM
+
+</div>
+
+
+
+
+<label class="upload-area" for="file">
+
+
+
+<input 
+type="file"
+id="file"
+accept="image/*"
+>
+
+
+
+<!-- ESTADO VAZIO -->
+
+<div id="emptyState">
+
+
+<div class="upload-icon">
+
+↑
+
+</div>
+
+
+<h2>
+
+Enviar imagem
+
+</h2>
+
+
+<p>
+
+Clique ou arraste uma imagem
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+<!-- PREVIEW -->
+
+<div id="previewBox" class="hidden">
+
+
+<img id="preview">
+
+
+
+<div class="file-info">
+
+
+<span id="fileName">
+
+imagem.png
+
+</span>
+
+
+
+<button 
+id="remove"
+type="button">
+
+✕
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</label>
+
+
+
+
+
+
+
+<!-- RENOMEAR -->
+
+
+<div class="rename-box">
+
+
+<label>
+
+Nome personalizado
+
+</label>
+
+
+<input 
+id="renameInput"
+type="text"
+placeholder="ex: cartaz-retiro-2026"
+>
+
+
+<p>
+
+Opcional. Se vazio mantém o nome original.
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- STATUS -->
+
+
+<div class="status-box">
+
+
+<span id="statusDot"></span>
+
+
+<span id="status">
+
+Aguardando imagem
+
+</span>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- BARRA -->
+
+
+<div class="progress hidden">
+
+
+<div id="progressBar"></div>
+
+
+</div>
+
+
+
+
+
+
+<!-- BOTÃO -->
+
+
+<button 
+id="upload"
+type="button">
+
+⚡ GERAR LINK DIRETO
+
+</button>
+
+
+
+
+
+</section>
+
+
+
+
+
+
+
+<!-- RESULTADO -->
+
+
+<section 
+class="card hidden"
+id="resultCard">
+
+
+
+<div class="title">
+
+LINK GERADO ✓
+
+</div>
+
+
+
+
+
+<div class="link-box">
+
+
+<span id="url">
+
+</span>
+
+
+
+<button 
+id="copy"
+type="button">
+
+📋 COPIAR LINK
+
+</button>
+
+
+
+</div>
+
+
+
+
+</section>
+
+</div> <!-- fim painelUpload -->
+
+
+<!-- IA DO SINAL -->
+
+<div id="painelIA" class="hidden">
+
+<section class="card" id="iaCard">
+
+<div class="ia-header">
+  <div class="ia-titulo">✨ IA do SINAL</div>
+  <div class="ia-subtitulo">Assistente para mídia da igreja.</div>
+</div>
+
+<div class="ia-modo-tabs">
+  <button type="button" class="ia-modo-tab active" id="modoCultoBtn">🎤 Legenda de culto</button>
+  <button type="button" class="ia-modo-tab" id="modoLivreBtn">💬 Livre</button>
+</div>
+
+
+<!-- MODO: LEGENDA DE CULTO -->
+
+<div id="painelModoCulto">
+
+  <div class="ia-field">
+    <label>Nome do culto</label>
+    <div class="ia-input-emoji">
+      <input type="text" id="cultoNome" placeholder="ex: Culto de Jovens">
+      <span id="cultoEmojiPreview">🙏</span>
+    </div>
+  </div>
+
+  <div class="ia-field">
+    <label>Tema / o que foi pregado</label>
+    <textarea id="cultoTema" rows="3" placeholder="ex: A importância de perdoar e seguir em frente"></textarea>
+  </div>
+
+  <div class="ia-field">
+    <label>Versículo (opcional)</label>
+    <input type="text" id="cultoVersiculo" placeholder="deixa em branco que a IA sugere um">
+  </div>
+
+  <button id="gerarLegendaCultoBtn" type="button" class="ia-btn-gerar">
+    <span id="gerarLegendaCultoTexto">✨ Gerar legenda</span>
+  </button>
+
+</div>
+
+
+<!-- MODO: LIVRE -->
+
+<div id="painelModoLivre" class="hidden">
+
+  <div class="ia-sugestoes">
+    <button type="button" class="ia-chip" data-texto="Escreva um aviso pra equipe">📢 Aviso</button>
+    <button type="button" class="ia-chip" data-texto="Crie um convite pro culto">🙏 Convite</button>
+    <button type="button" class="ia-chip" data-texto="Crie um roteiro de reel curto">🎬 Reel</button>
+    <button type="button" class="ia-chip" data-texto="Sugira ideias de carrossel pro Instagram">📷 Carrossel</button>
+    <button type="button" class="ia-chip" data-texto="Faça hashtags pra esse post">🏷️ Hashtags</button>
+    <button type="button" class="ia-chip" data-texto="Melhore este texto: ">✍️ Melhorar texto</button>
+  </div>
+
+  <textarea
+    id="iaInput"
+    class="ia-textarea"
+    rows="4"
+    placeholder="Descreva o que deseja..."
+  ></textarea>
+
+  <button id="iaGerarBtn" type="button" class="ia-btn-gerar">
+    <span id="iaGerarTexto">✨ Gerar</span>
+  </button>
+
+</div>
+
+
+<div id="iaErro" class="ia-erro hidden"></div>
+
+<div class="ia-historico-cabecalho">
+  <div class="title">HISTÓRICO</div>
+  <button type="button" id="iaLimparHistoricoBtn" class="ia-limpar-historico">🗑 Limpar</button>
+</div>
+
+<div id="iaHistorico"></div>
+
+</section>
+
+</div> <!-- fim painelIA -->
+
+
+</div>
+
+
+<script src="estudio.js"></script>
+
+
+
+
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="dashboard.html" class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
+      Culto
+    </a>
+    <a href="escala.html" class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Escala
+    </a>
+    <a href="cartazes.html" class="nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      Cartazes
+    </a>
+    <button class="nav-item active" id="btnMais">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+      Mais
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { exigirLogin, sair } from "./auth.js";
+  import { iniciarMenuMais } from "./menu-mais.js";
+
+  // Exige login pra usar o Estúdio - se não tiver logado, manda pro login
+  exigirLogin(() => {});
+
+  document.getElementById("estudioSairBtn").addEventListener("click", sair);
+  iniciarMenuMais();
+</script>
+
+</body>
+
+
+</html>
