@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SINAL • Central de Notificações</title>
+<link rel="stylesheet" href="admin.css">
+</head><body>
+<div class="app">
+<header class="header">
+<div><h1>🔔 Central de Avisos</h1><p>Painel administrativo do SINAL</p></div>
+<div class="online"><span></span>ONLINE</div>
+</header>
+
+<section class="stats">
+<div class="card"><small>Dispositivos</small><h2 id="deviceCount">--</h2></div>
+<div class="card"><small>Último envio</small><h2 id="lastSend">-</h2></div>
+<div class="card"><small>Total enviado</small><h2 id="totalSent">0</h2></div>
+</section>
+
+<section class="card">
+<h3>Ações rápidas</h3>
+<div class="chips">
+<button class="chip" data-t="🔔 Novo culto disponível" data-m="Confira a programação no aplicativo SINAL.">Culto</button>
+<button class="chip" data-t="📅 Nova escala disponível" data-m="Confira sua escala no aplicativo.">Escala</button>
+<button class="chip" data-t="📢 Aviso geral" data-m="Leia o comunicado no SINAL.">Aviso</button>
+<button class="chip" data-t="🚨 Aviso importante" data-m="Leia este comunicado o quanto antes.">Urgente</button>
+</div>
+<label>Título</label><input id="titulo">
+<label>Mensagem</label><textarea id="mensagem"></textarea>
+<button id="enviar">🚀 Enviar notificação</button>
+</section>
+
+<section class="card">
+<h3>Histórico</h3>
+<ul id="historico"></ul>
+</section>
+</div>
+<script src="admin.js"></script>
+</body></html>

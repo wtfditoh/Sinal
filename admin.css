@@ -1,0 +1,8 @@
+body{margin:0;background:#08090D;color:#F5F6F8;font-family:Inter,sans-serif}
+.app{max-width:700px;margin:auto;padding:20px}.header{display:flex;justify-content:space-between;align-items:center}
+.online span{display:inline-block;width:8px;height:8px;background:#2EE896;border-radius:50%}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.card{background:#14171F;border:1px solid #2E3444;border-radius:16px;padding:16px;margin-bottom:16px}
+input,textarea{width:100%;margin:8px 0 14px;padding:12px;background:#08090D;color:#fff;border:1px solid #2E3444;border-radius:10px}
+button{cursor:pointer}.chip{margin:4px;padding:8px 12px;border-radius:20px;border:1px solid #2E3444;background:#1B1F2A;color:#fff}
+#enviar{width:100%;padding:14px;border:none;border-radius:10px;background:#FFB020;color:#17130A;font-weight:bold}
