@@ -594,9 +594,9 @@ async function enviarNotificacao(){
 
 
         mostrarToast(
-            "Erro",
-            "Não foi possível enviar a notificação."
-        );
+    "Erro",
+    error.message
+);
 
 
 
