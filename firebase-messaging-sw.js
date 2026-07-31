@@ -16,9 +16,33 @@ firebase.initializeApp(firebaseConfig);
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  console.log(
-    '[firebase-messaging-sw.js] Mensagem recebida:',
-    payload
+
+// Quando clicar na notificação
+self.addEventListener("notificationclick", (event) => {
+
+  event.notification.close();
+
+  event.waitUntil(
+    clients.matchAll({
+      type: "window",
+      includeUncontrolled: true
+    }).then((clientList) => {
+
+      // Se o app já estiver aberto, foca nele
+      for (const client of clientList) {
+
+        if (client.url.includes("sinalpv.netlify.app") && "focus" in client) {
+          return client.focus();
+        }
+
+      }
+
+      // Se estiver fechado, abre o app
+      return clients.openWindow(
+        "https://sinalpv.netlify.app/dashboard.html"
+      );
+
+    })
   );
+
 });
