@@ -1,4 +1,6 @@
-const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
+const { getMessaging } = require("firebase-admin/messaging");
 
 
 const serviceAccount = JSON.parse(
@@ -6,12 +8,14 @@ const serviceAccount = JSON.parse(
 );
 
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+initializeApp({
+  credential: cert(serviceAccount)
 });
 
 
-const db = admin.firestore();
+const db = getFirestore();
+const messaging = getMessaging();
+
 
 
 exports.handler = async (event) => {
@@ -21,7 +25,11 @@ exports.handler = async (event) => {
     const { titulo, mensagem } = JSON.parse(event.body);
 
 
-    const usuarios = await db.collection("usuarios").get();
+
+    const usuarios = await db
+      .collection("usuarios")
+      .get();
+
 
 
     const tokens = [];
@@ -41,29 +49,42 @@ exports.handler = async (event) => {
     });
 
 
+
     if (tokens.length === 0) {
 
       return {
+
         statusCode: 400,
+
         body: JSON.stringify({
+
           erro: "Nenhum token encontrado"
+
         })
+
       };
 
     }
 
 
-    const resultado = await admin.messaging()
-      .sendEachForMulticast({
 
-        tokens,
 
-        notification: {
-          title: titulo,
-          body: mensagem
-        }
+    const resultado = await messaging.sendEachForMulticast({
 
-      });
+      tokens,
+
+      notification: {
+
+        title: titulo,
+
+        body: mensagem
+
+      }
+
+    });
+
+
+
 
 
     return {
@@ -81,7 +102,12 @@ exports.handler = async (event) => {
     };
 
 
+
+
   } catch (erro) {
+
+
+    console.error(erro);
 
 
     return {
