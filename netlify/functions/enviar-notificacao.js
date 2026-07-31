@@ -1,29 +1,106 @@
-exports.handler = async (event)=>{
+const admin = require("firebase-admin");
 
 
-console.log("Recebi pedido de notificação");
+if (!admin.apps.length) {
+
+  const serviceAccount = JSON.parse(
+    process.env.FIREBASE_SERVICE_ACCOUNT
+  );
 
 
-const dados = JSON.parse(event.body);
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+
+}
 
 
-console.log(dados);
+const db = admin.firestore();
 
 
+exports.handler = async (event) => {
 
-return {
+  try {
 
-statusCode:200,
+    const { titulo, mensagem } = JSON.parse(event.body);
 
-body:JSON.stringify({
 
-ok:true,
+    const usuarios = await db.collection("usuarios").get();
 
-mensagem:"Function funcionando"
 
-})
+    const tokens = [];
 
-};
 
+    usuarios.forEach((doc) => {
+
+      const dados = doc.data();
+
+
+      if (dados.push?.token) {
+
+        tokens.push(dados.push.token);
+
+      }
+
+    });
+
+
+    if (tokens.length === 0) {
+
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          erro: "Nenhum token encontrado"
+        })
+      };
+
+    }
+
+
+    const resultado = await admin.messaging()
+      .sendEachForMulticast({
+
+        tokens,
+
+        notification: {
+          title: titulo,
+          body: mensagem
+        }
+
+      });
+
+
+    return {
+
+      statusCode: 200,
+
+      body: JSON.stringify({
+
+        enviados: resultado.successCount,
+
+        falhas: resultado.failureCount
+
+      })
+
+    };
+
+
+  } catch (erro) {
+
+
+    return {
+
+      statusCode: 500,
+
+      body: JSON.stringify({
+
+        erro: erro.message
+
+      })
+
+    };
+
+
+  }
 
 };
