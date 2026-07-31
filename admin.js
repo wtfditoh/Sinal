@@ -1,545 +1,350 @@
-// admin.js
+// ===============================
+// SINAL ADMIN • admin.js
+// PARTE 1/4
+// ===============================
+
+
+// Firebase
 
 import { 
   auth, 
-  db, 
-  storage 
+  db 
 } from "./firebase-config.js";
 
+
 import {
-  onAuthStateChanged,
-  signOut
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
 
 import {
   collection,
-  getDocs,
   addDoc,
-  deleteDoc,
-  doc,
-  updateDoc,
-  serverTimestamp,
-  query,
-  orderBy
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject
-} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
 
 
 // ===============================
-// VARIÁVEIS GLOBAIS
+// VARIÁVEIS
 // ===============================
+
 
 let usuarioAtual = null;
-let arquivosUpload = [];
 
 
-// ===============================
-// AUTENTICAÇÃO ADMIN
-// ===============================
-
-onAuthStateChanged(auth, async (usuario) => {
-
-  if (!usuario) {
-    window.location.href = "index.html";
-    return;
-  }
-
-  usuarioAtual = usuario;
-
-  console.log("Admin conectado:", usuario.email);
-
-  iniciarAdmin();
-
-});
-
-
-// ===============================
-// INICIALIZAÇÃO
-// ===============================
-
-async function iniciarAdmin(){
-
-  carregarUsuarios();
-  carregarCultos();
-  carregarUploads();
-
-}
-
-
-// ===============================
-// LOGOUT
-// ===============================
-
-const btnSair = document.getElementById("btnSair");
-
-if(btnSair){
-
-  btnSair.addEventListener("click", async()=>{
-
-    await signOut(auth);
-    window.location.href="index.html";
-
-  });
-
-}
-
-// ===============================
-// CARREGAR USUÁRIOS
-// ===============================
-
-async function carregarUsuarios(){
-
-  const lista = document.getElementById("listaUsuarios");
-
-  if(!lista) return;
-
-  lista.innerHTML = "";
-
-  try{
-
-    const usuarios = await getDocs(collection(db,"usuarios"));
-
-    usuarios.forEach((item)=>{
-
-      const dados = item.data();
-
-      lista.innerHTML += `
-        <div class="admin-card">
-          <h3>${dados.nome || "Sem nome"}</h3>
-          <p>${dados.email || ""}</p>
-          <span>
-            Tipo: ${dados.tipo || "membro"}
-          </span>
-        </div>
-      `;
-
-    });
-
-
-  }catch(error){
-
-    console.error("Erro ao carregar usuários:",error);
-
-  }
-
-}
+let tituloAtual = "";
+let mensagemAtual = "";
 
 
 
 // ===============================
-// CARREGAR CULTOS
+// ELEMENTOS
 // ===============================
 
-async function carregarCultos(){
 
-  const lista = document.getElementById("listaCultos");
+const tituloInput = document.getElementById("titulo");
 
-  if(!lista) return;
-
-  lista.innerHTML="";
+const mensagemInput = document.getElementById("mensagem");
 
 
-  try{
+const tituloCount = document.getElementById("tituloCount");
 
-    const q = query(
-      collection(db,"cultos"),
-      orderBy("data","desc")
-    );
+const mensagemCount = document.getElementById("mensagemCount");
 
 
-    const resultado = await getDocs(q);
+
+const previewTitulo = document.getElementById("previewTitulo");
+
+const previewMensagem = document.getElementById("previewMensagem");
 
 
-    resultado.forEach((item)=>{
 
-      const culto = item.data();
-
-
-      lista.innerHTML += `
-
-      <div class="admin-card">
-
-        <h3>${culto.titulo || "Culto"}</h3>
-
-        <p>
-          ${culto.data || ""}
-        </p>
-
-        <p>
-          ${culto.descricao || ""}
-        </p>
-
-
-        <button 
-        class="btnExcluirCulto"
-        data-id="${item.id}">
-          Excluir
-        </button>
-
-
-      </div>
-
-      `;
-
-
-    });
-
-
-    document.querySelectorAll(".btnExcluirCulto")
-    .forEach(botao=>{
-
-      botao.addEventListener("click",async()=>{
-
-        const id = botao.dataset.id;
-
-        await deleteDoc(
-          doc(db,"cultos",id)
-        );
-
-        carregarCultos();
-
-      });
-
-
-    });
-
-
-  }catch(error){
-
-    console.error("Erro cultos:",error);
-
-  }
-
-}
 
 // ===============================
-// ADICIONAR CULTO
+// VERIFICA LOGIN ADMIN
 // ===============================
 
-const formCulto = document.getElementById("formCulto");
+
+onAuthStateChanged(auth, (usuario)=>{
 
 
-if(formCulto){
+    if(!usuario){
 
-  formCulto.addEventListener("submit", async(e)=>{
+        window.location.href = "index.html";
 
-    e.preventDefault();
-
-
-    const titulo = document.getElementById("tituloCulto").value;
-    const data = document.getElementById("dataCulto").value;
-    const descricao = document.getElementById("descricaoCulto").value;
-
-
-    try{
-
-
-      await addDoc(collection(db,"cultos"),{
-
-        titulo,
-        data,
-        descricao,
-
-        criadoPor: usuarioAtual.email,
-
-        criadoEm: serverTimestamp()
-
-      });
-
-
-
-      formCulto.reset();
-
-      carregarCultos();
-
-
-      alert("Culto adicionado com sucesso");
-
-
-    }catch(error){
-
-      console.error(
-        "Erro ao adicionar culto:",
-        error
-      );
+        return;
 
     }
 
 
-  });
-
-
-}
-
-
-
-// ===============================
-// SISTEMA DE UPLOAD
-// ===============================
-
-
-const inputUpload = document.getElementById("arquivoUpload");
-
-
-if(inputUpload){
-
-  inputUpload.addEventListener("change",(e)=>{
-
-
-    arquivosUpload = [
-      ...e.target.files
-    ];
+    usuarioAtual = usuario;
 
 
     console.log(
-      "Arquivos selecionados:",
-      arquivosUpload
+        "Admin conectado:",
+        usuario.email
     );
-
-
-  });
-
-}
-
-
-
-
-const btnEnviarUpload = document.getElementById("btnEnviarUpload");
-
-
-if(btnEnviarUpload){
-
-
-btnEnviarUpload.addEventListener("click",async()=>{
-
-
-  if(arquivosUpload.length === 0){
-
-    alert("Selecione algum arquivo");
-    return;
-
-  }
-
-
-
-  for(const arquivo of arquivosUpload){
-
-
-    try{
-
-
-      const caminho = 
-      `uploads/${Date.now()}-${arquivo.name}`;
-
-
-      const arquivoRef = ref(
-        storage,
-        caminho
-      );
-
-
-
-      await uploadBytes(
-        arquivoRef,
-        arquivo
-      );
-
-
-
-      const url = await getDownloadURL(
-        arquivoRef
-      );
-
-
-
-      await addDoc(
-        collection(db,"uploads"),
-        {
-
-          nome: arquivo.name,
-
-          url,
-
-          caminho,
-
-          enviadoPor: usuarioAtual.email,
-
-          data: serverTimestamp()
-
-        }
-
-      );
-
-
-    }catch(error){
-
-      console.error(
-        "Erro upload:",
-        error
-      );
-
-    }
-
-
-  }
-
-
-  alert("Upload concluído");
-
-
-  carregarUploads();
 
 
 });
 
 
-}
+
 
 // ===============================
-// CARREGAR UPLOADS
+// CONTADORES DE TEXTO
 // ===============================
 
-async function carregarUploads(){
 
-  const lista = document.getElementById("listaUploads");
-
-  if(!lista) return;
+if(tituloInput){
 
 
-  lista.innerHTML = "";
+    tituloInput.addEventListener(
+        "input",
+        ()=>{
 
 
-  try{
+            tituloAtual = tituloInput.value;
 
 
-    const q = query(
-      collection(db,"uploads"),
-      orderBy("data","desc")
-    );
-
-
-    const resultado = await getDocs(q);
+            tituloCount.textContent =
+            tituloAtual.length;
 
 
 
-    resultado.forEach((item)=>{
-
-
-      const arquivo = item.data();
-
-
-
-      lista.innerHTML += `
-
-      <div class="admin-card">
-
-        <h3>
-          ${arquivo.nome}
-        </h3>
-
-
-        <a 
-        href="${arquivo.url}"
-        target="_blank">
-          Abrir arquivo
-        </a>
-
-
-        <button 
-        class="btnExcluirUpload"
-        data-id="${item.id}"
-        data-path="${arquivo.caminho}">
-          Excluir
-        </button>
-
-
-      </div>
-
-      `;
-
-
-    });
-
-
-
-    document.querySelectorAll(".btnExcluirUpload")
-    .forEach(botao=>{
-
-
-      botao.addEventListener("click",async()=>{
-
-
-        const id = botao.dataset.id;
-        const caminho = botao.dataset.path;
-
-
-
-        try{
-
-
-          // remove do storage
-
-          const arquivoRef = ref(
-            storage,
-            caminho
-          );
-
-
-          await deleteObject(
-            arquivoRef
-          );
-
-
-
-          // remove do firestore
-
-          await deleteDoc(
-            doc(db,"uploads",id)
-          );
-
-
-
-          carregarUploads();
-
-
-
-        }catch(error){
-
-
-          console.error(
-            "Erro ao excluir upload:",
-            error
-          );
+            atualizarPreview();
 
 
         }
 
+    );
 
 
-      });
+}
 
+
+
+if(mensagemInput){
+
+
+    mensagemInput.addEventListener(
+        "input",
+        ()=>{
+
+
+            mensagemAtual = mensagemInput.value;
+
+
+            mensagemCount.textContent =
+            mensagemAtual.length;
+
+
+
+            atualizarPreview();
+
+
+        }
+
+    );
+
+
+}
+
+
+
+// ===============================
+// PREVIEW
+// ===============================
+
+
+function atualizarPreview(){
+
+
+    if(
+        previewTitulo &&
+        previewMensagem
+    ){
+
+
+        previewTitulo.textContent =
+        tituloAtual ||
+        "Título da notificação";
+
+
+
+        previewMensagem.textContent =
+        mensagemAtual ||
+        "A mensagem aparecerá aqui conforme você digita.";
+
+
+    }
+
+
+}
+
+// ===============================
+// CHIPS DE MENSAGENS RÁPIDAS
+// ===============================
+
+
+const chips = document.querySelectorAll(".chip");
+
+
+chips.forEach((chip)=>{
+
+
+    chip.addEventListener("click",()=>{
+
+
+        const titulo =
+        chip.dataset.title;
+
+
+        const mensagem =
+        chip.dataset.message;
+
+
+
+        tituloInput.value = titulo;
+
+        mensagemInput.value = mensagem;
+
+
+
+        tituloAtual = titulo;
+
+        mensagemAtual = mensagem;
+
+
+
+        tituloCount.textContent =
+        titulo.length;
+
+
+        mensagemCount.textContent =
+        mensagem.length;
+
+
+
+        atualizarPreview();
 
 
     });
 
 
+});
 
-  }catch(error){
 
 
-    console.error(
-      "Erro ao carregar uploads:",
-      error
+
+// ===============================
+// MODAL DE CONFIRMAÇÃO
+// ===============================
+
+
+const btnEnviar =
+document.getElementById("btnEnviar");
+
+
+const confirmModal =
+document.getElementById("confirmModal");
+
+
+const cancelarEnvio =
+document.getElementById("cancelarEnvio");
+
+
+const confirmarEnvio =
+document.getElementById("confirmarEnvio");
+
+
+
+
+
+if(btnEnviar){
+
+
+    btnEnviar.addEventListener(
+        "click",
+        ()=>{
+
+
+            if(
+                !tituloAtual ||
+                !mensagemAtual
+            ){
+
+                mostrarToast(
+                    "Atenção",
+                    "Preencha o título e a mensagem."
+                );
+
+                return;
+
+            }
+
+
+
+            confirmModal.classList.remove(
+                "hidden"
+            );
+
+
+        }
+
     );
 
 
-  }
+}
+
+
+
+
+
+if(cancelarEnvio){
+
+
+    cancelarEnvio.addEventListener(
+        "click",
+        ()=>{
+
+
+            confirmModal.classList.add(
+                "hidden"
+            );
+
+
+        }
+
+    );
+
+
+}
+
+
+
+
+
+if(confirmarEnvio){
+
+
+    confirmarEnvio.addEventListener(
+        "click",
+        ()=>{
+
+
+            confirmModal.classList.add(
+                "hidden"
+            );
+
+
+            enviarNotificacao();
+
+
+        }
+
+    );
 
 
 }
@@ -547,175 +352,534 @@ async function carregarUploads(){
 
 
 // ===============================
-// ATUALIZAR PERFIL ADMIN
+// FUNÇÃO TOAST
 // ===============================
 
 
-async function atualizarPerfil(dados){
+function mostrarToast(
+    titulo,
+    mensagem
+){
 
 
-  if(!usuarioAtual) return;
+    const toast =
+    document.getElementById("toast");
+
+
+    const toastTitulo =
+    document.getElementById("toastTitulo");
+
+
+    const toastMensagem =
+    document.getElementById("toastMensagem");
 
 
 
-  await updateDoc(
-    doc(db,"usuarios",usuarioAtual.uid),
-    dados
-  );
+    toastTitulo.textContent =
+    titulo;
 
 
-  console.log(
-    "Perfil atualizado"
-  );
+    toastMensagem.textContent =
+    mensagem;
+
+
+
+    toast.classList.remove(
+        "hidden"
+    );
+
+
+
+    setTimeout(()=>{
+
+
+        toast.classList.add(
+            "hidden"
+        );
+
+
+    },4000);
 
 
 }
 
 // ===============================
-// NOTIFICAÇÕES ADMIN
+// ENVIO DA NOTIFICAÇÃO
 // ===============================
 
-const formNotificacao = document.getElementById("formNotificacao");
+
+async function enviarNotificacao(){
 
 
-if(formNotificacao){
+    const btnText =
+    document.getElementById("btnText");
 
 
-  formNotificacao.addEventListener("submit", async(e)=>{
+    const btnIcon =
+    document.getElementById("btnIcon");
 
 
-    e.preventDefault();
-
-
-
-    const titulo = document.getElementById("tituloNotificacao").value;
-
-    const mensagem = document.getElementById("mensagemNotificacao").value;
+    const loadingScreen =
+    document.getElementById("loadingScreen");
 
 
 
     try{
 
 
-      await addDoc(
-        collection(db,"notificacoes"),
-        {
+        // Loading
 
-          titulo,
 
-          mensagem,
+        if(loadingScreen){
 
-          criadoPor: usuarioAtual.email,
-
-          criadoEm: serverTimestamp(),
-
-          lida:false
+            loadingScreen.classList.remove(
+                "hidden"
+            );
 
         }
-      );
 
 
 
-      formNotificacao.reset();
+        if(btnText){
+
+            btnText.textContent =
+            "Enviando...";
+
+        }
+
+
+        if(btnIcon){
+
+            btnIcon.textContent =
+            "⏳";
+
+        }
 
 
 
-      alert(
-        "Notificação criada!"
-      );
+
+        // Salva histórico no Firestore
+
+
+        const registro =
+        await addDoc(
+            collection(db,"notificacoes"),
+            {
+
+
+                titulo: tituloAtual,
+
+
+                mensagem: mensagemAtual,
+
+
+                enviadoPor:
+                usuarioAtual?.email || "admin",
+
+
+
+                data:
+                serverTimestamp(),
+
+
+
+                totalEnviados:
+                0
+
+
+
+            }
+
+        );
+
+
+
+
+
+        // Chama Netlify Function
+        // responsável pelo FCM
+
+
+        const resposta =
+        await fetch(
+            "/.netlify/functions/sendNotification",
+            {
+
+                method:"POST",
+
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json"
+
+                },
+
+
+                body:JSON.stringify({
+
+                    titulo:
+                    tituloAtual,
+
+
+                    mensagem:
+                    mensagemAtual,
+
+
+                    id:
+                    registro.id
+
+
+                })
+
+            }
+
+        );
+
+
+
+
+        if(!resposta.ok){
+
+            throw new Error(
+                "Falha no envio"
+            );
+
+        }
+
+
+
+
+        mostrarToast(
+            "Sucesso",
+            "Notificação enviada para os membros."
+        );
+
+
+
+
+        // Limpa campos
+
+
+        tituloInput.value="";
+
+        mensagemInput.value="";
+
+
+        tituloAtual="";
+
+        mensagemAtual="";
+
+
+
+        tituloCount.textContent="0";
+
+        mensagemCount.textContent="0";
+
+
+
+        atualizarPreview();
+
 
 
 
     }catch(error){
 
 
-      console.error(
-        "Erro ao criar notificação:",
-        error
-      );
-
-
-    }
+        console.error(
+            "Erro ao enviar:",
+            error
+        );
 
 
 
-  });
-
-
-}
-
-
-
-// ===============================
-// BUSCA NO ADMIN
-// ===============================
-
-
-const campoBusca = document.getElementById("buscaAdmin");
-
-
-if(campoBusca){
-
-
-  campoBusca.addEventListener(
-    "input",
-    ()=>{
-
-
-      const termo = campoBusca.value
-      .toLowerCase();
+        mostrarToast(
+            "Erro",
+            "Não foi possível enviar a notificação."
+        );
 
 
 
-      document
-      .querySelectorAll(".admin-card")
-      .forEach(card=>{
+    }finally{
 
 
-        const texto = card.innerText
-        .toLowerCase();
+        if(loadingScreen){
 
-
-
-        if(texto.includes(termo)){
-
-          card.style.display="block";
-
-        }else{
-
-          card.style.display="none";
+            loadingScreen.classList.add(
+                "hidden"
+            );
 
         }
 
 
-      });
+        if(btnText){
+
+            btnText.textContent =
+            "Enviar notificação";
+
+        }
+
+
+        if(btnIcon){
+
+            btnIcon.textContent =
+            "🚀";
+
+        }
 
 
     }
-  );
+
+
+}
+
+// ===============================
+// HISTÓRICO DE NOTIFICAÇÕES
+// ===============================
+
+
+import {
+
+  getDocs,
+
+  query,
+
+  orderBy,
+
+  limit
+
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+
+
+
+// Elementos
+
+
+const historico =
+document.getElementById("historico");
+
+
+const deviceCount =
+document.getElementById("deviceCount");
+
+
+const lastSend =
+document.getElementById("lastSend");
+
+
+const todayCount =
+document.getElementById("todayCount");
+
+
+
+
+// ===============================
+// CARREGAR HISTÓRICO
+// ===============================
+
+
+async function carregarHistorico(){
+
+
+    if(!historico) return;
+
+
+
+    try{
+
+
+        const q =
+        query(
+
+            collection(db,"notificacoes"),
+
+            orderBy(
+                "data",
+                "desc"
+            ),
+
+            limit(20)
+
+        );
+
+
+
+        const resultado =
+        await getDocs(q);
+
+
+
+        if(resultado.empty){
+
+
+            return;
+
+
+        }
+
+
+
+        historico.innerHTML="";
+
+
+
+        resultado.forEach((item)=>{
+
+
+            const dados =
+            item.data();
+
+
+
+            const data =
+            dados.data?.toDate
+            ? dados.data.toDate()
+            : null;
+
+
+
+            historico.innerHTML += `
+
+
+            <div class="history-item">
+
+
+                <h4>
+                    ${dados.titulo}
+                </h4>
+
+
+                <p>
+                    ${dados.mensagem}
+                </p>
+
+
+                <small>
+
+                    ${
+                        data
+                        ? data.toLocaleString("pt-BR")
+                        : "Agora"
+
+                    }
+
+                </small>
+
+
+            </div>
+
+
+            `;
+
+
+        });
+
+
+
+    }catch(error){
+
+
+        console.error(
+            "Erro histórico:",
+            error
+        );
+
+
+    }
 
 
 }
 
 
 
+
 // ===============================
-// ATUALIZAÇÃO AUTOMÁTICA
+// ATUALIZAR DASHBOARD
 // ===============================
 
 
-setInterval(()=>{
+async function atualizarDashboard(){
 
 
-  if(usuarioAtual){
+
+    try{
 
 
-    carregarCultos();
+        const q =
+        query(
 
-    carregarUploads();
+            collection(db,"notificacoes"),
+
+            orderBy(
+                "data",
+                "desc"
+            ),
+
+            limit(1)
+
+        );
 
 
-  }
+
+        const resultado =
+        await getDocs(q);
 
 
-},60000);
+
+        if(!resultado.empty){
+
+
+            const ultima =
+            resultado.docs[0].data();
+
+
+
+            lastSend.textContent =
+            "Agora";
+
+
+        }
+
+
+
+
+        // Aqui depois podemos ligar
+        // com a coleção de tokens FCM
+
+
+        deviceCount.textContent =
+        "--";
+
+
+
+        todayCount.textContent =
+        resultado.size;
+
+
+
+    }catch(error){
+
+
+        console.error(
+            "Erro dashboard:",
+            error
+        );
+
+
+    }
+
+
+}
+
+
+
+
+// ===============================
+// INICIAR PAINEL
+// ===============================
+
+
+carregarHistorico();
+
+atualizarDashboard();
