@@ -76,7 +76,6 @@ exports.handler = async (event) => {
       notification: {
   title: titulo,
   body: mensagem,
-  imageUrl: "https://sinalpv.netlify.app/icon-512.png"
 },
 webpush: {
   notification: {
