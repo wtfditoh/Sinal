@@ -826,8 +826,29 @@ async function atualizarDashboard(){
         // com a coleção de tokens FCM
 
 
-        deviceCount.textContent =
-        "--";
+        const usuariosSnapshot = await getDocs(
+    collection(db, "usuarios")
+);
+
+
+let dispositivos = 0;
+
+
+usuariosSnapshot.forEach((doc)=>{
+
+    const dados = doc.data();
+
+
+    if(dados.push?.token){
+
+        dispositivos++;
+
+    }
+
+});
+
+
+deviceCount.textContent = dispositivos;
 
 
 
