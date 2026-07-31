@@ -502,7 +502,7 @@ async function enviarNotificacao(){
 
         const resposta =
         await fetch(
-            "/.netlify/functions/sendNotification",
+    "/.netlify/functions/enviar-notificacao",
             {
 
                 method:"POST",
