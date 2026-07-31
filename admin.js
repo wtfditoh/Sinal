@@ -201,25 +201,32 @@ chips.forEach((chip)=>{
         const mensagem = chip.dataset.message;
 
 
-        document.getElementById("titulo").value = titulo;
-
-        document.getElementById("mensagem").value = mensagem;
-
-
-        document.getElementById("tituloCount").textContent = titulo.length;
-
-        document.getElementById("mensagemCount").textContent = mensagem.length;
+        tituloInput.value = titulo;
+        mensagemInput.value = mensagem;
 
 
-        document.getElementById("previewTitulo").textContent = titulo;
+        // Atualiza as variáveis
+        tituloAtual = titulo;
+        mensagemAtual = mensagem;
 
-        document.getElementById("previewMensagem").textContent = mensagem;
+
+        // Atualiza contadores
+        tituloCount.textContent = titulo.length;
+        mensagemCount.textContent = mensagem.length;
+
+
+        // Atualiza preview
+        atualizarPreview();
+
+
+        // Dispara evento para o sistema reconhecer a mudança
+        tituloInput.dispatchEvent(new Event("input"));
+        mensagemInput.dispatchEvent(new Event("input"));
 
 
     });
 
 });
-
 
 
 
