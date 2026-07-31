@@ -10,6 +10,7 @@ import {
   auth, 
   db 
 } from "./firebase-config.js";
+console.log("FIREBASE DB:", db);
 
 
 import {
