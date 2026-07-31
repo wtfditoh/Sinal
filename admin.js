@@ -6,6 +6,8 @@
 
 // Firebase
 
+alert("TESTE ADMIN");
+
 import { 
   auth, 
   db 
