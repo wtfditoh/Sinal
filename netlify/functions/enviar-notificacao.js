@@ -74,13 +74,19 @@ exports.handler = async (event) => {
       tokens,
 
       notification: {
-
-        title: titulo,
-
-        body: mensagem
-
-      }
-
+  title: titulo,
+  body: mensagem,
+  imageUrl: "https://sinalpv.netlify.app/icon-512.png"
+},
+webpush: {
+  notification: {
+    icon: "https://sinalpv.netlify.app/icon-192.png",
+    badge: "https://sinalpv.netlify.app/icon-192.png"
+  },
+  fcmOptions: {
+    link: "https://sinalpv.netlify.app/dashboard.html"
+  }
+}
     });
 
 
