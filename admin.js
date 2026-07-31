@@ -12,7 +12,6 @@ import {
   auth, 
   db 
 } from "./firebase-config.js";
-console.log("FIREBASE DB:", db);
 
 
 import {
@@ -23,10 +22,6 @@ import {
 import {
   collection,
   addDoc,
-  getDocs,
-  query,
-  orderBy,
-  limit,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
