@@ -19,7 +19,7 @@ function criarSheetSeNaoExiste() {
         <span class="mais-icone"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.82 0l4.6-4.6a2 2 0 0 0 0-2.82Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span>
         <span>Recursos <small>logos e senhas</small></span>
       </a>
-      <a href="estudio.html" class="mais-item">
+      <a href="media-tool.html" class="mais-item">
         <span class="mais-icone"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1-6.3-4.4-6.3 4.4 2.3-7.1-6-4.4h7.6z"/></svg></span>
         <span>Estúdio <small>link de imagem e IA</small></span>
       </a>
