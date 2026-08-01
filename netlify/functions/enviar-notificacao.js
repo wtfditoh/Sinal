@@ -22,7 +22,7 @@ exports.handler = async (event) => {
 
   try {
 
-    const { titulo, mensagem } = JSON.parse(event.body);
+    const { titulo, mensagem, link, imagem } = JSON.parse(event.body);
 
 
 
@@ -80,10 +80,14 @@ exports.handler = async (event) => {
 webpush: {
   notification: {
     icon: "https://sinalpv.netlify.app/icon-192.png",
-    badge: "https://sinalpv.netlify.app/icon-192.png"
+    badge: "https://sinalpv.netlify.app/icon-192.png",
+    // Imagem grande dentro da notificação (só aparece se foi informada)
+    ...(imagem ? { image: imagem } : {})
   },
   fcmOptions: {
-    link: "https://sinalpv.netlify.app/dashboard.html"
+    // Pra qual página do app abre ao clicar - vem do painel Admin,
+    // cai em dashboard.html se não vier nada
+    link: link || "https://sinalpv.netlify.app/dashboard.html"
   }
 }
     });
