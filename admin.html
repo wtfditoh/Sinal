@@ -125,37 +125,55 @@ Toque em uma opção para preencher automaticamente.
 
 <button class="chip"
 data-title="🔔 Novo culto disponível"
-data-message="Confira todas as informações do culto no aplicativo SINAL.">
+data-message="Confira todas as informações do culto no aplicativo SINAL."
+data-tipo="culto"
+data-cor="#FFB020"
+data-destino="dashboard.html">
 Culto
 </button>
 
 <button class="chip"
 data-title="📅 Nova escala disponível"
-data-message="Sua escala foi atualizada. Confira agora no aplicativo.">
+data-message="Sua escala foi atualizada. Confira agora no aplicativo."
+data-tipo="escala"
+data-cor="#2EE896"
+data-destino="escala.html">
 Escala
 </button>
 
 <button class="chip"
 data-title="📢 Aviso geral"
-data-message="Temos um novo comunicado disponível para todos os membros.">
+data-message="Temos um novo comunicado disponível para todos os membros."
+data-tipo="aviso"
+data-cor="#6D28D9"
+data-destino="dashboard.html">
 Aviso
 </button>
 
 <button class="chip"
 data-title="🚨 Aviso importante"
-data-message="Leia esta mensagem o quanto antes pelo aplicativo SINAL.">
+data-message="Leia esta mensagem o quanto antes pelo aplicativo SINAL."
+data-tipo="urgente"
+data-cor="#FF5C5C"
+data-destino="dashboard.html">
 Urgente
 </button>
 
 <button class="chip"
 data-title="🙏 Pedido de oração"
-data-message="A igreja convida você para unir-se em oração.">
+data-message="A igreja convida você para unir-se em oração."
+data-tipo="oracao"
+data-cor="#6D28D9"
+data-destino="dashboard.html">
 Oração
 </button>
 
 <button class="chip"
 data-title="🎉 Novo evento"
-data-message="Um novo evento foi publicado. Confira todos os detalhes.">
+data-message="Um novo evento foi publicado. Confira todos os detalhes."
+data-tipo="evento"
+data-cor="#FFB020"
+data-destino="cartazes.html">
 Evento
 </button>
 
@@ -233,6 +251,39 @@ placeholder="Digite aqui a mensagem que aparecerá na notificação..."></textar
 
 </div>
 
+<div class="field">
+
+<label>
+
+Abre no app em
+
+</label>
+
+<select id="destino">
+<option value="dashboard.html">📋 Culto (Dashboard)</option>
+<option value="escala.html">🗓️ Escala</option>
+<option value="cartazes.html">🖼️ Cartazes</option>
+<option value="logos.html">🏷️ Recursos</option>
+<option value="metricas.html">📊 Métricas</option>
+</select>
+
+</div>
+
+<div class="field">
+
+<label>
+
+Imagem (opcional)
+
+</label>
+
+<input
+id="imagemUrl"
+type="url"
+placeholder="Link direto de uma imagem (ex: do ImgBB)">
+
+</div>
+
 <div class="preview">
 
 <div class="preview-top">
@@ -274,6 +325,8 @@ id="previewMensagem">
 A mensagem aparecerá aqui conforme você digita.
 
 </div>
+
+<img id="previewImagem" class="preview-imagem" style="display:none;">
 
 </div>
 
