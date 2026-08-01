@@ -488,64 +488,41 @@ async function enviarNotificacao(){
 
 
 
-        // Chama Netlify Function
-        // responsável pelo FCM
-
-
-        const resposta =
-        await fetch(
+// Chama Netlify Function
+const resposta = await fetch(
     "/.netlify/functions/enviar-notificacao",
-            {
+    {
+        method: "POST",
 
-                method:"POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
 
-
-                headers:{
-
-                    "Content-Type":
-                    "application/json"
-
-                },
-
-
-                body:JSON.stringify({
-
-                    titulo:
-                    tituloAtual,
+        body: JSON.stringify({
+            titulo: tituloAtual,
+            mensagem: mensagemAtual,
+            id: registro.id
+        })
+    }
+);
 
 
-                    mensagem:
-                    mensagemAtual,
+const dados = await resposta.json();
 
 
-                    id:
-                    registro.id
+if(!resposta.ok){
+
+    throw new Error(
+        dados.erro || "Falha no envio"
+    );
+
+}
 
 
-                })
-
-            }
-
-        );
-
-
-
-
-        if(!resposta.ok){
-
-            throw new Error(
-                "Falha no envio"
-            );
-
-        }
-
-
-
-
-        mostrarToast(
-            "Sucesso",
-            "Notificação enviada para os membros."
-        );
+mostrarToast(
+    "Sucesso",
+    `Enviadas: ${dados.enviados} • Falhas: ${dados.falhas}`
+);
 
 
 
