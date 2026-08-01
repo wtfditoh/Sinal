@@ -1,30 +1,12 @@
 // ===============================
 // SINAL ADMIN • admin.js
-// PARTE 1/4
 // ===============================
 
-
-// Firebase
-
-import { 
-  auth, 
-  db 
-} from "./firebase-config.js";
-
-
+import { auth, db } from "./firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  orderBy,
-  limit,
-  serverTimestamp
+  collection, addDoc, updateDoc, doc, getDocs,
+  query, where, orderBy, limit, serverTimestamp, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
@@ -32,830 +14,467 @@ import {
 // VARIÁVEIS
 // ===============================
 
-
 let usuarioAtual = null;
-
 
 let tituloAtual = "";
 let mensagemAtual = "";
-
+let tipoAtual = "geral";
+let corAtual = "#FFB020";
 
 
 // ===============================
 // ELEMENTOS
 // ===============================
 
-
 const tituloInput = document.getElementById("titulo");
-
 const mensagemInput = document.getElementById("mensagem");
-
+const destinoSelect = document.getElementById("destino");
+const imagemInput = document.getElementById("imagemUrl");
 
 const tituloCount = document.getElementById("tituloCount");
-
 const mensagemCount = document.getElementById("mensagemCount");
 
-
-
 const previewTitulo = document.getElementById("previewTitulo");
-
 const previewMensagem = document.getElementById("previewMensagem");
-
-
+const previewImagem = document.getElementById("previewImagem");
 
 
 // ===============================
 // VERIFICA LOGIN ADMIN
 // ===============================
 
+onAuthStateChanged(auth, (usuario) => {
 
-onAuthStateChanged(auth, (usuario)=>{
+  if (!usuario) {
+    window.location.href = "index.html";
+    return;
+  }
 
-
-    if(!usuario){
-
-        window.location.href = "index.html";
-
-        return;
-
-    }
-
-
-    usuarioAtual = usuario;
-
-
-    console.log(
-        "Admin conectado:",
-        usuario.email
-    );
-
+  usuarioAtual = usuario;
+  console.log("Admin conectado:", usuario.email);
 
 });
 
 
-
-
 // ===============================
-// CONTADORES DE TEXTO
+// CONTADORES DE TEXTO + PREVIEW
 // ===============================
 
+if (tituloInput) {
+  tituloInput.addEventListener("input", () => {
+    tituloAtual = tituloInput.value;
+    tituloCount.textContent = tituloAtual.length;
+    atualizarPreview();
+  });
+}
 
-if(tituloInput){
+if (mensagemInput) {
+  mensagemInput.addEventListener("input", () => {
+    mensagemAtual = mensagemInput.value;
+    mensagemCount.textContent = mensagemAtual.length;
+    atualizarPreview();
+  });
+}
 
-
-    tituloInput.addEventListener(
-        "input",
-        ()=>{
-
-
-            tituloAtual = tituloInput.value;
-
-
-            tituloCount.textContent =
-            tituloAtual.length;
-
-
-
-            atualizarPreview();
-
-
-        }
-
-    );
-
-
+if (imagemInput) {
+  imagemInput.addEventListener("input", () => {
+    atualizarPreview();
+  });
 }
 
 
+function atualizarPreview() {
 
-if(mensagemInput){
+  if (previewTitulo && previewMensagem) {
+    previewTitulo.textContent = tituloAtual || "Título da notificação";
+    previewMensagem.textContent = mensagemAtual || "A mensagem aparecerá aqui conforme você digita.";
+  }
 
-
-    mensagemInput.addEventListener(
-        "input",
-        ()=>{
-
-
-            mensagemAtual = mensagemInput.value;
-
-
-            mensagemCount.textContent =
-            mensagemAtual.length;
-
-
-
-            atualizarPreview();
-
-
-        }
-
-    );
-
-
-}
-
-
-
-// ===============================
-// PREVIEW
-// ===============================
-
-
-function atualizarPreview(){
-
-
-    if(
-        previewTitulo &&
-        previewMensagem
-    ){
-
-
-        previewTitulo.textContent =
-        tituloAtual ||
-        "Título da notificação";
-
-
-
-        previewMensagem.textContent =
-        mensagemAtual ||
-        "A mensagem aparecerá aqui conforme você digita.";
-
-
+  if (previewImagem) {
+    const url = imagemInput?.value.trim();
+    if (url) {
+      previewImagem.src = url;
+      previewImagem.style.display = "block";
+    } else {
+      previewImagem.style.display = "none";
     }
-
+  }
 
 }
+
 
 // ===============================
 // CHIPS DE MENSAGENS RÁPIDAS
 // ===============================
 
-
 const chips = document.querySelectorAll(".chip");
 
-chips.forEach((chip)=>{
+chips.forEach((chip) => {
 
-    chip.addEventListener("click",()=>{
+  chip.addEventListener("click", () => {
 
-        const titulo = chip.dataset.title;
-        const mensagem = chip.dataset.message;
+    const titulo = chip.dataset.title;
+    const mensagem = chip.dataset.message;
 
+    tituloInput.value = titulo;
+    mensagemInput.value = mensagem;
 
-        tituloInput.value = titulo;
-        mensagemInput.value = mensagem;
+    tituloAtual = titulo;
+    mensagemAtual = mensagem;
 
+    tipoAtual = chip.dataset.tipo || "geral";
+    corAtual = chip.dataset.cor || "#FFB020";
 
-        // Atualiza as variáveis
-        tituloAtual = titulo;
-        mensagemAtual = mensagem;
+    if (destinoSelect && chip.dataset.destino) {
+      destinoSelect.value = chip.dataset.destino;
+    }
 
+    tituloCount.textContent = titulo.length;
+    mensagemCount.textContent = mensagem.length;
 
-        // Atualiza contadores
-        tituloCount.textContent = titulo.length;
-        mensagemCount.textContent = mensagem.length;
+    atualizarPreview();
 
-
-        // Atualiza preview
-        atualizarPreview();
-
-
-        // Dispara evento para o sistema reconhecer a mudança
-        tituloInput.dispatchEvent(new Event("input"));
-        mensagemInput.dispatchEvent(new Event("input"));
-
-
-    });
+  });
 
 });
-
 
 
 // ===============================
 // MODAL DE CONFIRMAÇÃO
 // ===============================
 
-
-const btnEnviar =
-document.getElementById("btnEnviar");
-
-
-const confirmModal =
-document.getElementById("confirmModal");
+const btnEnviar = document.getElementById("btnEnviar");
+const confirmModal = document.getElementById("confirmModal");
+const cancelarEnvio = document.getElementById("cancelarEnvio");
+const confirmarEnvio = document.getElementById("confirmarEnvio");
 
 
-const cancelarEnvio =
-document.getElementById("cancelarEnvio");
+if (btnEnviar) {
+  btnEnviar.addEventListener("click", () => {
 
+    if (!tituloAtual || !mensagemAtual) {
+      mostrarToast("Atenção", "Preencha o título e a mensagem.");
+      return;
+    }
 
-const confirmarEnvio =
-document.getElementById("confirmarEnvio");
+    confirmModal.classList.remove("hidden");
 
-
-
-
-
-if(btnEnviar){
-
-
-    btnEnviar.addEventListener(
-        "click",
-        ()=>{
-
-
-            if(
-                !tituloAtual ||
-                !mensagemAtual
-            ){
-
-                mostrarToast(
-                    "Atenção",
-                    "Preencha o título e a mensagem."
-                );
-
-                return;
-
-            }
-
-
-
-            confirmModal.classList.remove(
-                "hidden"
-            );
-
-
-        }
-
-    );
-
-
+  });
 }
 
-
-
-
-
-if(cancelarEnvio){
-
-
-    cancelarEnvio.addEventListener(
-        "click",
-        ()=>{
-
-
-            confirmModal.classList.add(
-                "hidden"
-            );
-
-
-        }
-
-    );
-
-
+if (cancelarEnvio) {
+  cancelarEnvio.addEventListener("click", () => {
+    confirmModal.classList.add("hidden");
+  });
 }
 
-
-
-
-
-if(confirmarEnvio){
-
-
-    confirmarEnvio.addEventListener(
-        "click",
-        ()=>{
-
-
-            confirmModal.classList.add(
-                "hidden"
-            );
-
-
-            enviarNotificacao();
-
-
-        }
-
-    );
-
-
+if (confirmarEnvio) {
+  confirmarEnvio.addEventListener("click", () => {
+    confirmModal.classList.add("hidden");
+    enviarNotificacao();
+  });
 }
-
 
 
 // ===============================
 // FUNÇÃO TOAST
 // ===============================
 
+function mostrarToast(titulo, mensagem) {
 
-function mostrarToast(
-    titulo,
-    mensagem
-){
+  const toast = document.getElementById("toast");
+  const toastTitulo = document.getElementById("toastTitulo");
+  const toastMensagem = document.getElementById("toastMensagem");
 
+  toastTitulo.textContent = titulo;
+  toastMensagem.textContent = mensagem;
 
-    const toast =
-    document.getElementById("toast");
+  toast.classList.remove("hidden");
 
-
-    const toastTitulo =
-    document.getElementById("toastTitulo");
-
-
-    const toastMensagem =
-    document.getElementById("toastMensagem");
-
-
-
-    toastTitulo.textContent =
-    titulo;
-
-
-    toastMensagem.textContent =
-    mensagem;
-
-
-
-    toast.classList.remove(
-        "hidden"
-    );
-
-
-
-    setTimeout(()=>{
-
-
-        toast.classList.add(
-            "hidden"
-        );
-
-
-    },4000);
-
+  setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 4000);
 
 }
+
 
 // ===============================
 // ENVIO DA NOTIFICAÇÃO
 // ===============================
 
+async function enviarNotificacao() {
 
-async function enviarNotificacao(){
+  const btnText = document.getElementById("btnText");
+  const btnIcon = document.getElementById("btnIcon");
+  const loadingScreen = document.getElementById("loadingScreen");
 
+  try {
 
-    const btnText =
-    document.getElementById("btnText");
+    if (loadingScreen) loadingScreen.classList.remove("hidden");
+    if (btnText) btnText.textContent = "Enviando...";
+    if (btnIcon) btnIcon.textContent = "⏳";
 
+    const destinoPagina = destinoSelect?.value || "dashboard.html";
+    const linkCompleto = `${window.location.origin}/${destinoPagina}`;
+    const imagemUrl = imagemInput?.value.trim() || null;
 
-    const btnIcon =
-    document.getElementById("btnIcon");
+    // Salva o registro no histórico ANTES de enviar, pra não perder o registro
+    // mesmo se o envio falhar no meio do caminho
+    const registro = await addDoc(collection(db, "notificacoes"), {
+      titulo: tituloAtual,
+      mensagem: mensagemAtual,
+      tipo: tipoAtual,
+      cor: corAtual,
+      destino: destinoPagina,
+      imagemUrl: imagemUrl,
+      enviadoPor: usuarioAtual?.email || "admin",
+      data: serverTimestamp(),
+      totalEnviados: 0,
+      status: "enviando"
+    });
 
+    const resposta = await fetch("/.netlify/functions/enviar-notificacao", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        titulo: tituloAtual,
+        mensagem: mensagemAtual,
+        link: linkCompleto,
+        imagem: imagemUrl,
+        id: registro.id
+      })
+    });
 
-    const loadingScreen =
-    document.getElementById("loadingScreen");
+    if (!resposta.ok) throw new Error("Falha no envio");
 
+    const resultado = await resposta.json();
 
+    // Atualiza o registro com o total real de dispositivos alcançados
+    await updateDoc(doc(db, "notificacoes", registro.id), {
+      totalEnviados: resultado.enviados || 0,
+      status: "enviada"
+    });
 
-    try{
+    mostrarToast("Sucesso", `Notificação enviada para ${resultado.enviados || 0} dispositivo(s).`);
 
+    // Limpa o formulário
+    tituloInput.value = "";
+    mensagemInput.value = "";
+    if (imagemInput) imagemInput.value = "";
 
-        // Loading
+    tituloAtual = "";
+    mensagemAtual = "";
+    tipoAtual = "geral";
+    corAtual = "#FFB020";
 
+    tituloCount.textContent = "0";
+    mensagemCount.textContent = "0";
 
-        if(loadingScreen){
+    atualizarPreview();
+    carregarHistorico();
+    atualizarDashboard();
 
-            loadingScreen.classList.remove(
-                "hidden"
-            );
+  } catch (error) {
 
-        }
+    console.error("Erro ao enviar:", error);
+    mostrarToast("Erro", error.message);
 
+  } finally {
 
+    if (loadingScreen) loadingScreen.classList.add("hidden");
+    if (btnText) btnText.textContent = "Enviar notificação";
+    if (btnIcon) btnIcon.textContent = "🚀";
 
-        if(btnText){
-
-            btnText.textContent =
-            "Enviando...";
-
-        }
-
-
-        if(btnIcon){
-
-            btnIcon.textContent =
-            "⏳";
-
-        }
-
-
-
-
-        // Salva histórico no Firestore
-
-
-        const registro =
-        await addDoc(
-            collection(db,"notificacoes"),
-            {
-
-
-                titulo: tituloAtual,
-
-
-                mensagem: mensagemAtual,
-
-
-                enviadoPor:
-                usuarioAtual?.email || "admin",
-
-
-
-                data:
-                serverTimestamp(),
-
-
-
-                totalEnviados:
-                0
-
-
-
-            }
-
-        );
-
-
-
-
-
-// Chama Netlify Function
-const resposta = await fetch(
-    "/.netlify/functions/enviar-notificacao",
-    {
-        method: "POST",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-            titulo: tituloAtual,
-            mensagem: mensagemAtual,
-            id: registro.id
-        })
-    }
-);
-
-
-const dados = await resposta.json();
-
-
-if(!resposta.ok){
-
-    throw new Error(
-        dados.erro || "Falha no envio"
-    );
+  }
 
 }
 
-
-mostrarToast(
-    "Sucesso",
-    `Enviadas: ${dados.enviados} • Falhas: ${dados.falhas}`
-);
-
-
-
-
-        // Limpa campos
-
-
-        tituloInput.value="";
-
-        mensagemInput.value="";
-
-
-        tituloAtual="";
-
-        mensagemAtual="";
-
-
-
-        tituloCount.textContent="0";
-
-        mensagemCount.textContent="0";
-
-
-
-        atualizarPreview();
-
-
-
-
-    }catch(error){
-
-
-        console.error(
-            "Erro ao enviar:",
-            error
-        );
-
-
-
-        mostrarToast(
-    "Erro",
-    error.message
-);
-
-
-
-    }finally{
-
-
-        if(loadingScreen){
-
-            loadingScreen.classList.add(
-                "hidden"
-            );
-
-        }
-
-
-        if(btnText){
-
-            btnText.textContent =
-            "Enviar notificação";
-
-        }
-
-
-        if(btnIcon){
-
-            btnIcon.textContent =
-            "🚀";
-
-        }
-
-
-    }
-
-
-}
 
 // ===============================
 // HISTÓRICO DE NOTIFICAÇÕES
 // ===============================
 
+const historico = document.getElementById("historico");
+const deviceCount = document.getElementById("deviceCount");
+const lastSend = document.getElementById("lastSend");
+const todayCount = document.getElementById("todayCount");
 
 
-// Elementos
+// Rótulo amigável por categoria, pro selo do histórico
+const NOMES_TIPO = {
+  culto: "Culto",
+  escala: "Escala",
+  aviso: "Aviso",
+  urgente: "Urgente",
+  oracao: "Oração",
+  evento: "Evento",
+  geral: "Geral"
+};
 
+function formatarDataHistorico(data) {
 
-const historico =
-document.getElementById("historico");
+  if (!data) return "agora mesmo";
 
+  const agora = Date.now();
+  const diffMin = Math.round((agora - data.getTime()) / 60000);
 
-const deviceCount =
-document.getElementById("deviceCount");
+  if (diffMin < 1) return "agora mesmo";
+  if (diffMin < 60) return `há ${diffMin} min`;
 
+  const diffHoras = Math.round(diffMin / 60);
+  if (diffHoras < 24) return `há ${diffHoras}h`;
 
-const lastSend =
-document.getElementById("lastSend");
-
-
-const todayCount =
-document.getElementById("todayCount");
-
-
-
-
-// ===============================
-// CARREGAR HISTÓRICO
-// ===============================
-
-
-async function carregarHistorico(){
-
-
-    if(!historico) return;
-
-
-
-    try{
-
-
-        const q =
-        query(
-
-            collection(db,"notificacoes"),
-
-            orderBy(
-                "data",
-                "desc"
-            ),
-
-            limit(20)
-
-        );
-
-
-
-        const resultado =
-        await getDocs(q);
-
-
-
-        if(resultado.empty){
-
-
-            return;
-
-
-        }
-
-
-
-        historico.innerHTML="";
-
-
-
-        resultado.forEach((item)=>{
-
-
-            const dados =
-            item.data();
-
-
-
-            const data =
-            dados.data?.toDate
-            ? dados.data.toDate()
-            : null;
-
-
-
-            historico.innerHTML += `
-
-
-            <div class="history-item">
-
-
-                <h4>
-                    ${dados.titulo}
-                </h4>
-
-
-                <p>
-                    ${dados.mensagem}
-                </p>
-
-
-                <small>
-
-                    ${
-                        data
-                        ? data.toLocaleString("pt-BR")
-                        : "Agora"
-
-                    }
-
-                </small>
-
-
-            </div>
-
-
-            `;
-
-
-        });
-
-
-
-    }catch(error){
-
-
-        console.error(
-            "Erro histórico:",
-            error
-        );
-
-
-    }
-
+  return data.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 
 }
 
 
+async function carregarHistorico() {
 
+  if (!historico) return;
 
-// ===============================
-// ATUALIZAR DASHBOARD
-// ===============================
+  try {
 
+    const q = query(collection(db, "notificacoes"), orderBy("data", "desc"), limit(20));
+    const resultado = await getDocs(q);
 
-async function atualizarDashboard(){
-
-
-
-    try{
-
-
-        const q =
-        query(
-
-            collection(db,"notificacoes"),
-
-            orderBy(
-                "data",
-                "desc"
-            ),
-
-            limit(1)
-
-        );
-
-
-
-        const resultado =
-        await getDocs(q);
-
-
-
-        if(!resultado.empty){
-
-
-            const ultima =
-            resultado.docs[0].data();
-
-
-
-            lastSend.textContent =
-            "Agora";
-
-
-        }
-
-
-
-
-        // Aqui depois podemos ligar
-        // com a coleção de tokens FCM
-
-
-        const usuariosSnapshot = await getDocs(
-    collection(db, "usuarios")
-);
-
-
-let dispositivos = 0;
-
-
-usuariosSnapshot.forEach((doc)=>{
-
-    const dados = doc.data();
-
-
-    if(dados.push?.token){
-
-        dispositivos++;
-
+    if (resultado.empty) {
+      historico.innerHTML = "";
+      return;
     }
 
-});
+    historico.innerHTML = "";
 
+    resultado.forEach((item) => {
 
-deviceCount.textContent = dispositivos;
+      const dados = item.data();
+      const data = dados.data?.toDate ? dados.data.toDate() : null;
+      const cor = dados.cor || "#FFB020";
+      const nomeTipo = NOMES_TIPO[dados.tipo] || "Geral";
 
+      const el = document.createElement("div");
+      el.className = "history-item";
+      el.style.borderLeftColor = cor;
 
+      el.innerHTML = `
+        <div class="history-badge" style="background:${cor}22; color:${cor};">${nomeTipo}</div>
+        <div class="history-top">
+          <div class="history-title">${escapeHtml(dados.titulo)}</div>
+          <div class="history-date">${formatarDataHistorico(data)}</div>
+        </div>
+        <div class="history-message">${escapeHtml(dados.mensagem)}</div>
+        <div class="history-footer">
+          <div class="history-status">✓ ${dados.totalEnviados || 0} dispositivo(s)</div>
+          <button type="button" class="history-repeat" data-id="${item.id}">🔁 Reenviar</button>
+        </div>
+      `;
 
-        todayCount.textContent =
-        resultado.size;
+      historico.appendChild(el);
 
+    });
 
+    historico.querySelectorAll(".history-repeat").forEach((btn) => {
+      btn.addEventListener("click", () => reenviarDoHistorico(btn.dataset.id));
+    });
 
-    }catch(error){
-
-
-        console.error(
-            "Erro dashboard:",
-            error
-        );
-
-
-    }
-
+  } catch (error) {
+    console.error("Erro histórico:", error);
+  }
 
 }
 
 
+function escapeHtml(texto) {
+  const div = document.createElement("div");
+  div.innerText = texto || "";
+  return div.innerHTML;
+}
+
+
+// Preenche o formulário de novo com os dados de um envio antigo,
+// pra facilitar mandar uma mensagem parecida sem digitar tudo de novo
+async function reenviarDoHistorico(id) {
+
+  const q = query(collection(db, "notificacoes"), orderBy("data", "desc"), limit(20));
+  const resultado = await getDocs(q);
+  const encontrado = resultado.docs.find((d) => d.id === id);
+
+  if (!encontrado) return;
+
+  const dados = encontrado.data();
+
+  tituloInput.value = dados.titulo || "";
+  mensagemInput.value = dados.mensagem || "";
+  if (imagemInput) imagemInput.value = dados.imagemUrl || "";
+  if (destinoSelect) destinoSelect.value = dados.destino || "dashboard.html";
+
+  tituloAtual = dados.titulo || "";
+  mensagemAtual = dados.mensagem || "";
+  tipoAtual = dados.tipo || "geral";
+  corAtual = dados.cor || "#FFB020";
+
+  tituloCount.textContent = tituloAtual.length;
+  mensagemCount.textContent = mensagemAtual.length;
+
+  atualizarPreview();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  mostrarToast("Pronto", "Formulário preenchido. Confere e clica em enviar.");
+
+}
+
+
+// ===============================
+// ATUALIZAR DASHBOARD (contadores)
+// ===============================
+
+async function atualizarDashboard() {
+
+  try {
+
+    // Último envio (o mais recente de todos)
+    const qUltimo = query(collection(db, "notificacoes"), orderBy("data", "desc"), limit(1));
+    const resultadoUltimo = await getDocs(qUltimo);
+
+    if (!resultadoUltimo.empty) {
+      const ultima = resultadoUltimo.docs[0].data();
+      const data = ultima.data?.toDate ? ultima.data.toDate() : null;
+      lastSend.textContent = formatarDataHistorico(data);
+    } else {
+      lastSend.textContent = "Nenhum envio ainda";
+    }
+
+    // Enviadas HOJE de verdade (consulta separada, filtrando por data)
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const qHoje = query(
+      collection(db, "notificacoes"),
+      where("data", ">=", Timestamp.fromDate(hoje))
+    );
+    const resultadoHoje = await getDocs(qHoje);
+    todayCount.textContent = resultadoHoje.size;
+
+    // Dispositivos com token registrado
+    const usuariosSnapshot = await getDocs(collection(db, "usuarios"));
+    let dispositivos = 0;
+
+    usuariosSnapshot.forEach((doc) => {
+      const dados = doc.data();
+      if (dados.push?.token) dispositivos++;
+    });
+
+    deviceCount.textContent = dispositivos;
+
+  } catch (error) {
+    console.error("Erro dashboard:", error);
+  }
+
+}
 
 
 // ===============================
 // INICIAR PAINEL
 // ===============================
 
-
 carregarHistorico();
-
 atualizarDashboard();
