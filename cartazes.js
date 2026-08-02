@@ -6,6 +6,7 @@ import { iniciarMenuMais } from "./menu-mais.js";
 import { confirmarExclusao } from "./confirm.js";
 import { baixarImagem } from "./baixar.js";
 import { registrarAtividade } from "./atividade.js";
+import { dispararNotificacao } from "./notificar.js";
 import {
   collection, query, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -279,6 +280,15 @@ cartazForm.addEventListener("submit", async (e) => {
       postadoEm: null,
       criadoPor: usuarioAtual.uid,
       criadoEm: serverTimestamp()
+    });
+
+    dispararNotificacao(db, usuarioAtual, {
+      titulo: `🖼️ Novo cartaz: ${payload.titulo}`,
+      mensagem: "Um novo cartaz foi adicionado. Já dá pra baixar e postar.",
+      tipo: "cartaz",
+      cor: "#2EE896",
+      destino: "cartazes.html",
+      imagemUrl: payload.link || null
     });
   }
 
