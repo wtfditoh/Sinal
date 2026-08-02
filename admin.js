@@ -454,7 +454,7 @@ async function atualizarDashboard() {
     const resultadoHoje = await getDocs(qHoje);
     todayCount.textContent = resultadoHoje.size;
 
-    // Dispositivos com token registrado
+    // Dispositivos com token registrado + total de usuários (mesma consulta)
     const usuariosSnapshot = await getDocs(collection(db, "usuarios"));
     let dispositivos = 0;
 
@@ -464,6 +464,39 @@ async function atualizarDashboard() {
     });
 
     deviceCount.textContent = dispositivos;
+
+    const userCount = document.getElementById("userCount");
+    if (userCount) userCount.textContent = usuariosSnapshot.size;
+
+    // Total de cultos cadastrados
+    const cultoCount = document.getElementById("cultoCount");
+    if (cultoCount) {
+      const cultosSnapshot = await getDocs(collection(db, "cultos"));
+      cultoCount.textContent = cultosSnapshot.size;
+    }
+
+    // Atividade recente (mesma coleção "atividades" que o app já alimenta)
+    const atividadeContainer = document.getElementById("atividadeRecente");
+    if (atividadeContainer) {
+      const qAtividade = query(collection(db, "atividades"), orderBy("criadoEm", "desc"), limit(10));
+      const resultadoAtividade = await getDocs(qAtividade);
+
+      if (resultadoAtividade.empty) {
+        atividadeContainer.innerHTML = '<p style="color:var(--faint); font-size:12.5px;">Nenhuma atividade ainda.</p>';
+      } else {
+        atividadeContainer.innerHTML = resultadoAtividade.docs.map((docSnap) => {
+          const a = docSnap.data();
+          const data = a.criadoEm?.toDate ? a.criadoEm.toDate() : null;
+          return `
+            <div class="atividade-item">
+              <div class="atividade-ponto"></div>
+              <div class="atividade-texto"><strong>${escapeHtml(a.usuario)}</strong> ${escapeHtml(a.texto)}</div>
+              <div class="atividade-tempo">${formatarDataHistorico(data)}</div>
+            </div>
+          `;
+        }).join("");
+      }
+    }
 
   } catch (error) {
     console.error("Erro dashboard:", error);
