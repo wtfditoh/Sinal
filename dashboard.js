@@ -1,6 +1,5 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, sair } from "./auth.js";
-import { iniciarPush } from "./push.js";
 import { initPerfil } from "./perfil.js";
 import { aplicarModoVisitante } from "./visitante.js";
 import { iniciarMenuMais } from "./menu-mais.js";
@@ -8,6 +7,7 @@ import { confirmarExclusao } from "./confirm.js";
 import { atualizarBadgeApp } from "./badge.js";
 import { registrarAtividade } from "./atividade.js";
 import { iniciarFeedAtividades } from "./feed.js";
+import { dispararNotificacao } from "./notificar.js";
 import {
   collection, query, where, orderBy, onSnapshot, limit,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -30,16 +30,9 @@ const emptyState = document.getElementById("emptyState");
 const monthLabel = document.getElementById("monthLabel");
 
 // ---------- Sessão ----------
-if ("serviceWorker" in navigator) {
-  await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-}
-
 iniciarMenuMais();
-exigirLogin(async (usuario) => {
+exigirLogin((usuario) => {
   usuarioAtual = usuario;
-
-  await iniciarPush(usuario);
-  
   initPerfil(usuario);
   aplicarModoVisitante(usuario);
   carregarCultosDoMes();
@@ -357,6 +350,15 @@ cultoForm.addEventListener("submit", async (e) => {
       postadoPor: null,
       postadoEm: null,
       criadoPor: usuarioAtual.uid
+    });
+
+    const dataFormatada = `${String(dia).padStart(2,"0")}/${String(mes).padStart(2,"0")}`;
+    dispararNotificacao(db, usuarioAtual, {
+      titulo: `🔔 Novo culto: ${payload.tipo || "Culto"}`,
+      mensagem: `Culto marcado pra ${dataFormatada}${payload.tema ? " — " + payload.tema : ""}. Confira no app.`,
+      tipo: "culto",
+      cor: "#FFB020",
+      destino: "dashboard.html"
     });
   }
 
