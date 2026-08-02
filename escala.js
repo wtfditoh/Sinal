@@ -5,6 +5,7 @@ import { aplicarModoVisitante } from "./visitante.js";
 import { iniciarMenuMais } from "./menu-mais.js";
 import { confirmarExclusao } from "./confirm.js";
 import { registrarAtividade } from "./atividade.js";
+import { dispararNotificacao } from "./notificar.js";
 import {
   collection, query, where, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, Timestamp,
@@ -590,6 +591,16 @@ async function gerarRotacaoParaMes(id, btn) {
   }
 
   await updateDoc(doc(db, "rotacoes", id), { proximoIndice: indice, atualizadoEm: serverTimestamp() });
+
+  if (geradas > 0) {
+    dispararNotificacao(db, usuarioAtual, {
+      titulo: `🗓️ Escala atualizada: ${rot.nome}`,
+      mensagem: `A escala de ${MESES[mes]} já tá disponível no app. Confira se você foi escalado(a).`,
+      tipo: "escala",
+      cor: "#2EE896",
+      destino: "escala.html"
+    });
+  }
 
   btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Gerar mês';
   btn.disabled = false;
