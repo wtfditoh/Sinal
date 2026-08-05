@@ -13,6 +13,7 @@
   --amber: #FFB020;
   --green: #2EE896;
   --red: #FF5C5C;
+  --purple: #6D28D9;
 
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -1356,6 +1357,25 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
 }
 .mural-item:nth-child(3n+2) { border-left-color: var(--green); }
 .mural-item:nth-child(3n+3) { border-left-color: var(--red); }
+.mural-item.mural-aviso {
+  border-left-color: var(--purple);
+  background: linear-gradient(160deg, rgba(109,40,217,0.1), var(--card));
+  border-color: rgba(109,40,217,0.3);
+}
+.mural-aviso-selo {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--purple);
+  margin-bottom: 4px;
+}
+.mural-aviso-titulo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
 .mural-texto { font-size: 13px; color: var(--text); line-height: 1.4; }
 .mural-meta {
   display: flex;
