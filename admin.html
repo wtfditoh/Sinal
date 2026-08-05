@@ -392,6 +392,86 @@ Enviar notificação
 
 </section>
 
+<!-- MÓDULO: AVISOS (publica no Mural do app) -->
+
+<section class="card">
+
+<div class="card-header">
+<h3>📢 Publicar Aviso</h3>
+</div>
+
+<div class="field">
+<label>Título</label>
+<input id="avisoTitulo" type="text" maxlength="60" placeholder="Ex.: Reunião de líderes">
+</div>
+
+<div class="field">
+<label>Conteúdo</label>
+<textarea id="avisoConteudo" rows="4" placeholder="O que a equipe precisa saber..."></textarea>
+</div>
+
+<div class="field">
+<label>Categoria</label>
+<select id="avisoCategoria">
+<option value="Geral">Geral</option>
+<option value="Reunião">Reunião</option>
+<option value="Mudança">Mudança de horário/local</option>
+<option value="Urgente">Urgente</option>
+</select>
+</div>
+
+<button id="btnPublicarAviso" class="btn-send">
+<span id="avisoBtnIcon">📢</span>
+<span id="avisoBtnText">Publicar aviso</span>
+</button>
+
+</section>
+
+<!-- MÓDULO: EVENTOS (cria em eventos.html do app) -->
+
+<section class="card">
+
+<div class="card-header">
+<h3>🎉 Publicar Evento</h3>
+</div>
+
+<div class="field">
+<label>Nome do evento</label>
+<input id="eventoNome" type="text" maxlength="60" placeholder="Ex.: Congresso de Jovens">
+</div>
+
+<div class="field">
+<label>Data</label>
+<input id="eventoData" type="date">
+</div>
+
+<div class="field">
+<label>Horário</label>
+<input id="eventoHorario" type="text" placeholder="Ex.: 19h30">
+</div>
+
+<div class="field">
+<label>Local</label>
+<input id="eventoLocal" type="text" placeholder="Ex.: Templo sede">
+</div>
+
+<div class="field">
+<label>Descrição</label>
+<textarea id="eventoDescricao" rows="3" placeholder="Detalhes do evento..."></textarea>
+</div>
+
+<div class="field">
+<label>Banner (opcional)</label>
+<input id="eventoBanner" type="url" placeholder="Link direto de uma imagem (ex: ImgBB)">
+</div>
+
+<button id="btnPublicarEvento" class="btn-send">
+<span id="eventoBtnIcon">🎉</span>
+<span id="eventoBtnText">Publicar evento</span>
+</button>
+
+</section>
+
 <section class="card">
 
     <div class="card-header">
