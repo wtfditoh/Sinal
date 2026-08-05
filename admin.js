@@ -506,6 +506,198 @@ async function atualizarDashboard() {
 
 
 // ===============================
+// MÓDULO: AVISOS (publica no Mural do app)
+// ===============================
+
+const btnPublicarAviso = document.getElementById("btnPublicarAviso");
+
+if (btnPublicarAviso) {
+  btnPublicarAviso.addEventListener("click", async () => {
+
+    const titulo = document.getElementById("avisoTitulo").value.trim();
+    const conteudo = document.getElementById("avisoConteudo").value.trim();
+    const categoria = document.getElementById("avisoCategoria").value;
+
+    if (!titulo || !conteudo) {
+      mostrarToast("Atenção", "Preenche o título e o conteúdo do aviso.");
+      return;
+    }
+
+    const avisoBtnText = document.getElementById("avisoBtnText");
+    const avisoBtnIcon = document.getElementById("avisoBtnIcon");
+
+    try {
+
+      avisoBtnText.textContent = "Publicando...";
+      avisoBtnIcon.textContent = "⏳";
+
+      // Publica direto no mural que o app já usa - assim a equipe vê
+      // no mesmo lugar de sempre, com um selo de "aviso oficial"
+      await addDoc(collection(db, "mural"), {
+        texto: conteudo,
+        titulo: titulo,
+        categoria: categoria,
+        tipo: "aviso",
+        autor: "Administração",
+        criadoPor: usuarioAtual?.uid || "admin",
+        criadoEm: serverTimestamp()
+      });
+
+      // Dispara a notificação push também
+      const linkCompleto = `${window.location.origin}/dashboard.html`;
+
+      const registro = await addDoc(collection(db, "notificacoes"), {
+        titulo: `📢 ${titulo}`,
+        mensagem: conteudo,
+        tipo: "aviso",
+        cor: "#6D28D9",
+        destino: "dashboard.html",
+        imagemUrl: null,
+        enviadoPor: usuarioAtual?.email || "admin",
+        data: serverTimestamp(),
+        totalEnviados: 0,
+        status: "enviando"
+      });
+
+      const resposta = await fetch("/.netlify/functions/enviar-notificacao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titulo: `📢 ${titulo}`, mensagem: conteudo, link: linkCompleto })
+      });
+
+      if (resposta.ok) {
+        const resultado = await resposta.json();
+        await updateDoc(doc(db, "notificacoes", registro.id), {
+          totalEnviados: resultado.enviados || 0,
+          status: "enviada"
+        });
+      }
+
+      mostrarToast("Sucesso", "Aviso publicado no mural e notificação enviada.");
+
+      document.getElementById("avisoTitulo").value = "";
+      document.getElementById("avisoConteudo").value = "";
+
+      carregarHistorico();
+      atualizarDashboard();
+
+    } catch (error) {
+      console.error("Erro ao publicar aviso:", error);
+      mostrarToast("Erro", "Não foi possível publicar o aviso.");
+    } finally {
+      avisoBtnText.textContent = "Publicar aviso";
+      avisoBtnIcon.textContent = "📢";
+    }
+
+  });
+}
+
+
+// ===============================
+// MÓDULO: EVENTOS
+// ===============================
+
+const btnPublicarEvento = document.getElementById("btnPublicarEvento");
+
+if (btnPublicarEvento) {
+  btnPublicarEvento.addEventListener("click", async () => {
+
+    const nome = document.getElementById("eventoNome").value.trim();
+    const dataInput = document.getElementById("eventoData").value;
+    const horario = document.getElementById("eventoHorario").value.trim();
+    const local = document.getElementById("eventoLocal").value.trim();
+    const descricao = document.getElementById("eventoDescricao").value.trim();
+    const banner = document.getElementById("eventoBanner").value.trim();
+
+    if (!nome || !dataInput) {
+      mostrarToast("Atenção", "Preenche pelo menos o nome e a data do evento.");
+      return;
+    }
+
+    const eventoBtnText = document.getElementById("eventoBtnText");
+    const eventoBtnIcon = document.getElementById("eventoBtnIcon");
+
+    try {
+
+      eventoBtnText.textContent = "Publicando...";
+      eventoBtnIcon.textContent = "⏳";
+
+      const [ano, mes, dia] = dataInput.split("-").map(Number);
+      const dataEvento = Timestamp.fromDate(new Date(ano, mes - 1, dia, 12, 0));
+
+      await addDoc(collection(db, "eventos"), {
+        nome,
+        data: dataEvento,
+        horario: horario || null,
+        local: local || null,
+        descricao: descricao || null,
+        banner: banner || null,
+        criadoPor: usuarioAtual?.uid || "admin",
+        criadoEm: serverTimestamp()
+      });
+
+      // Notifica a equipe
+      const linkCompleto = `${window.location.origin}/eventos.html`;
+      const dataFormatada = `${String(dia).padStart(2,"0")}/${String(mes).padStart(2,"0")}`;
+      const mensagemNotificacao = `${nome} — ${dataFormatada}${horario ? " às " + horario : ""}. Confira no app.`;
+
+      const registro = await addDoc(collection(db, "notificacoes"), {
+        titulo: `🎉 Novo evento: ${nome}`,
+        mensagem: mensagemNotificacao,
+        tipo: "evento",
+        cor: "#FFB020",
+        destino: "eventos.html",
+        imagemUrl: banner || null,
+        enviadoPor: usuarioAtual?.email || "admin",
+        data: serverTimestamp(),
+        totalEnviados: 0,
+        status: "enviando"
+      });
+
+      const resposta = await fetch("/.netlify/functions/enviar-notificacao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titulo: `🎉 Novo evento: ${nome}`,
+          mensagem: mensagemNotificacao,
+          link: linkCompleto,
+          imagem: banner || null
+        })
+      });
+
+      if (resposta.ok) {
+        const resultado = await resposta.json();
+        await updateDoc(doc(db, "notificacoes", registro.id), {
+          totalEnviados: resultado.enviados || 0,
+          status: "enviada"
+        });
+      }
+
+      mostrarToast("Sucesso", "Evento publicado e notificação enviada.");
+
+      document.getElementById("eventoNome").value = "";
+      document.getElementById("eventoData").value = "";
+      document.getElementById("eventoHorario").value = "";
+      document.getElementById("eventoLocal").value = "";
+      document.getElementById("eventoDescricao").value = "";
+      document.getElementById("eventoBanner").value = "";
+
+      carregarHistorico();
+      atualizarDashboard();
+
+    } catch (error) {
+      console.error("Erro ao publicar evento:", error);
+      mostrarToast("Erro", "Não foi possível publicar o evento.");
+    } finally {
+      eventoBtnText.textContent = "Publicar evento";
+      eventoBtnIcon.textContent = "🎉";
+    }
+
+  });
+}
+
+
+// ===============================
 // INICIAR PAINEL
 // ===============================
 
