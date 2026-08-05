@@ -944,8 +944,11 @@ function carregarMural() {
     }
     container.innerHTML = snapshot.docs.map((docSnap) => {
       const m = docSnap.data();
+      const ehAviso = m.tipo === "aviso";
       return `
-        <div class="mural-item">
+        <div class="mural-item ${ehAviso ? "mural-aviso" : ""}">
+          ${ehAviso ? `<div class="mural-aviso-selo">📢 AVISO OFICIAL${m.categoria ? " · " + escapeHtml(m.categoria) : ""}</div>` : ""}
+          ${ehAviso && m.titulo ? `<div class="mural-aviso-titulo">${escapeHtml(m.titulo)}</div>` : ""}
           <div class="mural-texto">${escapeHtml(m.texto)}</div>
           <div class="mural-meta">
             <span>${escapeHtml(m.autor)} · ${tempoRelativoMural(m.criadoEm)}</span>
