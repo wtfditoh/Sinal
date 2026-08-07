@@ -40,6 +40,12 @@
 <script type="module">
   import { iniciarToggleSenha } from "./toggle-senha.js";
   iniciarToggleSenha();
+
+  if (new URLSearchParams(window.location.search).get("bloqueado") === "1") {
+    const erro = document.getElementById("loginError");
+    erro.textContent = "Seu acesso foi bloqueado pela administração. Fale com a liderança.";
+    erro.classList.add("active");
+  }
 </script>
 </body>
 </html>
