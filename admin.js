@@ -5,7 +5,7 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  collection, addDoc, updateDoc, doc, getDocs,
+  collection, addDoc, updateDoc, setDoc, doc, getDocs,
   query, where, orderBy, limit, serverTimestamp, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -698,8 +698,192 @@ if (btnPublicarEvento) {
 
 
 // ===============================
+// MÓDULO: USUÁRIOS
+// ===============================
+
+let usuariosCache = [];
+
+const buscaUsuario = document.getElementById("buscaUsuario");
+const listaUsuarios = document.getElementById("listaUsuarios");
+
+async function carregarUsuarios() {
+
+  if (!listaUsuarios) return;
+
+  try {
+    const snapshot = await getDocs(collection(db, "usuarios"));
+    usuariosCache = snapshot.docs.map((d) => ({ uid: d.id, ...d.data() }));
+    renderUsuarios();
+  } catch (erro) {
+    console.error("Erro ao carregar usuários:", erro);
+  }
+
+}
+
+function renderUsuarios() {
+
+  const termo = (buscaUsuario?.value || "").trim().toLowerCase();
+  const filtrados = usuariosCache.filter((u) => (u.nome || "").toLowerCase().includes(termo));
+
+  if (filtrados.length === 0) {
+    listaUsuarios.innerHTML = '<p style="color:var(--faint); font-size:12.5px;">Nenhum usuário encontrado.</p>';
+    return;
+  }
+
+  listaUsuarios.innerHTML = filtrados.map((u) => {
+
+    const iniciais = (u.nome || "?").trim().charAt(0).toUpperCase();
+    const temToken = !!u.push?.token;
+
+    return `
+      <div class="usuario-item">
+        <div class="usuario-avatar">${iniciais}</div>
+        <div class="usuario-info">
+          <div class="usuario-nome">
+            ${escapeHtml(u.nome || "sem nome")}
+            ${u.bloqueado ? '<span class="usuario-tag-bloqueado">Bloqueado</span>' : ""}
+          </div>
+          <div class="usuario-meta">${temToken ? "🔔 notificações ativas" : "🔕 sem notificação"} · ${u.papel || "membro"}</div>
+          <div class="usuario-acoes">
+            <select class="usuario-select" data-uid="${u.uid}" data-acao="papel">
+              <option value="membro" ${u.papel === "membro" ? "selected" : ""}>Membro</option>
+              <option value="admin" ${u.papel === "admin" ? "selected" : ""}>Admin</option>
+              <option value="visitante" ${u.papel === "visitante" ? "selected" : ""}>Visitante</option>
+            </select>
+            <button type="button" class="usuario-btn" data-uid="${u.uid}" data-acao="${u.bloqueado ? "desbloquear" : "bloquear"}">
+              ${u.bloqueado ? "🔓 Desbloquear" : "🔒 Bloquear"}
+            </button>
+            <button type="button" class="usuario-btn perigo" data-uid="${u.uid}" data-acao="excluir">🗑 Excluir</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+  }).join("");
+
+  // Trocar cargo (só Firestore, não precisa de function)
+  listaUsuarios.querySelectorAll('[data-acao="papel"]').forEach((select) => {
+    select.addEventListener("change", async () => {
+      await updateDoc(doc(db, "usuarios", select.dataset.uid), { papel: select.value });
+      mostrarToast("Sucesso", "Cargo atualizado.");
+      carregarUsuarios();
+    });
+  });
+
+  // Bloquear / desbloquear / excluir (via Netlify Function, mexe na conta de login de verdade)
+  listaUsuarios.querySelectorAll('[data-acao="bloquear"], [data-acao="desbloquear"], [data-acao="excluir"]').forEach((btn) => {
+    btn.addEventListener("click", async () => {
+
+      const uid = btn.dataset.uid;
+      const acao = btn.dataset.acao;
+
+      if (acao === "excluir" && !confirm("Excluir esse usuário? A conta de login dele também será apagada. Isso não pode ser desfeito.")) return;
+      if (acao === "bloquear" && !confirm("Bloquear esse usuário? Ele será desconectado e não vai conseguir logar de novo até você desbloquear.")) return;
+
+      btn.disabled = true;
+      btn.textContent = "Aguarde...";
+
+      try {
+
+        const resposta = await fetch("/.netlify/functions/gerenciar-usuario", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uid, acao })
+        });
+
+        if (!resposta.ok) throw new Error("Falha na operação");
+
+        mostrarToast("Sucesso", `Usuário ${acao === "excluir" ? "excluído" : acao === "bloquear" ? "bloqueado" : "desbloqueado"}.`);
+        carregarUsuarios();
+
+      } catch (erro) {
+        console.error(erro);
+        mostrarToast("Erro", "Não foi possível completar essa ação. Confere se a function 'gerenciar-usuario' está publicada.");
+        btn.disabled = false;
+      }
+
+    });
+  });
+
+}
+
+if (buscaUsuario) {
+  buscaUsuario.addEventListener("input", renderUsuarios);
+}
+
+
+// ===============================
+// MÓDULO: CONFIGURAÇÕES
+// ===============================
+
+async function carregarConfiguracoes() {
+
+  const campo = document.getElementById("cfgNomeIgreja");
+  if (!campo) return;
+
+  try {
+
+    const snap = await getDocs(query(collection(db, "configuracoes")));
+    const docConfig = snap.docs.find((d) => d.id === "app");
+
+    if (docConfig) {
+      const c = docConfig.data();
+      document.getElementById("cfgNomeIgreja").value = c.nomeIgreja || "";
+      document.getElementById("cfgLogo").value = c.logo || "";
+      document.getElementById("cfgCor").value = c.corPrincipal || "#FFB020";
+      document.getElementById("cfgHorarios").value = c.horarios || "";
+      document.getElementById("cfgLinks").value = c.links || "";
+      document.getElementById("cfgContato").value = c.contato || "";
+    }
+
+  } catch (erro) {
+    console.error("Erro ao carregar configurações:", erro);
+  }
+
+}
+
+const btnSalvarConfig = document.getElementById("btnSalvarConfig");
+
+if (btnSalvarConfig) {
+  btnSalvarConfig.addEventListener("click", async () => {
+
+    const cfgBtnText = document.getElementById("cfgBtnText");
+    const cfgBtnIcon = document.getElementById("cfgBtnIcon");
+
+    try {
+
+      cfgBtnText.textContent = "Salvando...";
+      cfgBtnIcon.textContent = "⏳";
+
+      await setDoc(doc(db, "configuracoes", "app"), {
+        nomeIgreja: document.getElementById("cfgNomeIgreja").value.trim(),
+        logo: document.getElementById("cfgLogo").value.trim(),
+        corPrincipal: document.getElementById("cfgCor").value,
+        horarios: document.getElementById("cfgHorarios").value.trim(),
+        links: document.getElementById("cfgLinks").value.trim(),
+        contato: document.getElementById("cfgContato").value.trim(),
+        atualizadoEm: serverTimestamp()
+      }, { merge: true });
+
+      mostrarToast("Sucesso", "Configurações salvas.");
+
+    } catch (erro) {
+      console.error(erro);
+      mostrarToast("Erro", "Não foi possível salvar as configurações.");
+    } finally {
+      cfgBtnText.textContent = "Salvar configurações";
+      cfgBtnIcon.textContent = "💾";
+    }
+
+  });
+}
+
+
+// ===============================
 // INICIAR PAINEL
 // ===============================
 
 carregarHistorico();
+carregarUsuarios();
+carregarConfiguracoes();
 atualizarDashboard();
