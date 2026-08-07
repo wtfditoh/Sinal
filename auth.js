@@ -56,6 +56,13 @@ export function exigirLogin(callback) {
     const dadosUsuario = snap.exists()
       ? { uid: user.uid, ...snap.data() }
       : { uid: user.uid, nome: user.email.split("@")[0], papel: "membro" };
+
+    if (dadosUsuario.bloqueado) {
+      await signOut(auth);
+      window.location.href = "index.html?bloqueado=1";
+      return;
+    }
+
     callback(dadosUsuario);
   });
 }
