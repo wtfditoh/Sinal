@@ -1,136 +1,95 @@
 const { initializeApp, cert } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
-const { getMessaging } = require("firebase-admin/messaging");
-
+const { getAuth } = require("firebase-admin/auth");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 const serviceAccount = JSON.parse(
   process.env.FIREBASE_SERVICE_ACCOUNT
 );
 
-
 initializeApp({
   credential: cert(serviceAccount)
 });
 
-
+const auth = getAuth();
 const db = getFirestore();
-const messaging = getMessaging();
 
-
+function nomeParaEmail(nome) {
+  return nome
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, ".") + "@sinal.app";
+}
 
 exports.handler = async (event) => {
 
   try {
 
-    const { titulo, mensagem, link, imagem } = JSON.parse(event.body);
+    const { nome, senha, papel } = JSON.parse(event.body);
 
-
-
-    const usuarios = await db
-      .collection("usuarios")
-      .get();
-
-
-
-    const tokens = [];
-
-
-    usuarios.forEach((doc) => {
-
-      const dados = doc.data();
-
-
-      if (dados.push?.token) {
-
-        tokens.push(dados.push.token);
-
-      }
-
-    });
-
-
-
-    if (tokens.length === 0) {
-
+    if (!nome || !senha) {
       return {
-
         statusCode: 400,
-
         body: JSON.stringify({
-
-          erro: "Nenhum token encontrado"
-
+          erro: "Nome e senha são obrigatórios"
         })
-
       };
-
     }
 
+    if (senha.length < 6) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          erro: "Senha deve ter pelo menos 6 caracteres"
+        })
+      };
+    }
 
+    const email = nomeParaEmail(nome);
+    const papelFinal = papel || "membro";
 
-
-    const resultado = await messaging.sendEachForMulticast({
-
-      tokens,
-
-      notification: {
-  title: titulo,
-  body: mensagem,
-},
-webpush: {
-  notification: {
-    icon: "https://sinalpv.netlify.app/icon-192.png",
-    badge: "https://sinalpv.netlify.app/icon-192.png",
-    // Imagem grande dentro da notificação (só aparece se foi informada)
-    ...(imagem ? { image: imagem } : {})
-  },
-  fcmOptions: {
-    // Pra qual página do app abre ao clicar - vem do painel Admin,
-    // cai em dashboard.html se não vier nada
-    link: link || "https://sinalpv.netlify.app/dashboard.html"
-  }
-}
+    const userRecord = await auth.createUser({
+      email,
+      password: senha,
+      displayName: nome,
+      disabled: false
     });
 
-
-
-
+    await db.collection("usuarios").doc(userRecord.uid).set({
+      nome,
+      papel: papelFinal,
+      criadoEm: FieldValue.serverTimestamp(),
+      criadoPor: "admin"
+    });
 
     return {
-
       statusCode: 200,
-
       body: JSON.stringify({
-
-        enviados: resultado.successCount,
-
-        falhas: resultado.failureCount
-
+        sucesso: true,
+        uid: userRecord.uid,
+        email: email
       })
-
     };
-
-
-
 
   } catch (erro) {
 
-
     console.error(erro);
 
+    let mensagem = "Erro interno ao criar usuário";
+
+    if (erro.code === "auth/email-already-exists") {
+      mensagem = "Já existe uma conta com esse nome";
+    } else if (erro.code === "auth/invalid-password") {
+      mensagem = "Senha muito fraca (mínimo 6 caracteres)";
+    }
 
     return {
-
-      statusCode: 500,
-
+      statusCode: 400,
       body: JSON.stringify({
-
-        erro: erro.message
-
+        erro: mensagem
       })
-
     };
-
 
   }
 
