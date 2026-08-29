@@ -880,6 +880,91 @@ if (btnSalvarConfig) {
 
 
 // ===============================
+// MÓDULO: CADASTRAR USUÁRIO
+// ===============================
+
+const btnNovoUsuario = document.getElementById("btnNovoUsuario");
+const novoUsuarioModal = document.getElementById("novoUsuarioModal");
+const novoUsuarioForm = document.getElementById("novoUsuarioForm");
+const cancelarNovoUsuario = document.getElementById("cancelarNovoUsuario");
+
+if (btnNovoUsuario) {
+  btnNovoUsuario.addEventListener("click", () => {
+    novoUsuarioModal.classList.remove("hidden");
+    document.getElementById("novoUsuarioNome").focus();
+  });
+}
+
+if (cancelarNovoUsuario) {
+  cancelarNovoUsuario.addEventListener("click", () => {
+    novoUsuarioModal.classList.add("hidden");
+    novoUsuarioForm.reset();
+  });
+}
+
+// Fecha o modal se clicar fora dele
+if (novoUsuarioModal) {
+  novoUsuarioModal.addEventListener("click", (e) => {
+    if (e.target === novoUsuarioModal) {
+      novoUsuarioModal.classList.add("hidden");
+      novoUsuarioForm.reset();
+    }
+  });
+}
+
+if (novoUsuarioForm) {
+  novoUsuarioForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const nome = document.getElementById("novoUsuarioNome").value.trim();
+    const senha = document.getElementById("novoUsuarioSenha").value;
+    const papel = document.getElementById("novoUsuarioPapel").value;
+    
+    if (!nome || !senha) {
+      mostrarToast("Atenção", "Preencha nome e senha.");
+      return;
+    }
+    
+    if (senha.length < 6) {
+      mostrarToast("Atenção", "A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    
+    const btnSubmit = novoUsuarioForm.querySelector('button[type="submit"]');
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Cadastrando...";
+    
+    try {
+      const resposta = await fetch("/.netlify/functions/criar-usuario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, senha, papel })
+      });
+      
+      const dados = await resposta.json();
+      
+      if (!resposta.ok) {
+        throw new Error(dados.erro || "Erro ao cadastrar");
+      }
+      
+      mostrarToast("Sucesso", `Usuário ${nome} cadastrado!`);
+      novoUsuarioModal.classList.add("hidden");
+      novoUsuarioForm.reset();
+      carregarUsuarios();
+      atualizarDashboard();
+      
+    } catch (erro) {
+      console.error("Erro ao cadastrar:", erro);
+      mostrarToast("Erro", erro.message || "Não foi possível cadastrar o usuário. Confere se a function 'criar-usuario' está publicada.");
+    } finally {
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = "Cadastrar";
+    }
+  });
+}
+
+
+// ===============================
 // INICIAR PAINEL
 // ===============================
 
