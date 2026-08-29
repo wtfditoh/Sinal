@@ -649,9 +649,24 @@ function abrirModalResposta(id) {
     ` : ""}
   `;
   respostaModalOverlay.classList.add("active");
+}
+
+// Fecha o modal
+document.getElementById("respostaFecharBtn").addEventListener("click", () => {
+  respostaModalOverlay.classList.remove("active");
 });
-  
-  // Abre o modal de culto já preenchido com a resposta, pra revisão antes de salvar
+
+respostaModalOverlay.addEventListener("click", (e) => {
+  if (e.target === respostaModalOverlay) respostaModalOverlay.classList.remove("active");
+});
+
+// Aplica ao culto (event listener separado!)
+document.getElementById("respostaAplicarBtn").addEventListener("click", async () => {
+  const s = solicitacoesCache.get(respostaAtualId);
+  if (!s) return;
+  respostaModalOverlay.classList.remove("active");
+
+  // Abre o modal de culto já preenchido com a resposta
   abrirModalCriacao();
   if (s.dataCulto) document.getElementById("cData").value = formatarDataInput(s.dataCulto);
   document.getElementById("cTipo").value = s.titulo;
