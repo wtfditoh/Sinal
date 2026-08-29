@@ -15,7 +15,8 @@ const jaRespondido = document.getElementById("jaRespondido");
 const conteudo = document.getElementById("conteudo");
 const enviado = document.getElementById("enviado");
 
-let fotoUrl = null;
+let fotoPregadorUrl = null;
+let fotoLouvorUrl = null;
 let fotoEnviando = false;
 
 async function iniciar() {
@@ -39,7 +40,6 @@ async function iniciar() {
     document.getElementById("tituloSolicitacao").textContent = s.titulo;
     mostrar(conteudo);
 
-    // Marca que o link foi aberto
     if (!s.visualizadoEm) {
       updateDoc(doc(db, "solicitacoes", id), { visualizadoEm: serverTimestamp() }).catch(() => {});
     }
@@ -54,60 +54,95 @@ function mostrar(elemento) {
   elemento.style.display = "block";
 }
 
-// ---------- Upload de foto ----------
-const uploadArea = document.getElementById("uploadAreaFoto");
-const fotoUpload = document.getElementById("fotoUpload");
-const fotoPreview = document.getElementById("fotoPreview");
-const fotoPreviewImg = document.getElementById("fotoPreviewImg");
-const fotoRemover = document.getElementById("fotoRemover");
+// ---------- Upload de foto do pregador ----------
+const uploadAreaPregador = document.getElementById("uploadAreaPregador");
+const fotoPregadorUpload = document.getElementById("fotoPregadorUpload");
+const fotoPregadorPreview = document.getElementById("fotoPregadorPreview");
+const fotoPregadorPreviewImg = document.getElementById("fotoPregadorPreviewImg");
+const fotoPregadorRemover = document.getElementById("fotoPregadorRemover");
 
-if (uploadArea) {
-  uploadArea.addEventListener("click", () => {
-    if (!fotoEnviando) {
-      fotoUpload.click();
-    }
+if (uploadAreaPregador) {
+  uploadAreaPregador.addEventListener("click", () => {
+    if (!fotoEnviando) fotoPregadorUpload.click();
   });
 }
 
-if (fotoUpload) {
-  fotoUpload.addEventListener("change", async (e) => {
+if (fotoPregadorUpload) {
+  fotoPregadorUpload.addEventListener("change", async (e) => {
     const arquivo = e.target.files[0];
     if (!arquivo) return;
-    
-    // Verifica tamanho (máx 10MB)
     if (arquivo.size > 10 * 1024 * 1024) {
       alert("A foto é muito grande. Escolha uma imagem menor que 10MB.");
       return;
     }
-    
-    await enviarFoto(arquivo);
+    await enviarFoto(arquivo, "pregador");
   });
 }
 
-if (fotoRemover) {
-  fotoRemover.addEventListener("click", (e) => {
+if (fotoPregadorRemover) {
+  fotoPregadorRemover.addEventListener("click", (e) => {
     e.stopPropagation();
-    fotoUrl = null;
-    fotoPreview.style.display = "none";
-    fotoUpload.value = "";
-    document.getElementById("uploadIcone").textContent = "🖼️";
-    document.getElementById("uploadTexto").textContent = "Clique para escolher uma foto";
-    document.getElementById("uploadHint").textContent = "JPG, PNG ou GIF — máximo 10MB";
+    fotoPregadorUrl = null;
+    fotoPregadorPreview.style.display = "none";
+    fotoPregadorUpload.value = "";
+    document.getElementById("uploadIconePregador").textContent = "🖼️";
+    document.getElementById("uploadTextoPregador").textContent = "Clique para escolher";
+    document.getElementById("uploadHintPregador").textContent = "JPG ou PNG — máx 10MB";
   });
 }
 
-async function enviarFoto(arquivo) {
+// ---------- Upload de foto do louvor ----------
+const uploadAreaLouvor = document.getElementById("uploadAreaLouvor");
+const fotoLouvorUpload = document.getElementById("fotoLouvorUpload");
+const fotoLouvorPreview = document.getElementById("fotoLouvorPreview");
+const fotoLouvorPreviewImg = document.getElementById("fotoLouvorPreviewImg");
+const fotoLouvorRemover = document.getElementById("fotoLouvorRemover");
+
+if (uploadAreaLouvor) {
+  uploadAreaLouvor.addEventListener("click", () => {
+    if (!fotoEnviando) fotoLouvorUpload.click();
+  });
+}
+
+if (fotoLouvorUpload) {
+  fotoLouvorUpload.addEventListener("change", async (e) => {
+    const arquivo = e.target.files[0];
+    if (!arquivo) return;
+    if (arquivo.size > 10 * 1024 * 1024) {
+      alert("A foto é muito grande. Escolha uma imagem menor que 10MB.");
+      return;
+    }
+    await enviarFoto(arquivo, "louvor");
+  });
+}
+
+if (fotoLouvorRemover) {
+  fotoLouvorRemover.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fotoLouvorUrl = null;
+    fotoLouvorPreview.style.display = "none";
+    fotoLouvorUpload.value = "";
+    document.getElementById("uploadIconeLouvor").textContent = "🖼️";
+    document.getElementById("uploadTextoLouvor").textContent = "Clique para escolher";
+    document.getElementById("uploadHintLouvor").textContent = "JPG ou PNG — máx 10MB";
+  });
+}
+
+async function enviarFoto(arquivo, tipo) {
   fotoEnviando = true;
   
-  document.getElementById("uploadIcone").textContent = "⏳";
-  document.getElementById("uploadTexto").textContent = "Enviando foto...";
-  document.getElementById("uploadHint").textContent = "Isso pode levar alguns segundos";
+  const prefixo = tipo === "pregador" ? "Pregador" : "Louvor";
+  const uploadIcone = document.getElementById(`uploadIcone${prefixo}`);
+  const uploadTexto = document.getElementById(`uploadTexto${prefixo}`);
+  const uploadHint = document.getElementById(`uploadHint${prefixo}`);
+  
+  uploadIcone.textContent = "⏳";
+  uploadTexto.textContent = "Enviando foto...";
+  uploadHint.textContent = "Isso pode levar alguns segundos";
   
   try {
-    // Converte a imagem para base64
     const base64 = await converterParaBase64(arquivo);
     
-    // Faz upload para o ImgBB
     const formData = new FormData();
     formData.append("key", IMGBB_API_KEY);
     formData.append("image", base64.split(",")[1]);
@@ -117,21 +152,24 @@ async function enviarFoto(arquivo) {
       body: formData
     });
     
-    if (!resposta.ok) {
-      throw new Error("Falha no upload");
-    }
+    if (!resposta.ok) throw new Error("Falha no upload");
     
     const dados = await resposta.json();
     
     if (dados.success) {
-      fotoUrl = dados.data.url;
+      if (tipo === "pregador") {
+        fotoPregadorUrl = dados.data.url;
+        fotoPregadorPreviewImg.src = fotoPregadorUrl;
+        fotoPregadorPreview.style.display = "block";
+      } else {
+        fotoLouvorUrl = dados.data.url;
+        fotoLouvorPreviewImg.src = fotoLouvorUrl;
+        fotoLouvorPreview.style.display = "block";
+      }
       
-      fotoPreviewImg.src = fotoUrl;
-      fotoPreview.style.display = "block";
-      
-      document.getElementById("uploadIcone").textContent = "✅";
-      document.getElementById("uploadTexto").textContent = "Foto enviada com sucesso!";
-      document.getElementById("uploadHint").textContent = "Clique para trocar a foto";
+      uploadIcone.textContent = "✅";
+      uploadTexto.textContent = "Foto enviada!";
+      uploadHint.textContent = "Clique para trocar";
     } else {
       throw new Error("Erro no upload");
     }
@@ -139,9 +177,9 @@ async function enviarFoto(arquivo) {
     console.error("Erro ao enviar foto:", erro);
     alert("Não foi possível enviar a foto. Tente novamente.");
     
-    document.getElementById("uploadIcone").textContent = "🖼️";
-    document.getElementById("uploadTexto").textContent = "Clique para escolher uma foto";
-    document.getElementById("uploadHint").textContent = "JPG, PNG ou GIF — máximo 10MB";
+    uploadIcone.textContent = "🖼️";
+    uploadTexto.textContent = "Clique para escolher";
+    uploadHint.textContent = "JPG ou PNG — máx 10MB";
   } finally {
     fotoEnviando = false;
   }
@@ -176,8 +214,9 @@ document.getElementById("formResposta").addEventListener("submit", async (e) => 
         tema: document.getElementById("rTema").value.trim(),
         versiculo: document.getElementById("rVersiculo").value.trim(),
         eventoParte: document.getElementById("rEventoParte").value.trim(),
-        fotoUrl: fotoUrl,
-        fotoEnviadaEm: fotoUrl ? serverTimestamp() : null
+        fotoPregadorUrl: fotoPregadorUrl,
+        fotoLouvorUrl: fotoLouvorUrl,
+        fotosEnviadasEm: (fotoPregadorUrl || fotoLouvorUrl) ? serverTimestamp() : null
       },
       respondidoEm: serverTimestamp()
     });
