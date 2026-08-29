@@ -649,6 +649,7 @@ function abrirModalResposta(id) {
     ` : ""}
   `;
   respostaModalOverlay.classList.add("active");
+}
   
   // Abre o modal de culto já preenchido com a resposta, pra revisão antes de salvar
   abrirModalCriacao();
