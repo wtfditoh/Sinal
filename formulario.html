@@ -3,65 +3,261 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>SINAL — Formulário</title>
+<title>SINAL — Formulário do Culto</title>
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#0B0D12">
 <link rel="stylesheet" href="style.css">
+<style>
+  .form-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .form-icone {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+  .form-titulo-principal {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: #F5F6F8;
+    margin-bottom: 8px;
+  }
+  .form-subtitulo {
+    font-size: 14px;
+    color: #9CA3B5;
+    line-height: 1.6;
+  }
+  .form-campos {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .campo-grupo {
+    background: #1B1F2A;
+    border: 1px solid #2E3444;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .campo-titulo {
+    font-size: 16px;
+    font-weight: 600;
+    color: #F5F6F8;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .campo-emoji {
+    font-size: 20px;
+  }
+  .campo-input {
+    width: 100%;
+    background: #14171F;
+    border: 1px solid #2E3444;
+    border-radius: 8px;
+    padding: 12px;
+    color: #F5F6F8;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.15s ease;
+  }
+  .campo-input:focus {
+    outline: none;
+    border-color: #FFB020;
+    box-shadow: 0 0 0 3px rgba(255, 176, 32, 0.15);
+  }
+  textarea.campo-input {
+    resize: vertical;
+  }
+  .upload-area {
+    border: 2px dashed #2E3444;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #14171F;
+  }
+  .upload-area:hover {
+    border-color: #FFB020;
+    background: rgba(255, 176, 32, 0.05);
+  }
+  .upload-icone {
+    font-size: 36px;
+    margin-bottom: 10px;
+  }
+  .upload-texto {
+    font-size: 14px;
+    color: #9CA3B5;
+    margin-bottom: 4px;
+  }
+  .upload-hint {
+    font-size: 12px;
+    color: #5C6478;
+  }
+  .upload-preview {
+    margin-top: 12px;
+    display: none;
+  }
+  .upload-preview img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 1px solid #2E3444;
+  }
+  .upload-remover {
+    margin-top: 8px;
+    background: rgba(255, 92, 92, 0.1);
+    border: 1px solid rgba(255, 92, 92, 0.3);
+    color: #FF5C5C;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .upload-remover:hover {
+    background: rgba(255, 92, 92, 0.2);
+  }
+  .btn-enviar-form {
+    width: 100%;
+    background: linear-gradient(135deg, #FFC454, #FFB020);
+    color: #17130A;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    box-shadow: 0 8px 20px -6px rgba(255, 176, 32, 0.5);
+  }
+  .btn-enviar-form:active {
+    transform: scale(0.98);
+  }
+  .btn-enviar-form:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
 </head>
 <body>
 
 <div class="login-wrap">
-  <div class="login-card" style="max-width:400px;">
-    <div class="login-mark"></div>
-
-    <div id="carregando" style="text-align:center; color:var(--text-faint); font-size:13px;">Carregando...</div>
+  <div class="login-card" style="max-width:500px;">
+    
+    <div id="carregando" style="text-align:center; color:#5C6478; font-size:14px;">
+      <div class="loading-spinner" style="margin: 20px auto;"></div>
+      <p style="margin-top: 12px;">Carregando formulário...</p>
+    </div>
 
     <div id="naoEncontrado" style="display:none; text-align:center;">
-      <div style="font-size:32px; margin-bottom:8px;">😕</div>
-      <div class="login-title">Link inválido</div>
-      <div class="login-sub">Esse link não existe mais ou já expirou. Pede um novo link pra equipe de mídia.</div>
+      <div style="font-size:48px; margin-bottom:12px;">😕</div>
+      <div class="form-titulo-principal">Link inválido</div>
+      <div class="form-subtitulo">Esse link não existe mais ou já expirou. Pede um novo link pra equipe de mídia.</div>
     </div>
 
     <div id="jaRespondido" style="display:none; text-align:center;">
-      <div style="font-size:32px; margin-bottom:8px;">✅</div>
-      <div class="login-title">Já foi respondido</div>
-      <div class="login-sub">Esse formulário já foi preenchido antes. Se precisar mudar algo, chama a equipe de mídia.</div>
+      <div style="font-size:48px; margin-bottom:12px;">✅</div>
+      <div class="form-titulo-principal">Já foi respondido</div>
+      <div class="form-subtitulo">Esse formulário já foi preenchido antes. Se precisar mudar algo, chama a equipe de mídia.</div>
     </div>
 
     <div id="conteudo" style="display:none;">
-      <div class="login-title" id="tituloSolicitacao">Culto</div>
-      <div class="login-sub">Preenche o que souber — pode deixar em branco o que não sabe ainda</div>
+      <div class="form-header">
+        <div class="form-icone">🙏</div>
+        <div class="form-titulo-principal" id="tituloSolicitacao">Culto</div>
+        <div class="form-subtitulo">
+          Olá! Precisamos de algumas informações para preparar a divulgação do culto.
+          Preencha o que souber — não se preocupe se não tiver tudo ainda.
+        </div>
+      </div>
 
-      <form id="formResposta">
-        <div class="field">
-          <label for="rNome">Seu nome</label>
-          <input type="text" id="rNome" required placeholder="Quem está preenchendo">
+      <form id="formResposta" class="form-campos">
+        
+        <div class="campo-grupo">
+          <div class="campo-titulo">
+            <span class="campo-emoji">👤</span>
+            Quem está preenchendo?
+          </div>
+          <input type="text" id="rNome" required placeholder="Seu nome completo" class="campo-input">
         </div>
-        <div class="field">
-          <label for="rPregador">Pregador</label>
-          <input type="text" id="rPregador" placeholder="Nome de quem vai pregar">
+
+        <div class="campo-grupo">
+          <div class="campo-titulo">
+            <span class="campo-emoji">🎤</span>
+            Quem vai pregar?
+          </div>
+          <input type="text" id="rPregador" placeholder="Nome do pregador ou ministrante" class="campo-input">
         </div>
-        <div class="field">
-          <label for="rTema">Tema do culto</label>
-          <input type="text" id="rTema" placeholder="Se já tiver definido">
+
+        <div class="campo-grupo">
+          <div class="campo-titulo">
+            <span class="campo-emoji">📌</span>
+            Tema do culto
+          </div>
+          <input type="text" id="rTema" placeholder="Se já tiver definido" class="campo-input">
         </div>
-        <div class="field">
-          <label for="rVersiculo">Versículo-chave</label>
-          <textarea id="rVersiculo" rows="2" placeholder="Se já souber"></textarea>
+
+        <div class="campo-grupo">
+          <div class="campo-titulo">
+            <span class="campo-emoji">📖</span>
+            Versículo-chave
+          </div>
+          <textarea id="rVersiculo" rows="2" placeholder="Se já souber qual será" class="campo-input"></textarea>
         </div>
-        <div class="field">
-          <label for="rEventoParte">Evento à parte / observações</label>
-          <textarea id="rEventoParte" rows="2" placeholder="ex: Batismo, Ceia, Apresentação especial..."></textarea>
+
+        <div class="campo-grupo">
+          <div class="campo-titulo">
+            <span class="campo-emoji">📸</span>
+            Foto do pregador ou ministério de louvor
+            <span style="font-size:11px; color:#5C6478; font-weight:400;">(opcional)</span>
+          </div>
+          <div class="upload-area" id="uploadAreaFoto">
+            <div class="upload-icone" id="uploadIcone">🖼️</div>
+            <div class="upload-texto" id="uploadTexto">Clique para escolher uma foto</div>
+            <div class="upload-hint" id="uploadHint">JPG, PNG ou GIF — máximo 10MB</div>
+            <input type="file" id="fotoUpload" accept="image/*" style="display:none;">
+            <div class="upload-preview" id="fotoPreview">
+              <img id="fotoPreviewImg" src="" alt="Prévia da foto">
+              <button type="button" class="upload-remover" id="fotoRemover">Remover foto</button>
+            </div>
+          </div>
         </div>
-        <button type="submit" class="login-btn" id="respostaBtn">Enviar</button>
+
+        <div class="campo-grupo">
+          <div class="campo-titulo">
+            <span class="campo-emoji">📎</span>
+            Observações importantes
+          </div>
+          <textarea id="rEventoParte" rows="2" placeholder="Ex: Batismo, Ceia, apresentação especial..." class="campo-input"></textarea>
+        </div>
+
+        <button type="submit" class="btn-enviar-form" id="respostaBtn">
+          <span id="btnTexto">📨 Enviar informações</span>
+        </button>
+        
         <div class="login-error" id="respostaError">Não foi possível enviar. Confere sua conexão e tenta de novo.</div>
       </form>
     </div>
 
     <div id="enviado" style="display:none; text-align:center;">
-      <div style="font-size:36px; margin-bottom:10px;">🙌</div>
-      <div style="font-weight:700; margin-bottom:6px;">Enviado com sucesso!</div>
-      <p style="color:var(--text-dim); font-size:13px;">Já caiu direto pra equipe de mídia. Obrigado!</p>
+      <div style="font-size:48px; margin-bottom:12px;">🙌</div>
+      <div class="form-titulo-principal">Enviado com sucesso!</div>
+      <p class="form-subtitulo">As informações já chegaram para a equipe de mídia. Muito obrigado!</p>
     </div>
 
   </div>
