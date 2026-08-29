@@ -597,12 +597,28 @@ function abrirModalResposta(id) {
     ${r.tema ? `<div class="resposta-linha"><strong>Tema</strong>${escapeHtml(r.tema)}</div>` : ""}
     ${r.versiculo ? `<div class="resposta-linha"><strong>Versículo</strong>${escapeHtml(r.versiculo)}</div>` : ""}
     ${r.eventoParte ? `<div class="resposta-linha"><strong>Evento à parte</strong>${escapeHtml(r.eventoParte)}</div>` : ""}
-    ${r.fotoUrl ? `
+    ${r.fotoPregadorUrl ? `
       <div class="resposta-linha">
-        <strong>Foto enviada</strong>
-        <img src="${r.fotoUrl}" alt="Foto do pregador/ministério" 
+        <strong>Foto do pregador</strong>
+        <img src="${r.fotoPregadorUrl}" alt="Foto do pregador" 
              style="width:100%; border-radius:8px; margin-top:8px; cursor:pointer;"
-             onclick="window.open('${r.fotoUrl}', '_blank')">
+             onclick="window.open('${r.fotoPregadorUrl}', '_blank')">
+        <button type="button" class="btn" style="margin-top:8px; width:100%;" 
+                onclick="window.open('${r.fotoPregadorUrl}', '_blank')">
+          📥 Download
+        </button>
+      </div>
+    ` : ""}
+    ${r.fotoLouvorUrl ? `
+      <div class="resposta-linha">
+        <strong>Foto do ministério de louvor</strong>
+        <img src="${r.fotoLouvorUrl}" alt="Foto do ministério" 
+             style="width:100%; border-radius:8px; margin-top:8px; cursor:pointer;"
+             onclick="window.open('${r.fotoLouvorUrl}', '_blank')">
+        <button type="button" class="btn" style="margin-top:8px; width:100%;" 
+                onclick="window.open('${r.fotoLouvorUrl}', '_blank')">
+          📥 Download
+        </button>
       </div>
     ` : ""}
   `;
