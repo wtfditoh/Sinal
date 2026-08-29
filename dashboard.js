@@ -14,6 +14,24 @@ import {
   getDoc, getDocs, setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// Função global de download de imagem
+window.baixarImagem = function(url, nomeArquivo) {
+  fetch(url)
+    .then(res => res.blob())
+    .then(blob => {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = nomeArquivo || "imagem.jpg";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+    })
+    .catch(() => {
+      window.open(url, "_blank");
+    });
+};
+
 const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 
 let usuarioAtual = null;
@@ -464,22 +482,22 @@ function carregarSolicitacoes() {
       const s = docSnap.data();
       const id = docSnap.id;
       solicitacoesCache.set(id, s);
-      if (s.status === "respondido") pendentesRespondidos++;
+     if (s.status === "respondido" || s.status === "aplicado") pendentesRespondidos++;
 
       const item = document.createElement("div");
       item.className = "solicitacao-item";
-      const statusLabel = {
-        aguardando: s.visualizadoEm ? "👁️ visualizado, aguardando resposta" : "aguardando resposta",
-        respondido: "respondido, revisar",
-        aplicado: "já aplicado"
-      };
+     const statusLabel = {
+  aguardando: s.visualizadoEm ? "👁️ visualizado, aguardando resposta" : "aguardando resposta",
+  respondido: "respondido, revisar",
+  aplicado: "✅ concluído — ver"
+};
       item.innerHTML = `
         <div class="solicitacao-info">
           <div class="solicitacao-titulo">${escapeHtml(s.titulo)}</div>
           <div class="solicitacao-status ${s.status}">${statusLabel[s.status] || s.status}</div>
         </div>
         ${s.status === "aguardando" ? `<button class="btn" data-id="${id}" data-acao="link"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Link</button>` : ""}
-        ${s.status === "respondido" ? `<button class="btn btn-mark" data-id="${id}" data-acao="ver"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg> Ver</button>` : ""}
+        ${s.status === "respondido" || s.status === "aplicado" ? `<button class="btn btn-mark" data-id="${id}" data-acao="ver"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg> Ver</button>` : ""}
         <button class="btn btn-excluir" data-id="${id}" data-acao="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
       `;
       listaSolicitacoes.appendChild(item);
@@ -591,6 +609,14 @@ function abrirModalResposta(id) {
   respostaModalTitulo.textContent = s.titulo;
   const r = s.resposta;
   
+  // Esconde o botão "Aplicar" se já foi aplicado
+  const btnAplicar = document.getElementById("respostaAplicarBtn");
+  if (s.status === "aplicado") {
+    btnAplicar.style.display = "none";
+  } else {
+    btnAplicar.style.display = "block";
+  }
+  
   respostaModalCorpo.innerHTML = `
     <div class="resposta-linha"><strong>Preenchido por</strong>${escapeHtml(r.nomeLider) || "—"}</div>
     ${r.pregador ? `<div class="resposta-linha"><strong>Pregador</strong>${escapeHtml(r.pregador)}</div>` : ""}
@@ -604,7 +630,7 @@ function abrirModalResposta(id) {
              style="width:100%; border-radius:8px; margin-top:8px; cursor:pointer;"
              onclick="window.open('${r.fotoPregadorUrl}', '_blank')">
         <button type="button" class="btn" style="margin-top:8px; width:100%;" 
-                onclick="window.open('${r.fotoPregadorUrl}', '_blank')">
+                onclick="window.baixarImagem('${r.fotoPregadorUrl}', 'pregador.jpg')">
           📥 Download
         </button>
       </div>
@@ -616,27 +642,14 @@ function abrirModalResposta(id) {
              style="width:100%; border-radius:8px; margin-top:8px; cursor:pointer;"
              onclick="window.open('${r.fotoLouvorUrl}', '_blank')">
         <button type="button" class="btn" style="margin-top:8px; width:100%;" 
-                onclick="window.open('${r.fotoLouvorUrl}', '_blank')">
+                onclick="window.baixarImagem('${r.fotoLouvorUrl}', 'louvor.jpg')">
           📥 Download
         </button>
       </div>
     ` : ""}
   `;
   respostaModalOverlay.classList.add("active");
-}
-
-document.getElementById("respostaFecharBtn").addEventListener("click", () => {
-  respostaModalOverlay.classList.remove("active");
-});
-respostaModalOverlay.addEventListener("click", (e) => {
-  if (e.target === respostaModalOverlay) respostaModalOverlay.classList.remove("active");
-});
-
-document.getElementById("respostaAplicarBtn").addEventListener("click", async () => {
-  const s = solicitacoesCache.get(respostaAtualId);
-  if (!s) return;
-  respostaModalOverlay.classList.remove("active");
-
+  
   // Abre o modal de culto já preenchido com a resposta, pra revisão antes de salvar
   abrirModalCriacao();
   if (s.dataCulto) document.getElementById("cData").value = formatarDataInput(s.dataCulto);
