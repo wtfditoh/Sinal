@@ -8,259 +8,398 @@
 <meta name="theme-color" content="#0B0D12">
 <link rel="stylesheet" href="style.css">
 <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background: #08090D;
+    font-family: 'Inter', sans-serif;
+    color: #F5F6F8;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-image:
+      radial-gradient(circle at 15% -10%, rgba(255, 176, 32, 0.12), transparent 45%),
+      radial-gradient(circle at 85% 110%, rgba(52, 211, 153, 0.08), transparent 45%);
+  }
+  
+  .form-container {
+    width: 100%;
+    max-width: 520px;
+    background: #14171F;
+    border: 1px solid #2E3444;
+    border-radius: 24px;
+    padding: 32px 24px;
+    box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.7);
+  }
+  
   .form-header {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
   }
+  
   .form-icone {
-    font-size: 48px;
-    margin-bottom: 12px;
+    font-size: 56px;
+    margin-bottom: 16px;
+    display: block;
   }
-  .form-titulo-principal {
+  
+  .form-titulo {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
-    font-size: 26px;
+    font-size: 28px;
     color: #F5F6F8;
     margin-bottom: 8px;
   }
+  
   .form-subtitulo {
-    font-size: 14px;
+    font-size: 15px;
     color: #9CA3B5;
     line-height: 1.6;
+    max-width: 400px;
+    margin: 0 auto;
   }
+  
   .form-campos {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 20px;
   }
+  
   .campo-grupo {
     background: #1B1F2A;
     border: 1px solid #2E3444;
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 16px;
+    padding: 20px;
+    transition: border-color 0.2s ease;
   }
+  
+  .campo-grupo:hover {
+    border-color: #3a4152;
+  }
+  
   .campo-titulo {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: #F5F6F8;
     margin-bottom: 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 10px;
   }
+  
   .campo-emoji {
-    font-size: 20px;
+    font-size: 22px;
+    flex-shrink: 0;
   }
+  
+  .campo-label {
+    flex: 1;
+  }
+  
+  .campo-opcional {
+    font-size: 12px;
+    color: #5C6478;
+    font-weight: 400;
+  }
+  
   .campo-input {
     width: 100%;
-    background: #14171F;
+    background: #0E1016;
     border: 1px solid #2E3444;
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 10px;
+    padding: 14px 16px;
     color: #F5F6F8;
     font-size: 15px;
     font-family: 'Inter', sans-serif;
-    transition: border-color 0.15s ease;
+    transition: all 0.2s ease;
   }
+  
   .campo-input:focus {
     outline: none;
     border-color: #FFB020;
-    box-shadow: 0 0 0 3px rgba(255, 176, 32, 0.15);
+    box-shadow: 0 0 0 3px rgba(255, 176, 32, 0.1);
+    background: #14171F;
   }
+  
+  .campo-input::placeholder {
+    color: #5C6478;
+  }
+  
   textarea.campo-input {
     resize: vertical;
+    min-height: 60px;
   }
+  
   .upload-area {
     border: 2px dashed #2E3444;
     border-radius: 12px;
-    padding: 30px 20px;
+    padding: 24px 16px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    background: #14171F;
+    transition: all 0.25s ease;
+    background: #0E1016;
+    position: relative;
+    overflow: hidden;
   }
+  
   .upload-area:hover {
     border-color: #FFB020;
-    background: rgba(255, 176, 32, 0.05);
+    background: rgba(255, 176, 32, 0.03);
   }
+  
+  .upload-area.tem-foto {
+    border-color: #2EE896;
+    background: rgba(46, 232, 150, 0.05);
+  }
+  
   .upload-icone {
-    font-size: 36px;
-    margin-bottom: 10px;
+    font-size: 32px;
+    margin-bottom: 8px;
+    display: block;
   }
+  
   .upload-texto {
     font-size: 14px;
     color: #9CA3B5;
     margin-bottom: 4px;
+    font-weight: 500;
   }
+  
   .upload-hint {
     font-size: 12px;
     color: #5C6478;
   }
+  
   .upload-preview {
     margin-top: 12px;
     display: none;
+    position: relative;
   }
+  
   .upload-preview img {
     max-width: 100%;
-    max-height: 200px;
-    border-radius: 8px;
+    max-height: 240px;
+    border-radius: 10px;
     border: 1px solid #2E3444;
+    display: block;
+    margin: 0 auto;
   }
+  
   .upload-remover {
-    margin-top: 8px;
+    margin-top: 10px;
     background: rgba(255, 92, 92, 0.1);
     border: 1px solid rgba(255, 92, 92, 0.3);
     color: #FF5C5C;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
   }
+  
   .upload-remover:hover {
     background: rgba(255, 92, 92, 0.2);
+    border-color: rgba(255, 92, 92, 0.5);
   }
-  .btn-enviar-form {
+  
+  .btn-enviar {
     width: 100%;
     background: linear-gradient(135deg, #FFC454, #FFB020);
     color: #17130A;
     border: none;
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 14px;
+    padding: 18px;
     font-weight: 700;
     font-size: 16px;
     cursor: pointer;
-    transition: transform 0.2s ease;
-    box-shadow: 0 8px 20px -6px rgba(255, 176, 32, 0.5);
+    transition: all 0.2s ease;
+    box-shadow: 0 12px 24px -8px rgba(255, 176, 32, 0.5);
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.3px;
   }
-  .btn-enviar-form:active {
-    transform: scale(0.98);
+  
+  .btn-enviar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px -8px rgba(255, 176, 32, 0.6);
   }
-  .btn-enviar-form:disabled {
+  
+  .btn-enviar:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px -4px rgba(255, 176, 32, 0.4);
+  }
+  
+  .btn-enviar:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
   }
+  
   .loading-spinner {
     display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,0.3);
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
     border-radius: 50%;
     border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
+    animation: spin 0.8s ease-in-out infinite;
+    vertical-align: middle;
+    margin-right: 8px;
   }
+  
   @keyframes spin {
     to { transform: rotate(360deg); }
+  }
+  
+  .estado-vazio {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  
+  .estado-icone {
+    font-size: 56px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  
+  .estado-titulo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  
+  .estado-texto {
+    font-size: 14px;
+    color: #9CA3B5;
+    line-height: 1.6;
   }
 </style>
 </head>
 <body>
 
-<div class="login-wrap">
-  <div class="login-card" style="max-width:500px;">
-    
-    <div id="carregando" style="text-align:center; color:#5C6478; font-size:14px;">
-      <div class="loading-spinner" style="margin: 20px auto;"></div>
-      <p style="margin-top: 12px;">Carregando formulário...</p>
+<div class="form-container">
+  
+  <div id="carregando" class="estado-vazio">
+    <div class="loading-spinner" style="margin: 20px auto;"></div>
+    <p class="estado-texto" style="margin-top: 16px;">Carregando formulário...</p>
+  </div>
+
+  <div id="naoEncontrado" class="estado-vazio" style="display:none;">
+    <span class="estado-icone">😕</span>
+    <div class="estado-titulo">Link inválido</div>
+    <div class="estado-texto">Esse link não existe mais ou já expirou. Pede um novo link pra equipe de mídia.</div>
+  </div>
+
+  <div id="jaRespondido" class="estado-vazio" style="display:none;">
+    <span class="estado-icone">✅</span>
+    <div class="estado-titulo">Já foi respondido</div>
+    <div class="estado-texto">Esse formulário já foi preenchido antes. Se precisar mudar algo, chama a equipe de mídia.</div>
+  </div>
+
+  <div id="conteudo" style="display:none;">
+    <div class="form-header">
+      <span class="form-icone">🙏</span>
+      <div class="form-titulo" id="tituloSolicitacao">Culto</div>
+      <div class="form-subtitulo">
+        Ajude a equipe de mídia a preparar a divulgação. Preencha o que souber — sem pressa!
+      </div>
     </div>
 
-    <div id="naoEncontrado" style="display:none; text-align:center;">
-      <div style="font-size:48px; margin-bottom:12px;">😕</div>
-      <div class="form-titulo-principal">Link inválido</div>
-      <div class="form-subtitulo">Esse link não existe mais ou já expirou. Pede um novo link pra equipe de mídia.</div>
-    </div>
+    <form id="formResposta" class="form-campos">
+      
+      <div class="campo-grupo">
+        <div class="campo-titulo">
+          <span class="campo-emoji">👤</span>
+          <span class="campo-label">Quem está preenchendo?</span>
+        </div>
+        <input type="text" id="rNome" required placeholder="Seu nome completo" class="campo-input">
+      </div>
 
-    <div id="jaRespondido" style="display:none; text-align:center;">
-      <div style="font-size:48px; margin-bottom:12px;">✅</div>
-      <div class="form-titulo-principal">Já foi respondido</div>
-      <div class="form-subtitulo">Esse formulário já foi preenchido antes. Se precisar mudar algo, chama a equipe de mídia.</div>
-    </div>
+      <div class="campo-grupo">
+        <div class="campo-titulo">
+          <span class="campo-emoji">🎤</span>
+          <span class="campo-label">Quem vai pregar?</span>
+        </div>
+        <input type="text" id="rPregador" placeholder="Nome do pregador ou ministrante" class="campo-input">
+      </div>
 
-    <div id="conteudo" style="display:none;">
-      <div class="form-header">
-        <div class="form-icone">🙏</div>
-        <div class="form-titulo-principal" id="tituloSolicitacao">Culto</div>
-        <div class="form-subtitulo">
-          Olá! Precisamos de algumas informações para preparar a divulgação do culto.
-          Preencha o que souber — não se preocupe se não tiver tudo ainda.
+      <div class="campo-grupo">
+        <div class="campo-titulo">
+          <span class="campo-emoji">📌</span>
+          <span class="campo-label">Tema do culto</span>
+        </div>
+        <input type="text" id="rTema" placeholder="Se já tiver definido" class="campo-input">
+      </div>
+
+      <div class="campo-grupo">
+        <div class="campo-titulo">
+          <span class="campo-emoji">📖</span>
+          <span class="campo-label">Versículo-chave</span>
+        </div>
+        <textarea id="rVersiculo" rows="2" placeholder="Se já souber qual será" class="campo-input"></textarea>
+      </div>
+
+      <div class="campo-grupo">
+        <div class="campo-titulo">
+          <span class="campo-emoji">📸</span>
+          <span class="campo-label">Foto do pregador</span>
+          <span class="campo-opcional">opcional</span>
+        </div>
+        <div class="upload-area" id="uploadAreaPregador">
+          <span class="upload-icone" id="uploadIconePregador">🖼️</span>
+          <div class="upload-texto" id="uploadTextoPregador">Clique para escolher</div>
+          <div class="upload-hint" id="uploadHintPregador">JPG ou PNG — máx 10MB</div>
+          <input type="file" id="fotoPregadorUpload" accept="image/*" style="display:none;">
+          <div class="upload-preview" id="fotoPregadorPreview">
+            <img id="fotoPregadorPreviewImg" src="" alt="Foto do pregador">
+            <button type="button" class="upload-remover" id="fotoPregadorRemover">Remover foto</button>
+          </div>
         </div>
       </div>
 
-      <form id="formResposta" class="form-campos">
-        
-        <div class="campo-grupo">
-          <div class="campo-titulo">
-            <span class="campo-emoji">👤</span>
-            Quem está preenchendo?
-          </div>
-          <input type="text" id="rNome" required placeholder="Seu nome completo" class="campo-input">
+      <div class="campo-grupo">
+        <div class="campo-titulo">
+          <span class="campo-emoji">🎵</span>
+          <span class="campo-label">Foto do ministério de louvor</span>
+          <span class="campo-opcional">opcional</span>
         </div>
-
-        <div class="campo-grupo">
-          <div class="campo-titulo">
-            <span class="campo-emoji">🎤</span>
-            Quem vai pregar?
-          </div>
-          <input type="text" id="rPregador" placeholder="Nome do pregador ou ministrante" class="campo-input">
-        </div>
-
-        <div class="campo-grupo">
-          <div class="campo-titulo">
-            <span class="campo-emoji">📌</span>
-            Tema do culto
-          </div>
-          <input type="text" id="rTema" placeholder="Se já tiver definido" class="campo-input">
-        </div>
-
-        <div class="campo-grupo">
-          <div class="campo-titulo">
-            <span class="campo-emoji">📖</span>
-            Versículo-chave
-          </div>
-          <textarea id="rVersiculo" rows="2" placeholder="Se já souber qual será" class="campo-input"></textarea>
-        </div>
-
-        <div class="campo-grupo">
-          <div class="campo-titulo">
-            <span class="campo-emoji">📸</span>
-            Foto do pregador ou ministério de louvor
-            <span style="font-size:11px; color:#5C6478; font-weight:400;">(opcional)</span>
-          </div>
-          <div class="upload-area" id="uploadAreaFoto">
-            <div class="upload-icone" id="uploadIcone">🖼️</div>
-            <div class="upload-texto" id="uploadTexto">Clique para escolher uma foto</div>
-            <div class="upload-hint" id="uploadHint">JPG, PNG ou GIF — máximo 10MB</div>
-            <input type="file" id="fotoUpload" accept="image/*" style="display:none;">
-            <div class="upload-preview" id="fotoPreview">
-              <img id="fotoPreviewImg" src="" alt="Prévia da foto">
-              <button type="button" class="upload-remover" id="fotoRemover">Remover foto</button>
-            </div>
+        <div class="upload-area" id="uploadAreaLouvor">
+          <span class="upload-icone" id="uploadIconeLouvor">🖼️</span>
+          <div class="upload-texto" id="uploadTextoLouvor">Clique para escolher</div>
+          <div class="upload-hint" id="uploadHintLouvor">JPG ou PNG — máx 10MB</div>
+          <input type="file" id="fotoLouvorUpload" accept="image/*" style="display:none;">
+          <div class="upload-preview" id="fotoLouvorPreview">
+            <img id="fotoLouvorPreviewImg" src="" alt="Foto do ministério">
+            <button type="button" class="upload-remover" id="fotoLouvorRemover">Remover foto</button>
           </div>
         </div>
+      </div>
 
-        <div class="campo-grupo">
-          <div class="campo-titulo">
-            <span class="campo-emoji">📎</span>
-            Observações importantes
-          </div>
-          <textarea id="rEventoParte" rows="2" placeholder="Ex: Batismo, Ceia, apresentação especial..." class="campo-input"></textarea>
+      <div class="campo-grupo">
+        <div class="campo-titulo">
+          <span class="campo-emoji">📎</span>
+          <span class="campo-label">Observações importantes</span>
         </div>
+        <textarea id="rEventoParte" rows="2" placeholder="Ex: Batismo, Ceia, apresentação especial..." class="campo-input"></textarea>
+      </div>
 
-        <button type="submit" class="btn-enviar-form" id="respostaBtn">
-          <span id="btnTexto">📨 Enviar informações</span>
-        </button>
-        
-        <div class="login-error" id="respostaError">Não foi possível enviar. Confere sua conexão e tenta de novo.</div>
-      </form>
-    </div>
-
-    <div id="enviado" style="display:none; text-align:center;">
-      <div style="font-size:48px; margin-bottom:12px;">🙌</div>
-      <div class="form-titulo-principal">Enviado com sucesso!</div>
-      <p class="form-subtitulo">As informações já chegaram para a equipe de mídia. Muito obrigado!</p>
-    </div>
-
+      <button type="submit" class="btn-enviar" id="respostaBtn">
+        <span id="btnTexto">📨 Enviar informações</span>
+      </button>
+      
+      <div class="login-error" id="respostaError">Não foi possível enviar. Confere sua conexão e tenta de novo.</div>
+    </form>
   </div>
+
+  <div id="enviado" class="estado-vazio" style="display:none;">
+    <span class="estado-icone">🙌</span>
+    <div class="estado-titulo">Enviado com sucesso!</div>
+    <p class="estado-texto">As informações já chegaram para a equipe de mídia. Muito obrigado!</p>
+  </div>
+
 </div>
 
 <script type="module" src="formulario.js"></script>
