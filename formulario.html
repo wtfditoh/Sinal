@@ -6,7 +6,7 @@
 <title>SINAL — Formulário do Culto</title>
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#0B0D12">
-<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
@@ -270,6 +270,18 @@
     line-height: 1.7;
     max-width: 360px;
     margin: 0 auto;
+  }
+  
+  .login-error {
+    color: #FF5C5C;
+    font-size: 13px;
+    margin-top: 8px;
+    text-align: center;
+    display: none;
+  }
+  
+  .login-error.active {
+    display: block;
   }
   
   @media (max-width: 480px) {
