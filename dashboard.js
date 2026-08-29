@@ -590,12 +590,21 @@ function abrirModalResposta(id) {
   respostaAtualId = id;
   respostaModalTitulo.textContent = s.titulo;
   const r = s.resposta;
+  
   respostaModalCorpo.innerHTML = `
     <div class="resposta-linha"><strong>Preenchido por</strong>${escapeHtml(r.nomeLider) || "—"}</div>
     ${r.pregador ? `<div class="resposta-linha"><strong>Pregador</strong>${escapeHtml(r.pregador)}</div>` : ""}
     ${r.tema ? `<div class="resposta-linha"><strong>Tema</strong>${escapeHtml(r.tema)}</div>` : ""}
     ${r.versiculo ? `<div class="resposta-linha"><strong>Versículo</strong>${escapeHtml(r.versiculo)}</div>` : ""}
     ${r.eventoParte ? `<div class="resposta-linha"><strong>Evento à parte</strong>${escapeHtml(r.eventoParte)}</div>` : ""}
+    ${r.fotoUrl ? `
+      <div class="resposta-linha">
+        <strong>Foto enviada</strong>
+        <img src="${r.fotoUrl}" alt="Foto do pregador/ministério" 
+             style="width:100%; border-radius:8px; margin-top:8px; cursor:pointer;"
+             onclick="window.open('${r.fotoUrl}', '_blank')">
+      </div>
+    ` : ""}
   `;
   respostaModalOverlay.classList.add("active");
 }
