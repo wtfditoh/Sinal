@@ -1,16 +1,22 @@
-const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 let app = null;
+let auth = null;
+let db = null;
 
 function initAdmin() {
-  if (app) return app;
+  if (app) return;
   
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  app = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+  
+  app = initializeApp({
+    credential: cert(serviceAccount)
   });
   
-  return app;
+  auth = getAuth(app);
+  db = getFirestore(app);
 }
 
 function nomeParaEmail(nome) {
@@ -56,17 +62,17 @@ exports.handler = async (event) => {
     const email = nomeParaEmail(nome);
     const papelFinal = papel || "membro";
 
-    const userRecord = await admin.auth().createUser({
+    const userRecord = await auth.createUser({
       email,
       password: senha,
       displayName: nome,
       disabled: false
     });
 
-    await admin.firestore().collection("usuarios").doc(userRecord.uid).set({
+    await db.collection("usuarios").doc(userRecord.uid).set({
       nome,
       papel: papelFinal,
-      criadoEm: admin.firestore.FieldValue.serverTimestamp(),
+      criadoEm: FieldValue.serverTimestamp(),
       criadoPor: "admin"
     });
 
