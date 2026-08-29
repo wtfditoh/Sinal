@@ -476,8 +476,14 @@ Enviar notificação
 
 <section class="card">
 
-<div class="card-header">
+<div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+
 <h3>👥 Usuários</h3>
+
+<button id="btnNovoUsuario" class="btn-primary" style="padding:8px 16px; font-size:12px; border-radius:8px;">
++ Cadastrar
+</button>
+
 </div>
 
 <div class="field">
@@ -665,6 +671,37 @@ Enviar notificação
 
 
 
+<!-- Modal: cadastrar usuário -->
+<div id="novoUsuarioModal" class="modal hidden">
+    <div class="modal-card">
+        <h2>Cadastrar usuário</h2>
+        <form id="novoUsuarioForm">
+            <div class="field">
+                <label>Nome completo</label>
+                <input type="text" id="novoUsuarioNome" required placeholder="Ex.: João Silva">
+            </div>
+            <div class="field">
+                <label>Senha</label>
+                <input type="password" id="novoUsuarioSenha" required minlength="6" placeholder="Mínimo 6 caracteres">
+            </div>
+            <div class="field">
+                <label>Papel</label>
+                <select id="novoUsuarioPapel">
+                    <option value="membro">Membro</option>
+                    <option value="admin">Admin</option>
+                    <option value="visitante">Visitante</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn-secondary" id="cancelarNovoUsuario">Cancelar</button>
+                <button type="submit" class="btn-primary">Cadastrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+    
 <!-- LOADING -->
 
 <div id="loadingScreen" class="loading hidden">
