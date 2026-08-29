@@ -1,6 +1,3 @@
-// Netlify Function: criar-usuario
-// Cria conta de usuário sem derrubar a sessão do admin logado
-
 const admin = require("firebase-admin");
 
 let app = null;
@@ -26,7 +23,6 @@ function nomeParaEmail(nome) {
 }
 
 exports.handler = async (event) => {
-  // CORS
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -46,7 +42,6 @@ exports.handler = async (event) => {
     if (!nome || !senha) {
       return {
         statusCode: 400,
-        headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({ erro: "Nome e senha são obrigatórios" })
       };
     }
@@ -54,7 +49,6 @@ exports.handler = async (event) => {
     if (senha.length < 6) {
       return {
         statusCode: 400,
-        headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({ erro: "Senha deve ter pelo menos 6 caracteres" })
       };
     }
@@ -62,7 +56,6 @@ exports.handler = async (event) => {
     const email = nomeParaEmail(nome);
     const papelFinal = papel || "membro";
 
-    // Cria a conta no Firebase Auth
     const userRecord = await admin.auth().createUser({
       email,
       password: senha,
@@ -70,7 +63,6 @@ exports.handler = async (event) => {
       disabled: false
     });
 
-    // Cria o documento no Firestore
     await admin.firestore().collection("usuarios").doc(userRecord.uid).set({
       nome,
       papel: papelFinal,
@@ -80,7 +72,6 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers: { "Access-Control-Allow-Origin": "*" },
       body: JSON.stringify({
         sucesso: true,
         uid: userRecord.uid,
@@ -101,7 +92,6 @@ exports.handler = async (event) => {
     
     return {
       statusCode: 400,
-      headers: { "Access-Control-Allow-Origin": "*" },
       body: JSON.stringify({ erro: mensagem })
     };
   }
