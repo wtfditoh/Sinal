@@ -120,7 +120,7 @@ function mostrarToast(mensagem) {
   });
   
   // Fecha automaticamente após 3 segundos
-  setTimeout(fechar, 3000);
+  setTimeout(fechar, 7000);
 }
 
 function atualizarLabelMes() {
@@ -646,7 +646,7 @@ async function gerarRotacaoParaMes(id, btn) {
   const cultosDoMes = cultosSnapshot.docs.map((d) => d.data());
 
   if (cultosDoMes.length === 0) {
-   mostrarToast("⚠️ Nenhum culto cadastrado nesse mês ainda. Cadastra os cultos primeiro no Dashboard.");
+   mostrarToast("⚠️ Nenhum culto cadastrado nesse mês ainda. Cadastre os cultos do mês primeiro no dashboard.");
     btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Gerar mês';
     btn.disabled = false;
     return;
