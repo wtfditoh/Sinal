@@ -186,43 +186,72 @@ function renderCultos(docs) {
     const card = document.createElement("div");
     card.className = "culto-card";
     card.style.animationDelay = `${index * 0.05}s`;
-    card.innerHTML = `
-      <div class="culto-top">
-        <div class="tally ${isPostado ? "postado" : "pendente"}"></div>
-        <div class="culto-data">${formatarData(c.data)}</div>
-        <div class="culto-status-label ${isPostado ? "postado" : "pendente"}">
-          ${isPostado ? "postado" : "pendente"}
-        </div>
-      </div>
-      <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
-      ${c.tema ? `<div class="culto-tema">📌 ${escapeHtml(c.tema)}</div>` : ""}
-      ${c.pregador ? `<div class="culto-tema">🎤 ${escapeHtml(c.pregador)}</div>` : ""}
-      ${c.eventoParte ? `<div class="culto-tema">📎 ${escapeHtml(c.eventoParte)}</div>` : ""}
-      ${c.versiculo
-        ? `<div class="culto-versiculo">"${escapeHtml(c.versiculo)}"</div>`
-        : `<div class="culto-versiculo culto-versiculo-vazio">Versículo da pregação ainda não adicionado</div>`
-      }
-      ${c.origemPublica ? `<div class="culto-origem-form">📝 preenchido pelo formulário de líderes</div>` : ""}
-      <div class="checklist-dia">
-        ${renderChecklistItem(id, "foto", "📸 Foto", c.checklist?.foto)}
-        ${renderChecklistItem(id, "story", "📱 Story", c.checklist?.story)}
-        ${renderChecklistItem(id, "feed", "📰 Feed", c.checklist?.feed)}
-      </div>
-      <div class="culto-actions">
-        ${isPostado
-          ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
-          : `<button class="btn btn-mark" data-id="${id}" data-action="marcar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Marcar como postado</button>`
-        }
-        <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
-        <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
-      </div>
-      ${isPostado || c.editadoPor ? `
-        <div class="culto-detalhes-audit">
-          ${isPostado ? `<div class="culto-postado-por">✓ postado por ${escapeHtml(c.postadoPor) || "—"}</div>` : ""}
-          ${c.editadoPor ? `<div class="culto-postado-por">✎ editado por ${escapeHtml(c.editadoPor)}${formatarHorarioEdicao(c.editadoEm)}</div>` : ""}
+    // Verifica se é hoje
+const dataCulto = c.data.toDate();
+const hoje = new Date();
+const ehHoje = dataCulto.getDate() === hoje.getDate() && 
+               dataCulto.getMonth() === hoje.getMonth() && 
+               dataCulto.getFullYear() === hoje.getFullYear();
+
+if (ehHoje) card.classList.add("hoje");
+
+card.innerHTML = `
+  <div class="culto-top">
+    <div class="tally ${isPostado ? "postado" : "pendente"}"></div>
+    <div class="culto-data">${formatarData(c.data)}${ehHoje ? " · HOJE" : ""}</div>
+    <div class="culto-status-label ${isPostado ? "postado" : "pendente"}">
+      ${isPostado ? "postado" : "pendente"}
+    </div>
+  </div>
+  <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
+  ${c.tema ? `<div class="culto-tema">📌 ${escapeHtml(c.tema)}</div>` : ""}
+  ${c.pregador ? `<div class="culto-tema">🎤 ${escapeHtml(c.pregador)}</div>` : ""}
+  ${c.eventoParte ? `<div class="culto-tema">📎 ${escapeHtml(c.eventoParte)}</div>` : ""}
+  ${c.versiculo
+    ? `<div class="culto-versiculo">"${escapeHtml(c.versiculo)}"</div>`
+    : `<div class="culto-versiculo culto-versiculo-vazio">Versículo da pregação ainda não adicionado</div>`
+  }
+  ${c.fotoPregadorUrl || c.fotoLouvorUrl ? `
+    <div class="culto-foto-mini">
+      ${c.fotoPregadorUrl ? `
+        <div>
+          <div class="culto-foto-item" onclick="window.open('${c.fotoPregadorUrl}', '_blank')">
+            <img src="${c.fotoPregadorUrl}" alt="Pregador" loading="lazy">
+          </div>
+          <div class="culto-foto-label">pregador</div>
         </div>
       ` : ""}
-    `;
+      ${c.fotoLouvorUrl ? `
+        <div>
+          <div class="culto-foto-item" onclick="window.open('${c.fotoLouvorUrl}', '_blank')">
+            <img src="${c.fotoLouvorUrl}" alt="Louvor" loading="lazy">
+          </div>
+          <div class="culto-foto-label">louvor</div>
+        </div>
+      ` : ""}
+    </div>
+  ` : ""}
+  ${c.origemPublica ? `<div class="culto-origem-form">📝 preenchido pelo formulário de líderes</div>` : ""}
+  <div class="checklist-dia">
+    ${renderChecklistItem(id, "foto", "📸 Foto", c.checklist?.foto)}
+    ${renderChecklistItem(id, "story", "📱 Story", c.checklist?.story)}
+    ${renderChecklistItem(id, "feed", "📰 Feed", c.checklist?.feed)}
+  </div>
+  <div class="culto-actions">
+    ${isPostado
+      ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
+      : `<button class="btn btn-mark" data-id="${id}" data-action="marcar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Marcar como postado</button>`
+    }
+    <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
+    <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+  </div>
+  ${isPostado || c.editadoPor ? `
+    <div class="culto-detalhes-audit">
+      ${isPostado ? `<div class="culto-postado-por">✓ postado por ${escapeHtml(c.postadoPor) || "—"}</div>` : ""}
+      ${c.editadoPor ? `<div class="culto-postado-por">✎ editado por ${escapeHtml(c.editadoPor)}${formatarHorarioEdicao(c.editadoEm)}</div>` : ""}
+    </div>
+  ` : ""}
+`;
     listaCultos.appendChild(card);
   });
 
