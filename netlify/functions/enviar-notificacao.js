@@ -1,6 +1,6 @@
 const { initializeApp, cert } = require("firebase-admin/app");
-const { getAuth } = require("firebase-admin/auth");
-const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getFirestore } = require("firebase-admin/firestore");
+const { getMessaging } = require("firebase-admin/messaging");
 
 const serviceAccount = JSON.parse(
   process.env.FIREBASE_SERVICE_ACCOUNT
@@ -10,65 +10,104 @@ initializeApp({
   credential: cert(serviceAccount)
 });
 
-const auth = getAuth();
 const db = getFirestore();
-
-function nomeParaEmail(nome) {
-  return nome
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, ".") + "@sinal.app";
-}
+const messaging = getMessaging();
 
 exports.handler = async (event) => {
 
   try {
 
-    const { nome, senha, papel } = JSON.parse(event.body);
+    const { titulo, mensagem, link, imagem, id } = JSON.parse(event.body);
 
-    if (!nome || !senha) {
+    // Busca usuários com token de notificação
+    const usuarios = await db.collection("usuarios").get();
+
+    const tokens = [];
+    const tokensInvalidos = [];
+
+    usuarios.forEach((doc) => {
+      const dados = doc.data();
+      if (dados.push?.token) {
+        tokens.push(dados.push.token);
+      }
+    });
+
+    if (tokens.length === 0) {
       return {
         statusCode: 400,
         body: JSON.stringify({
-          erro: "Nome e senha são obrigatórios"
+          erro: "Nenhum token encontrado"
         })
       };
     }
 
-    if (senha.length < 6) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          erro: "Senha deve ter pelo menos 6 caracteres"
-        })
-      };
+    // Envia em lotes de 500 (limite do FCM)
+    const resultados = [];
+    const LOTES = 500;
+
+    for (let i = 0; i < tokens.length; i += LOTES) {
+      const lote = tokens.slice(i, i + LOTES);
+      
+      const resultado = await messaging.sendEachForMulticast({
+        tokens: lote,
+        notification: {
+          title: titulo,
+          body: mensagem,
+        },
+        webpush: {
+          notification: {
+            icon: "https://sinalpv.netlify.app/icon-192.png",
+            badge: "https://sinalpv.netlify.app/icon-192.png",
+            ...(imagem ? { image: imagem } : {})
+          },
+          fcmOptions: {
+            link: link || "https://sinalpv.netlify.app/dashboard.html"
+          }
+        }
+      });
+
+      resultados.push(resultado);
+
+      // Identifica tokens inválidos
+      resultado.responses.forEach((resp, index) => {
+        if (!resp.success) {
+          const errorCode = resp.error?.code;
+          if (errorCode === "messaging/registration-token-not-registered" ||
+              errorCode === "messaging/invalid-registration-token") {
+            tokensInvalidos.push(lote[index]);
+          }
+        }
+      });
     }
 
-    const email = nomeParaEmail(nome);
-    const papelFinal = papel || "membro";
+    // Remove tokens inválidos do Firestore (limpeza automática)
+    if (tokensInvalidos.length > 0) {
+      const usuariosSnapshot = await db.collection("usuarios").get();
+      const batch = db.batch();
+      
+      usuariosSnapshot.forEach((doc) => {
+        const dados = doc.data();
+        if (dados.push?.token && tokensInvalidos.includes(dados.push.token)) {
+          batch.update(doc.ref, {
+            "push.token": null,
+            "push.tokenInvalidoEm": new Date()
+          });
+        }
+      });
 
-    const userRecord = await auth.createUser({
-      email,
-      password: senha,
-      displayName: nome,
-      disabled: false
-    });
+      await batch.commit();
+    }
 
-    await db.collection("usuarios").doc(userRecord.uid).set({
-      nome,
-      papel: papelFinal,
-      criadoEm: FieldValue.serverTimestamp(),
-      criadoPor: "admin"
-    });
+    // Soma os resultados de todos os lotes
+    const totalEnviados = resultados.reduce((acc, r) => acc + r.successCount, 0);
+    const totalFalhas = resultados.reduce((acc, r) => acc + r.failureCount, 0);
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        sucesso: true,
-        uid: userRecord.uid,
-        email: email
+        enviados: totalEnviados,
+        falhas: totalFalhas,
+        tokensRemovidos: tokensInvalidos.length
       })
     };
 
@@ -76,18 +115,10 @@ exports.handler = async (event) => {
 
     console.error(erro);
 
-    let mensagem = "Erro interno ao criar usuário";
-
-    if (erro.code === "auth/email-already-exists") {
-      mensagem = "Já existe uma conta com esse nome";
-    } else if (erro.code === "auth/invalid-password") {
-      mensagem = "Senha muito fraca (mínimo 6 caracteres)";
-    }
-
     return {
-      statusCode: 400,
+      statusCode: 500,
       body: JSON.stringify({
-        erro: mensagem
+        erro: erro.message
       })
     };
 
