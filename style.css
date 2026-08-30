@@ -1801,3 +1801,8 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   padding: 10px 14px;
   font-size: 12.5px;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
