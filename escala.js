@@ -56,6 +56,41 @@ document.getElementById("nextMonth").addEventListener("click", () => {
   carregarEscalaDoMes();
 });
 
+function chaveDia(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+// ADICIONE AQUI
+function mostrarToast(mensagem) {
+  const toast = document.createElement("div");
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1B1F2A;
+    border: 1px solid #2E3444;
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: #F5F6F8;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    animation: slideFadeIn 0.3s ease;
+    text-align: center;
+    max-width: 90%;
+  `;
+  toast.textContent = mensagem;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transition = "opacity 0.3s ease";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 function atualizarLabelMes() {
   monthLabel.textContent = `${MESES[mesAtual.getMonth()]} ${mesAtual.getFullYear()}`;
 }
@@ -650,7 +685,7 @@ rotacaoForm.addEventListener("submit", async (e) => {
     .filter((p) => p.length > 0);
 
   if (pessoas.length === 0) {
-    alert("Coloca pelo menos uma pessoa na lista.");
+   mostrarToast("⚠️ Coloca pelo menos uma pessoa na lista.");
     return;
   }
 
