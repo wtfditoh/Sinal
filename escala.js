@@ -56,10 +56,6 @@ document.getElementById("nextMonth").addEventListener("click", () => {
   carregarEscalaDoMes();
 });
 
-function chaveDia(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
-
 // ADICIONE AQUI
 function mostrarToast(mensagem) {
   const toast = document.createElement("div");
