@@ -1734,3 +1734,70 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   border-color: var(--red);
   color: #2a0d0d;
 }
+
+/* ---------- Melhorias Dashboard ---------- */
+.culto-card.hoje {
+  border-color: var(--amber);
+  box-shadow: 0 0 20px rgba(255, 176, 32, 0.2), 0 12px 24px -16px rgba(0,0,0,0.6);
+}
+.culto-card.hoje::before {
+  background: var(--amber);
+  box-shadow: 0 0 12px 2px rgba(255, 176, 32, 0.5);
+}
+
+.culto-foto-mini {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.culto-foto-item {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.culto-foto-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.culto-foto-item:hover {
+  transform: scale(1.05);
+  border-color: var(--amber);
+}
+.culto-foto-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--text-faint);
+  text-align: center;
+  margin-top: 2px;
+}
+
+.proximo-culto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  font-size: 14px;
+}
+.proximo-culto-timer {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--amber);
+}
+
+/* Compacta seções para melhor visual */
+.solicitacoes-section {
+  margin-bottom: 14px;
+}
+.solicitacoes-header {
+  padding: 10px 14px;
+  font-size: 12.5px;
+}
