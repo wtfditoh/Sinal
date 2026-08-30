@@ -579,7 +579,7 @@ async function gerarRotacaoParaMes(id, btn) {
   const cultosDoMes = cultosSnapshot.docs.map((d) => d.data());
 
   if (cultosDoMes.length === 0) {
-    alert("Nenhum culto cadastrado nesse mês ainda. Cadastra os cultos primeiro no Dashboard.");
+   mostrarToast("⚠️ Nenhum culto cadastrado nesse mês ainda. Cadastra os cultos primeiro no Dashboard.");
     btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Gerar mês';
     btn.disabled = false;
     return;
