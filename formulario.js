@@ -206,7 +206,7 @@ document.getElementById("formResposta").addEventListener("submit", async (e) => 
   btnTexto.innerHTML = '<span class="loading-spinner" style="display:inline-block;"></span> Enviando...';
 
   try {
-    await updateDoc(doc(db, "solicitacoes", id), {
+       await updateDoc(doc(db, "solicitacoes", id), {
       status: "respondido",
       resposta: {
         nomeLider: document.getElementById("rNome").value.trim(),
@@ -220,6 +220,27 @@ document.getElementById("formResposta").addEventListener("submit", async (e) => 
       },
       respondidoEm: serverTimestamp()
     });
+
+    // Dispara notificação push para a equipe
+    const nomeLider = document.getElementById("rNome").value.trim();
+    const pregador = document.getElementById("rPregador").value.trim() || "não informado";
+    const tema = document.getElementById("rTema").value.trim() || "não informado";
+
+    try {
+      await fetch("https://sinalpv.netlify.app/.netlify/functions/enviar-notificacao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titulo: "✅ Formulário respondido!",
+          mensagem: `${nomeLider} respondeu o formulário. Pregador: ${pregador}. Tema: ${tema}. Confira no app.`,
+          link: "https://sinalpv.netlify.app/dashboard.html",
+          imagem: fotoPregadorUrl || fotoLouvorUrl || null
+        })
+      });
+    } catch (erroNotificacao) {
+      console.error("Erro ao notificar equipe:", erroNotificacao);
+      // Não bloqueia o envio do formulário se a notificação falhar
+    }
     
     mostrar(enviado);
   } catch (erro) {
