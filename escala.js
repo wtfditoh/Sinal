@@ -624,7 +624,7 @@ async function gerarRotacaoParaMes(id, btn) {
 
   btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Gerar mês';
   btn.disabled = false;
-  alert(geradas > 0 ? `${geradas} escala(s) gerada(s) pra ${cultosDoMes.length} culto(s) do mês!` : "Já tava tudo preenchido pra essa função nos cultos do mês.");
+ mostrarToast(geradas > 0 ? `✅ ${geradas} escala(s) gerada(s) pra ${cultosDoMes.length} culto(s) do mês!` : "⚠️ Já tava tudo preenchido pra essa função nos cultos do mês.");
 }
 
 // ---------- Modal: nova rotação ----------
