@@ -58,33 +58,69 @@ document.getElementById("nextMonth").addEventListener("click", () => {
 
 // ADICIONE AQUI
 function mostrarToast(mensagem) {
-  const toast = document.createElement("div");
-  toast.style.cssText = `
+  // Cria o overlay
+  const overlay = document.createElement("div");
+  overlay.style.cssText = `
     position: fixed;
-    bottom: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1B1F2A;
-    border: 1px solid #2E3444;
-    border-radius: 12px;
-    padding: 14px 20px;
-    color: #F5F6F8;
-    font-size: 14px;
-    font-weight: 600;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
     z-index: 9999;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    animation: slideFadeIn 0.3s ease;
-    text-align: center;
-    max-width: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
   `;
-  toast.textContent = mensagem;
-  document.body.appendChild(toast);
   
-  setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transition = "opacity 0.3s ease";
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  // Cria o card
+  const card = document.createElement("div");
+  card.style.cssText = `
+    background: #1B1F2A;
+    border: 1px solid #333a49;
+    border-radius: 16px;
+    padding: 24px 20px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    animation: modalPop 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+  `;
+  
+  card.innerHTML = `
+    <div style="font-size:32px; margin-bottom:12px;">${mensagem.includes("✅") ? "✅" : "⚠️"}</div>
+    <div style="color:#F5F6F8; font-size:14px; font-weight:600; line-height:1.5;">${mensagem}</div>
+    <button style="
+      margin-top:16px;
+      background: linear-gradient(135deg, #FFC454, #FFB020);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      color: #17130A;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    ">OK</button>
+  `;
+  
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+  
+  // Fecha ao clicar no OK ou no overlay
+  const fechar = () => {
+    overlay.style.opacity = "0";
+    overlay.style.transition = "opacity 0.2s ease";
+    setTimeout(() => overlay.remove(), 200);
+  };
+  
+  card.querySelector("button").addEventListener("click", fechar);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) fechar();
+  });
+  
+  // Fecha automaticamente após 3 segundos
+  setTimeout(fechar, 3000);
 }
 
 function atualizarLabelMes() {
