@@ -298,7 +298,7 @@ async function gerarImagemEscala() {
   });
 
   if (todos.length === 0) {
-    alert("Não tem escala cadastrada nesse mês ainda.");
+    mostrarToast("⚠️ Não tem escala cadastrada nesse mês ainda.");
     return;
   }
 
