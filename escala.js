@@ -531,7 +531,7 @@ function carregarRotacoes() {
       item.innerHTML = `
         <div class="solicitacao-info">
           <div class="solicitacao-titulo">${escapeHtml(r.nome)}</div>
-          <div class="solicitacao-status aguardando">${DIAS_SEMANA_NOME[r.diaSemana]} · próxima: ${escapeHtml(proximaPessoa)}</div>
+         <div class="solicitacao-status aguardando">${r.funcao} · próxima: ${escapeHtml(proximaPessoa)}</div>
         </div>
         <button class="btn btn-mark" data-id="${id}" data-acao="gerar"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Gerar mês</button>
         <button class="btn btn-excluir" data-id="${id}" data-acao="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
@@ -564,24 +564,44 @@ async function gerarRotacaoParaMes(id, btn) {
 
   const ano = mesAtual.getFullYear();
   const mes = mesAtual.getMonth();
-  const totalDias = new Date(ano, mes + 1, 0).getDate();
+  const inicio = new Date(ano, mes, 1);
+  const fim = new Date(ano, mes + 1, 1);
+
+  // Busca os cultos cadastrados no mês
+  const qCultos = query(
+    collection(db, "cultos"),
+    where("data", ">=", Timestamp.fromDate(inicio)),
+    where("data", "<", Timestamp.fromDate(fim)),
+    orderBy("data", "asc")
+  );
+
+  const cultosSnapshot = await getDocs(qCultos);
+  const cultosDoMes = cultosSnapshot.docs.map((d) => d.data());
+
+  if (cultosDoMes.length === 0) {
+    alert("Nenhum culto cadastrado nesse mês ainda. Cadastra os cultos primeiro no Dashboard.");
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Gerar mês';
+    btn.disabled = false;
+    return;
+  }
 
   let indice = rot.proximoIndice || 0;
   let geradas = 0;
 
-  for (let dia = 1; dia <= totalDias; dia++) {
-    const d = new Date(ano, mes, dia);
-    if (d.getDay() !== rot.diaSemana) continue;
+  for (const culto of cultosDoMes) {
+    const dataCulto = culto.data.toDate();
+    const chave = chaveDia(dataCulto);
 
-    const chave = chaveDia(d);
+    // Verifica se já tem essa função escalada nesse dia
     const jaTemEssaFuncao = (escalasPorDia.get(chave) || []).some((it) => it.funcao === rot.funcao);
     if (jaTemEssaFuncao) continue; // não sobrescreve o que já tá escalado manualmente
 
     const pessoa = rot.pessoas[indice % rot.pessoas.length];
     await addDoc(collection(db, "escalas"), {
-      data: Timestamp.fromDate(new Date(ano, mes, dia, 12, 0)),
+      data: Timestamp.fromDate(new Date(ano, mes, dataCulto.getDate(), 12, 0)),
       funcao: rot.funcao,
       pessoa,
+      cultoTipo: culto.tipo || null,
       criadoPor: usuarioAtual.uid,
       viaRotacao: id,
       atualizadoEm: serverTimestamp()
@@ -604,7 +624,7 @@ async function gerarRotacaoParaMes(id, btn) {
 
   btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Gerar mês';
   btn.disabled = false;
-  alert(geradas > 0 ? `${geradas} escala(s) gerada(s) pra esse mês!` : "Já tava tudo preenchido pra esse dia da semana nesse mês.");
+  alert(geradas > 0 ? `${geradas} escala(s) gerada(s) pra ${cultosDoMes.length} culto(s) do mês!` : "Já tava tudo preenchido pra essa função nos cultos do mês.");
 }
 
 // ---------- Modal: nova rotação ----------
