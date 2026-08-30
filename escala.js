@@ -654,16 +654,15 @@ rotacaoForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  await addDoc(collection(db, "rotacoes"), {
-    nome: document.getElementById("rNome").value,
-    funcao: document.getElementById("rFuncao").value,
-    diaSemana: Number(document.getElementById("rDiaSemana").value),
-    pessoas,
-    proximoIndice: 0,
-    criadoPor: usuarioAtual.uid,
-    criadoEm: serverTimestamp(),
-    atualizadoEm: serverTimestamp()
-  });
+ await addDoc(collection(db, "rotacoes"), {
+  nome: document.getElementById("rNome").value,
+  funcao: document.getElementById("rFuncao").value,
+  pessoas,
+  proximoIndice: 0,
+  criadoPor: usuarioAtual.uid,
+  criadoEm: serverTimestamp(),
+  atualizadoEm: serverTimestamp()
+});
 
   rotacaoForm.reset();
   rotacaoModalOverlay.classList.remove("active");
