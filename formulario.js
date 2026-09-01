@@ -85,9 +85,8 @@ if (fotoPregadorRemover) {
     fotoPregadorUrl = null;
     fotoPregadorPreview.style.display = "none";
     fotoPregadorUpload.value = "";
-    document.getElementById("uploadIconePregador").textContent = "🖼️";
-    document.getElementById("uploadTextoPregador").textContent = "Clique para escolher";
-    document.getElementById("uploadHintPregador").textContent = "JPG ou PNG — máx 10MB";
+    uploadAreaPregador.classList.remove("tem-foto");
+    uploadAreaPregador.querySelector(".upload-titulo").textContent = "Toque aqui para escolher a foto";
   });
 }
 
@@ -122,23 +121,20 @@ if (fotoLouvorRemover) {
     fotoLouvorUrl = null;
     fotoLouvorPreview.style.display = "none";
     fotoLouvorUpload.value = "";
-    document.getElementById("uploadIconeLouvor").textContent = "🖼️";
-    document.getElementById("uploadTextoLouvor").textContent = "Clique para escolher";
-    document.getElementById("uploadHintLouvor").textContent = "JPG ou PNG — máx 10MB";
+    uploadAreaLouvor.classList.remove("tem-foto");
+    uploadAreaLouvor.querySelector(".upload-titulo").textContent = "Toque aqui para escolher a foto";
   });
 }
 
 async function enviarFoto(arquivo, tipo) {
   fotoEnviando = true;
   
-  const prefixo = tipo === "pregador" ? "Pregador" : "Louvor";
-  const uploadIcone = document.getElementById(`uploadIcone${prefixo}`);
-  const uploadTexto = document.getElementById(`uploadTexto${prefixo}`);
-  const uploadHint = document.getElementById(`uploadHint${prefixo}`);
+  const uploadArea = tipo === "pregador" ? uploadAreaPregador : uploadAreaLouvor;
+  const uploadTitulo = uploadArea.querySelector(".upload-titulo");
+  const uploadSubtitulo = uploadArea.querySelector(".upload-subtitulo");
   
-  uploadIcone.textContent = "⏳";
-  uploadTexto.textContent = "Enviando foto...";
-  uploadHint.textContent = "Isso pode levar alguns segundos";
+  uploadTitulo.textContent = "Enviando foto...";
+  uploadSubtitulo.textContent = "Isso pode levar alguns segundos";
   
   try {
     const base64 = await converterParaBase64(arquivo);
@@ -161,15 +157,16 @@ async function enviarFoto(arquivo, tipo) {
         fotoPregadorUrl = dados.data.url;
         fotoPregadorPreviewImg.src = fotoPregadorUrl;
         fotoPregadorPreview.style.display = "block";
+        uploadAreaPregador.classList.add("tem-foto");
       } else {
         fotoLouvorUrl = dados.data.url;
         fotoLouvorPreviewImg.src = fotoLouvorUrl;
         fotoLouvorPreview.style.display = "block";
+        uploadAreaLouvor.classList.add("tem-foto");
       }
       
-      uploadIcone.textContent = "✅";
-      uploadTexto.textContent = "Foto enviada!";
-      uploadHint.textContent = "Clique para trocar";
+      uploadTitulo.textContent = "✅ Foto enviada!";
+      uploadSubtitulo.textContent = "Clique para trocar";
     } else {
       throw new Error("Erro no upload");
     }
@@ -177,9 +174,8 @@ async function enviarFoto(arquivo, tipo) {
     console.error("Erro ao enviar foto:", erro);
     alert("Não foi possível enviar a foto. Tente novamente.");
     
-    uploadIcone.textContent = "🖼️";
-    uploadTexto.textContent = "Clique para escolher";
-    uploadHint.textContent = "JPG ou PNG — máx 10MB";
+    uploadTitulo.textContent = "Toque aqui para escolher a foto";
+    uploadSubtitulo.textContent = "JPG ou PNG — máx. 10MB";
   } finally {
     fotoEnviando = false;
   }
@@ -203,10 +199,10 @@ document.getElementById("formResposta").addEventListener("submit", async (e) => 
   
   errorBox.classList.remove("active");
   btn.disabled = true;
-  btnTexto.innerHTML = '<span class="loading-spinner" style="display:inline-block;"></span> Enviando...';
+  btnTexto.innerHTML = '<span class="spinner" style="display:inline-block;"></span> Enviando...';
 
   try {
-       await updateDoc(doc(db, "solicitacoes", id), {
+    await updateDoc(doc(db, "solicitacoes", id), {
       status: "respondido",
       resposta: {
         nomeLider: document.getElementById("rNome").value.trim(),
@@ -239,7 +235,6 @@ document.getElementById("formResposta").addEventListener("submit", async (e) => 
       });
     } catch (erroNotificacao) {
       console.error("Erro ao notificar equipe:", erroNotificacao);
-      // Não bloqueia o envio do formulário se a notificação falhar
     }
     
     mostrar(enviado);
@@ -247,7 +242,10 @@ document.getElementById("formResposta").addEventListener("submit", async (e) => 
     console.error("Erro ao enviar resposta:", erro);
     errorBox.classList.add("active");
     btn.disabled = false;
-    btnTexto.textContent = "📨 Enviar informações";
+    btnTexto.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Enviar informações
+    `;
   }
 });
 
