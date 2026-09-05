@@ -36,6 +36,27 @@
   </div>
 </div>
 
+<script type="module">
+  // Checa se o app está em manutenção ANTES de mostrar o login.
+  // Usa import direto pra não depender de auth.js nem exigirLogin.
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { firebaseConfig } from "./firebase-config.js";
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  try {
+    const snap = await getDoc(doc(db, "configuracoes", "app"));
+    if (snap.exists() && snap.data().manutencao === true) {
+      window.location.href = "manutencao.html";
+    }
+  } catch (e) {
+    console.warn("Não foi possível verificar manutenção:", e);
+    // Se der erro, deixa o login aparecer normalmente (fail-open)
+  }
+</script>
+
 <script type="module" src="auth.js"></script>
 <script type="module">
   import { iniciarToggleSenha } from "./toggle-senha.js";
