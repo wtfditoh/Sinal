@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SINAL — Em manutenção</title>
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#08090D">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #08090D;
+  color: #F5F6F8;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 24px;
+}
+
+/* ---- Fundo animado ---- */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.18;
+  animation: orb-flutuar 8s ease-in-out infinite;
+}
+
+.bg-orb:nth-child(1) {
+  width: 400px; height: 400px;
+  background: #FFB020;
+  top: -120px; left: -80px;
+  animation-delay: 0s;
+}
+
+.bg-orb:nth-child(2) {
+  width: 300px; height: 300px;
+  background: #2EE896;
+  bottom: -80px; right: -60px;
+  animation-delay: -3s;
+}
+
+.bg-orb:nth-child(3) {
+  width: 200px; height: 200px;
+  background: #6D28D9;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -5s;
+}
+
+@keyframes orb-flutuar {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(20px, -30px) scale(1.05); }
+  66% { transform: translate(-15px, 20px) scale(0.97); }
+}
+
+/* ---- Partículas ---- */
+.particulas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particula {
+  position: absolute;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  background: #FFB020;
+  opacity: 0;
+  animation: subir var(--dur) ease-in infinite;
+  animation-delay: var(--delay);
+  left: var(--x);
+  top: 100%;
+}
+
+@keyframes subir {
+  0% { opacity: 0; transform: translateY(0) scale(0); }
+  10% { opacity: 0.6; transform: translateY(-20px) scale(1); }
+  90% { opacity: 0.2; }
+  100% { opacity: 0; transform: translateY(-100vh) scale(0.5); }
+}
+
+/* ---- Conteúdo ---- */
+.conteudo {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+}
+
+/* ---- Logo animada ---- */
+.logo-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 36px;
+}
+
+/* Anel externo girando devagar */
+.anel-externo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #2EE896, #FFB020, #FF5C5C, #6D28D9, #2EE896);
+  animation: girar-devagar 6s linear infinite;
+  padding: 3px;
+}
+
+.anel-externo-inner {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  background: #08090D;
+}
+
+/* Anel do meio girando ao contrário */
+.anel-medio {
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#08090D, #08090D) padding-box,
+    conic-gradient(from 180deg, #FFB020 0deg, transparent 120deg, #2EE896 240deg, transparent 280deg, #FFB020 360deg) border-box;
+  animation: girar-devagar 3s linear infinite reverse;
+}
+
+/* Círculo central com ícone */
+.logo-centro {
+  position: absolute;
+  inset: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1B1F2A, #14171F);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(255,176,32,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.logo-nome {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #FFB020;
+  letter-spacing: -0.5px;
+}
+
+@keyframes girar-devagar {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Texto ---- */
+.titulo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 30px;
+  margin-bottom: 14px;
+  background: linear-gradient(90deg, #F5F6F8, #9CA3B5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+}
+
+.subtitulo {
+  font-size: 16px;
+  color: #9CA3B5;
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+
+/* ---- Card de status ---- */
+.status-card {
+  background: rgba(255,176,32,0.06);
+  border: 1px solid rgba(255,176,32,0.2);
+  border-radius: 20px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.status-icone {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,176,32,0.12);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  animation: pulsar 2s ease-in-out infinite;
+}
+
+@keyframes pulsar {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,176,32,0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(255,176,32,0); }
+}
+
+.status-texto {
+  text-align: left;
+}
+
+.status-titulo {
+  font-weight: 700;
+  font-size: 14px;
+  color: #FFB020;
+  margin-bottom: 2px;
+}
+
+.status-desc {
+  font-size: 13px;
+  color: #9CA3B5;
+  line-height: 1.5;
+}
+
+/* ---- Barra de progresso falsa ---- */
+.progresso-wrap {
+  margin-bottom: 32px;
+}
+
+.progresso-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #5C6478;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.progresso-barra {
+  height: 3px;
+  background: #1B1F2A;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progresso-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #2EE896, #FFB020);
+  animation: progresso 3s ease-in-out infinite;
+  transform-origin: left;
+}
+
+@keyframes progresso {
+  0% { width: 0%; opacity: 1; }
+  70% { width: 85%; opacity: 1; }
+  85% { width: 90%; opacity: 1; }
+  95% { width: 90%; opacity: 0.5; }
+  100% { width: 0%; opacity: 0; }
+}
+
+/* ---- Rodapé ---- */
+.rodape {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #2E3444;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Fundo animado -->
+<div class="bg">
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+</div>
+
+<!-- Partículas -->
+<div class="particulas" id="particulas"></div>
+
+<!-- Conteúdo -->
+<div class="conteudo">
+
+  <div class="logo-wrap">
+    <div class="anel-externo">
+      <div class="anel-externo-inner"></div>
+    </div>
+    <div class="anel-medio"></div>
+    <div class="logo-centro">
+      <div class="logo-nome">S</div>
+    </div>
+  </div>
+
+  <div class="titulo">Voltamos em breve</div>
+  <div class="subtitulo">
+    O SINAL está passando por uma<br>atualização para ficar ainda melhor. 🔧
+  </div>
+
+  <div class="status-card">
+    <div class="status-icone">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB020" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+    </div>
+    <div class="status-texto">
+      <div class="status-titulo">Manutenção em andamento</div>
+      <div class="status-desc">Nossa equipe está trabalhando para que tudo volte o mais rápido possível.</div>
+    </div>
+  </div>
+
+  <div class="progresso-wrap">
+    <div class="progresso-label">
+      <span>atualizando sistema</span>
+      <span id="porcentagem">0%</span>
+    </div>
+    <div class="progresso-barra">
+      <div class="progresso-fill"></div>
+    </div>
+  </div>
+
+  <div class="rodape">SINAL • Sistema de Mídia da Igreja</div>
+
+</div>
+
+<script>
+// Cria partículas flutuantes de forma aleatória
+const container = document.getElementById("particulas");
+for (let i = 0; i < 20; i++) {
+  const p = document.createElement("div");
+  p.className = "particula";
+  p.style.setProperty("--x", Math.random() * 100 + "vw");
+  p.style.setProperty("--dur", (6 + Math.random() * 8) + "s");
+  p.style.setProperty("--delay", "-" + Math.random() * 10 + "s");
+  // Cores variadas pra cada partícula
+  const cores = ["#FFB020", "#2EE896", "#6D28D9", "#FF5C5C"];
+  p.style.background = cores[Math.floor(Math.random() * cores.length)];
+  p.style.width = p.style.height = (1 + Math.random() * 2.5) + "px";
+  container.appendChild(p);
+}
+
+// Contador de porcentagem falso acompanhando a animação
+const pct = document.getElementById("porcentagem");
+let v = 0;
+setInterval(() => {
+  v = (v + 1) % 95;
+  pct.textContent = v + "%";
+}, 80);
+</script>
+
+</body>
+</html>
