@@ -880,67 +880,6 @@ if (btnSalvarConfig) {
 
 
 // ===============================
-// MÓDULO: CADASTRAR USUÁRIO
-// ===============================
-
-const btnCadastrarUsuario = document.getElementById("btnCadastrarUsuario");
-
-if (btnCadastrarUsuario) {
-  btnCadastrarUsuario.addEventListener("click", async () => {
-    
-    const nome = document.getElementById("novoUsuarioNome").value.trim();
-    const senha = document.getElementById("novoUsuarioSenha").value;
-    const papel = document.getElementById("novoUsuarioPapel").value;
-    
-    if (!nome || !senha) {
-      mostrarToast("Atenção", "Preencha nome e senha.");
-      return;
-    }
-    
-    if (senha.length < 6) {
-      mostrarToast("Atenção", "A senha deve ter pelo menos 6 caracteres.");
-      return;
-    }
-    
-    const btnText = document.getElementById("cadUsuarioBtnText");
-    btnCadastrarUsuario.disabled = true;
-    btnText.textContent = "Cadastrando...";
-    
-    try {
-      const resposta = await fetch("/.netlify/functions/criar-usuario", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, senha, papel })
-      });
-      
-      const dados = await resposta.json();
-      
-      if (!resposta.ok) {
-        throw new Error(dados.erro || "Erro ao cadastrar");
-      }
-      
-      mostrarToast("Sucesso", `Usuário ${nome} cadastrado!`);
-      
-      // Limpa os campos
-      document.getElementById("novoUsuarioNome").value = "";
-      document.getElementById("novoUsuarioSenha").value = "";
-      document.getElementById("novoUsuarioPapel").value = "membro";
-      
-      carregarUsuarios();
-      atualizarDashboard();
-      
-    } catch (erro) {
-      console.error("Erro ao cadastrar:", erro);
-      mostrarToast("Erro", erro.message || "Não foi possível cadastrar o usuário. Confere se a function 'criar-usuario' está publicada.");
-    } finally {
-      btnCadastrarUsuario.disabled = false;
-      btnText.textContent = "Cadastrar usuário";
-    }
-  });
-}
-
-
-// ===============================
 // INICIAR PAINEL
 // ===============================
 
@@ -948,3 +887,65 @@ carregarHistorico();
 carregarUsuarios();
 carregarConfiguracoes();
 atualizarDashboard();
+
+
+// ===============================
+// MODO MANUTENÇÃO
+// ===============================
+
+async function carregarModoManutencao() {
+
+  const toggle = document.getElementById("toggleManutencao");
+  const track = document.getElementById("toggleTrack");
+  const thumb = document.getElementById("toggleThumb");
+  const status = document.getElementById("manutencaoStatus");
+  const aviso = document.getElementById("manutencaoAviso");
+
+  if (!toggle) return;
+
+  function aplicarEstado(ativo) {
+    toggle.checked = ativo;
+    track.style.background = ativo ? "var(--red)" : "var(--border)";
+    thumb.style.transform = ativo ? "translateX(24px)" : "translateX(0)";
+    status.textContent = ativo ? "⚠️ Ativo — app bloqueado pra todos os usuários" : "✓ Desativado — app funcionando normalmente";
+    status.style.color = ativo ? "var(--red)" : "var(--green)";
+    aviso.style.display = ativo ? "block" : "none";
+  }
+
+  // Carrega o estado atual do Firestore
+  try {
+    const snap = await getDocs(query(collection(db, "configuracoes")));
+    const docCfg = snap.docs.find((d) => d.id === "app");
+    const emManutencao = docCfg?.data()?.manutencao === true;
+    aplicarEstado(emManutencao);
+  } catch (e) {
+    status.textContent = "Erro ao verificar.";
+  }
+
+  // Quando o usuário muda o toggle, salva no Firestore imediatamente
+  toggle.addEventListener("change", async () => {
+    const novoEstado = toggle.checked;
+    aplicarEstado(novoEstado);
+
+    try {
+      await setDoc(doc(db, "configuracoes", "app"), {
+        manutencao: novoEstado,
+        atualizadoEm: serverTimestamp()
+      }, { merge: true });
+
+      mostrarToast(
+        novoEstado ? "Manutenção ativada" : "Manutenção desativada",
+        novoEstado
+          ? "O app está bloqueado. Ninguém consegue fazer login."
+          : "O app voltou ao normal."
+      );
+    } catch (e) {
+      console.error("Erro ao salvar modo manutenção:", e);
+      mostrarToast("Erro", "Não foi possível salvar. Tenta de novo.");
+      aplicarEstado(!novoEstado); // reverte o toggle se falhar
+    }
+  });
+
+}
+
+carregarModoManutencao();
