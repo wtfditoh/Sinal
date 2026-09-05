@@ -883,38 +883,10 @@ if (btnSalvarConfig) {
 // MÓDULO: CADASTRAR USUÁRIO
 // ===============================
 
-const btnNovoUsuario = document.getElementById("btnNovoUsuario");
-const novoUsuarioModal = document.getElementById("novoUsuarioModal");
-const novoUsuarioForm = document.getElementById("novoUsuarioForm");
-const cancelarNovoUsuario = document.getElementById("cancelarNovoUsuario");
+const btnCadastrarUsuario = document.getElementById("btnCadastrarUsuario");
 
-if (btnNovoUsuario) {
-  btnNovoUsuario.addEventListener("click", () => {
-    novoUsuarioModal.classList.remove("hidden");
-    document.getElementById("novoUsuarioNome").focus();
-  });
-}
-
-if (cancelarNovoUsuario) {
-  cancelarNovoUsuario.addEventListener("click", () => {
-    novoUsuarioModal.classList.add("hidden");
-    novoUsuarioForm.reset();
-  });
-}
-
-// Fecha o modal se clicar fora dele
-if (novoUsuarioModal) {
-  novoUsuarioModal.addEventListener("click", (e) => {
-    if (e.target === novoUsuarioModal) {
-      novoUsuarioModal.classList.add("hidden");
-      novoUsuarioForm.reset();
-    }
-  });
-}
-
-if (novoUsuarioForm) {
-  novoUsuarioForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+if (btnCadastrarUsuario) {
+  btnCadastrarUsuario.addEventListener("click", async () => {
     
     const nome = document.getElementById("novoUsuarioNome").value.trim();
     const senha = document.getElementById("novoUsuarioSenha").value;
@@ -930,9 +902,9 @@ if (novoUsuarioForm) {
       return;
     }
     
-    const btnSubmit = novoUsuarioForm.querySelector('button[type="submit"]');
-    btnSubmit.disabled = true;
-    btnSubmit.textContent = "Cadastrando...";
+    const btnText = document.getElementById("cadUsuarioBtnText");
+    btnCadastrarUsuario.disabled = true;
+    btnText.textContent = "Cadastrando...";
     
     try {
       const resposta = await fetch("/.netlify/functions/criar-usuario", {
@@ -948,8 +920,12 @@ if (novoUsuarioForm) {
       }
       
       mostrarToast("Sucesso", `Usuário ${nome} cadastrado!`);
-      novoUsuarioModal.classList.add("hidden");
-      novoUsuarioForm.reset();
+      
+      // Limpa os campos
+      document.getElementById("novoUsuarioNome").value = "";
+      document.getElementById("novoUsuarioSenha").value = "";
+      document.getElementById("novoUsuarioPapel").value = "membro";
+      
       carregarUsuarios();
       atualizarDashboard();
       
@@ -957,8 +933,8 @@ if (novoUsuarioForm) {
       console.error("Erro ao cadastrar:", erro);
       mostrarToast("Erro", erro.message || "Não foi possível cadastrar o usuário. Confere se a function 'criar-usuario' está publicada.");
     } finally {
-      btnSubmit.disabled = false;
-      btnSubmit.textContent = "Cadastrar";
+      btnCadastrarUsuario.disabled = false;
+      btnText.textContent = "Cadastrar usuário";
     }
   });
 }
