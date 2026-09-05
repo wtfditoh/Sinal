@@ -1,725 +1,1352 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>SINAL • Painel Admin</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
+<title>SINAL • Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
 
-<link rel="stylesheet" href="admin.css">
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+  --bg: #08090D;
+  --card: #14171F;
+  --card2: #1B1F2A;
+  --border: #2E3444;
+  --text: #F5F6F8;
+  --dim: #9CA3B5;
+  --faint: #5C6478;
+  --amber: #FFB020;
+  --green: #2EE896;
+  --red: #FF5C5C;
+  --purple: #6D28D9;
+  --display: 'Space Grotesk', sans-serif;
+  --body: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --sidebar: 240px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ================================
+   SIDEBAR
+================================ */
+
+.sidebar {
+  width: var(--sidebar);
+  flex-shrink: 0;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 20;
+  overflow-y: auto;
+}
+
+.sidebar-marca {
+  padding: 28px 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.marca-anel {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: conic-gradient(from 180deg, #2EE896, #FFB020, #FF5C5C, #2EE896);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+.marca-anel::after {
+  content: ''; width: 24px; height: 24px;
+  border-radius: 50%; background: var(--card);
+}
+
+.marca-titulo {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 17px;
+  margin-bottom: 2px;
+}
+
+.marca-sub {
+  font-size: 11.5px;
+  color: var(--faint);
+  font-family: var(--mono);
+}
+
+.sidebar-nav {
+  padding: 16px 10px;
+  flex: 1;
+}
+
+.nav-secao {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding: 0 10px;
+  margin: 16px 0 6px;
+}
+
+.nav-secao:first-child { margin-top: 0; }
+
+.nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  color: var(--dim);
+  font-family: var(--body);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.nav-btn:hover { background: var(--card2); color: var(--text); }
+.nav-btn.active { background: rgba(255,176,32,0.12); color: var(--amber); }
+.nav-btn svg { flex-shrink: 0; opacity: .7; }
+.nav-btn.active svg { opacity: 1; }
+
+.sidebar-status {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.status-dot {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+}
+
+.status-dot::before {
+  content: '';
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px #2EE896;
+  animation: pulsar 2s ease-in-out infinite;
+}
+
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ================================
+   CONTEÚDO PRINCIPAL
+================================ */
+
+.main {
+  margin-left: var(--sidebar);
+  flex: 1;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 50% 30% at 70% 0%, rgba(255,176,32,0.07), transparent),
+    radial-gradient(ellipse 40% 40% at 20% 100%, rgba(46,232,150,0.05), transparent);
+}
+
+.main-header {
+  padding: 28px 32px 0;
+  margin-bottom: 28px;
+}
+
+.main-titulo {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 26px;
+  margin-bottom: 4px;
+}
+
+.main-sub {
+  font-size: 14px;
+  color: var(--dim);
+}
+
+.main-corpo {
+  padding: 0 32px 48px;
+}
+
+/* ================================
+   SEÇÕES (mostrar/esconder)
+================================ */
+
+.secao { display: none; }
+.secao.ativa { display: block; }
+
+/* ================================
+   CARDS DE STAT (dashboard)
+================================ */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  transition: border-color 0.2s;
+}
+
+.stat-card:hover { border-color: #3a4152; }
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  color: var(--faint);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-num {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-desc {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.stat-num.amber { color: var(--amber); }
+.stat-num.green { color: var(--green); }
+.stat-num.purple { color: var(--purple); }
+
+/* ================================
+   CARDS DE SEÇÃO
+================================ */
+
+.modulo {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+.modulo-titulo {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.modulo-sub {
+  font-size: 13px;
+  color: var(--dim);
+  margin-bottom: 22px;
+}
+
+.modulo-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 22px 0;
+}
+
+/* ================================
+   CHIPS
+================================ */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.chip {
+  padding: 9px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--card2);
+  color: var(--dim);
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chip:hover { border-color: var(--amber); color: var(--amber); background: rgba(255,176,32,0.08); }
+.chip.ativo { border-color: var(--amber); color: var(--amber); background: rgba(255,176,32,0.12); }
+
+/* ================================
+   CAMPOS
+================================ */
+
+.field { margin-bottom: 16px; }
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dim);
+  margin-bottom: 7px;
+  font-family: var(--mono);
+  letter-spacing: 0.3px;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 16px;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus { outline: none; border-color: var(--amber); }
+.field input::placeholder,
+.field textarea::placeholder { color: var(--faint); }
+textarea { resize: vertical; }
+
+.counter {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  text-align: right;
+  margin-top: 5px;
+}
+
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* ================================
+   PREVIEW DE NOTIFICAÇÃO
+================================ */
+
+.preview-wrap {
+  background: #0B0E15;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.preview-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--faint);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.preview-notif {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  max-width: 360px;
+}
+
+.preview-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.preview-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+}
+
+.preview-app {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dim);
+  flex: 1;
+}
+
+.preview-tempo {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--faint);
+}
+
+.preview-titulo {
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-bottom: 4px;
+}
+
+.preview-mensagem {
+  font-size: 12.5px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.preview-img {
+  display: none;
+  width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* ================================
+   BOTÕES DE AÇÃO
+================================ */
+
+.btn-enviar {
+  width: 100%;
+  background: linear-gradient(135deg, #FFC454, var(--amber));
+  color: #17130A;
+  border: none;
+  border-radius: 14px;
+  padding: 17px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--body);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 10px 24px -8px rgba(255,176,32,0.4);
+}
+
+.btn-enviar:hover { transform: translateY(-1px); box-shadow: 0 16px 28px -8px rgba(255,176,32,0.5); }
+.btn-enviar:active { transform: translateY(0); }
+.btn-enviar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-secundario {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-secundario:hover { border-color: var(--amber); color: var(--amber); }
+
+/* ================================
+   LISTA DE USUÁRIOS
+================================ */
+
+.usuario-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card2);
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+}
+
+.usuario-item:hover { border-color: #3a4152; }
+
+.usuario-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--amber);
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.usuario-info { flex: 1; min-width: 0; }
+
+.usuario-nome {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag-bloqueado {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--red);
+  background: rgba(255,92,92,0.12);
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+
+.usuario-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  margin-bottom: 10px;
+}
+
+.usuario-acoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.usuario-select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.usuario-btn {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--dim);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.usuario-btn:hover { border-color: var(--amber); color: var(--amber); }
+.usuario-btn.perigo:hover { border-color: var(--red); color: var(--red); }
+
+/* ================================
+   HISTÓRICO
+================================ */
+
+.history-item {
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  background: var(--card2);
+  margin-bottom: 12px;
+  transition: border-color 0.15s;
+}
+
+.history-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.history-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.history-title {
+  font-weight: 700;
+  font-size: 14.5px;
+}
+
+.history-date {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.history-message {
+  font-size: 13px;
+  color: var(--dim);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.history-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-status {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+}
+
+.history-repeat {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.history-repeat:hover { border-color: var(--amber); color: var(--amber); }
+
+.history-empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--faint);
+}
+
+.history-empty-icone {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(255,176,32,0.08);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+  font-size: 26px;
+}
+
+/* ================================
+   ATIVIDADE
+================================ */
+
+.atividade-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.atividade-item:last-child { border-bottom: none; }
+
+.atividade-ponto {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--amber);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+.atividade-texto {
+  flex: 1;
+  font-size: 13px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.atividade-texto strong { color: var(--text); font-weight: 600; }
+
+.atividade-tempo {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+/* ================================
+   TOAST
+================================ */
+
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
+  z-index: 999;
+  min-width: 260px;
+  max-width: 360px;
+  animation: entrarToast 0.25s ease;
+}
+
+.toast.hidden { display: none; }
+
+@keyframes entrarToast {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toast-icone { font-size: 22px; }
+
+.toast-content strong { display: block; font-size: 14px; margin-bottom: 2px; }
+.toast-content p { font-size: 13px; color: var(--dim); }
+
+/* ================================
+   MODAL
+================================ */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal.hidden { display: none; }
+
+.modal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 32px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.modal-card h2 {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.modal-card p {
+  font-size: 14px;
+  color: var(--dim);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ================================
+   LOADING
+================================ */
+
+.loading {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(6px);
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--dim);
+  font-size: 14px;
+}
+
+.loading.hidden { display: none; }
+
+.loader {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar { to { transform: rotate(360deg); } }
+
+/* ================================
+   SPINNER DE BOTÃO
+================================ */
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(23,19,10,0.3);
+  border-top-color: #17130A;
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .main-header { padding: 20px 16px 0; }
+  .main-corpo { padding: 0 16px 40px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .row-2 { grid-template-columns: 1fr; }
+
+  .mobile-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 20;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px;
+    background: none;
+    border: none;
+    color: var(--faint);
+    font-size: 9px;
+    font-family: var(--mono);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  .mobile-nav-btn.active { color: var(--amber); }
+
+  body { padding-bottom: 64px; }
+}
+
+@media (min-width: 769px) {
+  .mobile-nav { display: none; }
+}
+
+</style>
 </head>
-
 <body>
 
-<div class="background-grid"></div>
+<!-- Sidebar desktop -->
+<aside class="sidebar">
 
-<div class="app">
+  <div class="sidebar-marca">
+    <div class="marca-anel"></div>
+    <div class="marca-titulo">SINAL Admin</div>
+    <div class="marca-sub">Painel de controle</div>
+  </div>
 
-<header class="header">
+  <nav class="sidebar-nav">
 
-<div class="brand">
+    <div class="nav-secao">Geral</div>
 
-<div class="brand-logo">
-🔔
-</div>
+    <button class="nav-btn active" data-secao="dashboard">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
 
-<div>
+    <button class="nav-btn" data-secao="notificacoes">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notificações
+    </button>
 
-<h1>
-Central de Notificações
-</h1>
+    <div class="nav-secao">Conteúdo</div>
 
-<p>
-Envie notificações push para todos os membros do SINAL.
-</p>
+    <button class="nav-btn" data-secao="avisos">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Avisos
+    </button>
 
-</div>
+    <button class="nav-btn" data-secao="eventos">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Eventos
+    </button>
 
-</div>
+    <div class="nav-secao">Gestão</div>
 
-<div class="status-online">
+    <button class="nav-btn" data-secao="usuarios">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Usuários
+    </button>
 
-<span class="dot"></span>
+    <button class="nav-btn" data-secao="historico">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3M3.05 11a9 9 0 1 0 .5-3M3 4v4h4"/></svg>
+      Histórico
+    </button>
 
-ONLINE
+    <button class="nav-btn" data-secao="configuracoes">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Configurações
+    </button>
 
-</div>
+  </nav>
 
-</header>
+  <div class="sidebar-status">
+    <div class="status-dot">Conectado</div>
+  </div>
 
-<section class="dashboard">
+</aside>
 
-<div class="dash-card">
+<!-- Conteúdo principal -->
+<main class="main">
 
-<span class="dash-label">
-📱 Dispositivos
-</span>
+  <!-- ====== DASHBOARD ====== -->
+  <div id="secao-dashboard" class="secao ativa">
 
-<h2 id="deviceCount">
---
-</h2>
-
-<p>
-Recebendo notificações
-</p>
-
-</div>
-
-<div class="dash-card">
-
-<span class="dash-label">
-📨 Último envio
-</span>
-
-<h2 id="lastSend">
---
-</h2>
-
-<p>
-Atualizado automaticamente
-</p>
-
-</div>
-
-<div class="dash-card">
-
-<span class="dash-label">
-🚀 Enviadas hoje
-</span>
-
-<h2 id="todayCount">
-0
-</h2>
-
-<p>
-Notificações enviadas
-</p>
-
-</div>
-
-<div class="dash-card">
-
-<span class="dash-label">
-👥 Usuários
-</span>
-
-<h2 id="userCount">
---
-</h2>
-
-<p>
-Cadastrados no app
-</p>
-
-</div>
-
-<div class="dash-card">
-
-<span class="dash-label">
-📋 Cultos
-</span>
-
-<h2 id="cultoCount">
---
-</h2>
-
-<p>
-Cadastrados no total
-</p>
-
-</div>
-
-</section>
-
-<section class="card">
-
-<div class="card-header">
-<h3>📢 Atividade recente</h3>
-</div>
-
-<div id="atividadeRecente"></div>
-
-</section>
-
-<section class="card">
-
-<div class="card-header">
-
-<h3>
-⚡ Mensagens rápidas
-</h3>
-
-<p>
-Toque em uma opção para preencher automaticamente.
-</p>
-
-</div>
-
-<div class="chips">
-
-<button class="chip"
-data-title="🔔 Novo culto disponível"
-data-message="Confira todas as informações do culto no aplicativo SINAL."
-data-tipo="culto"
-data-cor="#FFB020"
-data-destino="dashboard.html">
-Culto
-</button>
-
-<button class="chip"
-data-title="📅 Nova escala disponível"
-data-message="Sua escala foi atualizada. Confira agora no aplicativo."
-data-tipo="escala"
-data-cor="#2EE896"
-data-destino="escala.html">
-Escala
-</button>
-
-<button class="chip"
-data-title="📢 Aviso geral"
-data-message="Temos um novo comunicado disponível para todos os membros."
-data-tipo="aviso"
-data-cor="#6D28D9"
-data-destino="dashboard.html">
-Aviso
-</button>
-
-<button class="chip"
-data-title="🚨 Aviso importante"
-data-message="Leia esta mensagem o quanto antes pelo aplicativo SINAL."
-data-tipo="urgente"
-data-cor="#FF5C5C"
-data-destino="dashboard.html">
-Urgente
-</button>
-
-<button class="chip"
-data-title="🙏 Pedido de oração"
-data-message="A igreja convida você para unir-se em oração."
-data-tipo="oracao"
-data-cor="#6D28D9"
-data-destino="dashboard.html">
-Oração
-</button>
-
-<button class="chip"
-data-title="🎉 Novo evento"
-data-message="Um novo evento foi publicado. Confira todos os detalhes."
-data-tipo="evento"
-data-cor="#FFB020"
-data-destino="cartazes.html">
-Evento
-</button>
-
-</div>
-
-</section>
-
-<section class="card">
-
-<div class="card-header">
-
-<h3>
-✉ Nova notificação
-</h3>
-
-<p>
-Preencha os campos abaixo.
-</p>
-
-</div>
-
-<div class="field">
-
-<label>
-
-Título
-
-</label>
-
-<input
-id="titulo"
-type="text"
-maxlength="60"
-placeholder="Ex.: Novo culto disponível">
-
-<div class="counter">
-
-<span id="tituloCount">
-
-0
-
-</span>
-
-/60
-
-</div>
-
-</div>
-
-<div class="field">
-
-<label>
-
-Mensagem
-
-</label>
-
-<textarea
-id="mensagem"
-maxlength="180"
-rows="5"
-placeholder="Digite aqui a mensagem que aparecerá na notificação..."></textarea>
-
-<div class="counter">
-
-<span id="mensagemCount">
-
-0
-
-</span>
-
-/180
-
-</div>
-
-</div>
-
-<div class="field">
-
-<label>
-
-Abre no app em
-
-</label>
-
-<select id="destino">
-<option value="dashboard.html">📋 Culto (Dashboard)</option>
-<option value="escala.html">🗓️ Escala</option>
-<option value="cartazes.html">🖼️ Cartazes</option>
-<option value="logos.html">🏷️ Recursos</option>
-<option value="metricas.html">📊 Métricas</option>
-</select>
-
-</div>
-
-<div class="field">
-
-<label>
-
-Imagem (opcional)
-
-</label>
-
-<input
-id="imagemUrl"
-type="url"
-placeholder="Link direto de uma imagem (ex: do ImgBB)">
-
-</div>
-
-<div class="preview">
-
-<div class="preview-top">
-
-<img
-src="icon-192.png"
-class="preview-icon">
-
-<div>
-
-<strong>
-
-SINAL
-
-</strong>
-
-<small>
-
-Agora mesmo
-
-</small>
-
-</div>
-
-</div>
-
-<div
-class="preview-title"
-id="previewTitulo">
-
-Título da notificação
-
-</div>
-
-<div
-class="preview-body"
-id="previewMensagem">
-
-A mensagem aparecerá aqui conforme você digita.
-
-</div>
-
-<img id="previewImagem" class="preview-imagem" style="display:none;">
-
-</div>
-
-<button
-id="btnEnviar"
-class="btn-send">
-
-<span id="btnIcon">
-
-🚀
-
-</span>
-
-<span id="btnText">
-
-Enviar notificação
-
-</span>
-
-</button>
-
-</section>
-
-<!-- MÓDULO: AVISOS (publica no Mural do app) -->
-
-<section class="card">
-
-<div class="card-header">
-<h3>📢 Publicar Aviso</h3>
-</div>
-
-<div class="field">
-<label>Título</label>
-<input id="avisoTitulo" type="text" maxlength="60" placeholder="Ex.: Reunião de líderes">
-</div>
-
-<div class="field">
-<label>Conteúdo</label>
-<textarea id="avisoConteudo" rows="4" placeholder="O que a equipe precisa saber..."></textarea>
-</div>
-
-<div class="field">
-<label>Categoria</label>
-<select id="avisoCategoria">
-<option value="Geral">Geral</option>
-<option value="Reunião">Reunião</option>
-<option value="Mudança">Mudança de horário/local</option>
-<option value="Urgente">Urgente</option>
-</select>
-</div>
-
-<button id="btnPublicarAviso" class="btn-send">
-<span id="avisoBtnIcon">📢</span>
-<span id="avisoBtnText">Publicar aviso</span>
-</button>
-
-</section>
-
-<!-- MÓDULO: EVENTOS (cria em eventos.html do app) -->
-
-<section class="card">
-
-<div class="card-header">
-<h3>🎉 Publicar Evento</h3>
-</div>
-
-<div class="field">
-<label>Nome do evento</label>
-<input id="eventoNome" type="text" maxlength="60" placeholder="Ex.: Congresso de Jovens">
-</div>
-
-<div class="field">
-<label>Data</label>
-<input id="eventoData" type="date">
-</div>
-
-<div class="field">
-<label>Horário</label>
-<input id="eventoHorario" type="text" placeholder="Ex.: 19h30">
-</div>
-
-<div class="field">
-<label>Local</label>
-<input id="eventoLocal" type="text" placeholder="Ex.: Templo sede">
-</div>
-
-<div class="field">
-<label>Descrição</label>
-<textarea id="eventoDescricao" rows="3" placeholder="Detalhes do evento..."></textarea>
-</div>
-
-<div class="field">
-<label>Banner (opcional)</label>
-<input id="eventoBanner" type="url" placeholder="Link direto de uma imagem (ex: ImgBB)">
-</div>
-
-<button id="btnPublicarEvento" class="btn-send">
-<span id="eventoBtnIcon">🎉</span>
-<span id="eventoBtnText">Publicar evento</span>
-</button>
-
-</section>
-
-<!-- MÓDULO: USUÁRIOS -->
-
-<section class="card">
-
-<div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-
-<h3>👥 Usuários</h3>
-
-<button id="btnNovoUsuario" class="btn-primary" style="padding:8px 16px; font-size:12px; border-radius:8px;">
-+ Cadastrar
-</button>
-
-</div>
-
-<div class="field">
-<input id="buscaUsuario" type="text" placeholder="Pesquisar por nome...">
-</div>
-
-<div id="listaUsuarios"></div>
-
-</section>
-
-<!-- MÓDULO: CONFIGURAÇÕES -->
-
-<section class="card">
-
-<div class="card-header">
-<h3>⚙️ Configurações</h3>
-</div>
-
-<div class="field">
-<label>Nome da igreja</label>
-<input id="cfgNomeIgreja" type="text" placeholder="Ex.: IEADRN Parque Verde">
-</div>
-
-<div class="field">
-<label>Logo (link da imagem)</label>
-<input id="cfgLogo" type="url" placeholder="Link direto de uma imagem">
-</div>
-
-<div class="field">
-<label>Cor principal</label>
-<input id="cfgCor" type="color" value="#FFB020" style="height:44px; padding:4px; cursor:pointer;">
-</div>
-
-<div class="field">
-<label>Horários dos cultos</label>
-<textarea id="cfgHorarios" rows="3" placeholder="Ex.: Domingo 18h - Culto da Família&#10;Quinta 19h30 - Culto de Jovens"></textarea>
-</div>
-
-<div class="field">
-<label>Links úteis</label>
-<textarea id="cfgLinks" rows="2" placeholder="Ex.: Instagram: instagram.com/suaigreja"></textarea>
-</div>
-
-<div class="field">
-<label>Contato</label>
-<input id="cfgContato" type="text" placeholder="Ex.: (11) 99999-9999">
-</div>
-
-<button id="btnSalvarConfig" class="btn-send">
-<span id="cfgBtnIcon">💾</span>
-<span id="cfgBtnText">Salvar configurações</span>
-</button>
-
-</section>
-
-<section class="card">
-
-    <div class="card-header">
-
-        <h3>📜 Histórico</h3>
-
-        <p>Últimas notificações enviadas.</p>
-
+    <div class="main-header">
+      <div class="main-titulo">Dashboard</div>
+      <div class="main-sub">Visão geral do app em tempo real.</div>
     </div>
 
-    <div id="historico" class="history">
+    <div class="main-corpo">
 
-        <div class="history-empty">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+            Dispositivos
+          </div>
+          <div class="stat-num amber" id="deviceCount">--</div>
+          <div class="stat-desc">com push ativo</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Usuários
+          </div>
+          <div class="stat-num" id="userCount">--</div>
+          <div class="stat-desc">cadastrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/></svg>
+            Cultos
+          </div>
+          <div class="stat-num" id="cultoCount">--</div>
+          <div class="stat-desc">no total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+            Enviadas hoje
+          </div>
+          <div class="stat-num green" id="todayCount">0</div>
+          <div class="stat-desc">notificações</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Último envio
+          </div>
+          <div class="stat-num" style="font-size:18px; color:var(--dim);" id="lastSend">--</div>
+          <div class="stat-desc">data/hora</div>
+        </div>
+      </div>
 
-            <div class="history-icon">
-                🔔
-            </div>
+      <div class="modulo">
+        <div class="modulo-titulo">Atividade recente</div>
+        <div class="modulo-sub">Últimas ações da equipe no app.</div>
+        <div id="atividadeRecente">
+          <div class="history-empty">
+            <div class="history-empty-icone">📭</div>
+            <p style="font-size:13px;">Nenhuma atividade ainda.</p>
+          </div>
+        </div>
+      </div>
 
-            <h4>
-                Nenhuma notificação enviada
-            </h4>
+    </div>
+  </div>
 
-            <p>
-                Assim que você enviar uma notificação, ela aparecerá aqui.
-            </p>
+  <!-- ====== NOTIFICAÇÕES ====== -->
+  <div id="secao-notificacoes" class="secao">
+    <div class="main-header">
+      <div class="main-titulo">Notificações</div>
+      <div class="main-sub">Envie mensagens push pra toda a equipe.</div>
+    </div>
+    <div class="main-corpo">
 
+      <div class="modulo">
+        <div class="modulo-titulo">Mensagens rápidas</div>
+        <div class="modulo-sub">Toque num modelo pra preencher automaticamente.</div>
+        <div class="chips">
+          <button class="chip" data-title="🔔 Novo culto disponível" data-message="Confira todas as informações do culto no aplicativo SINAL." data-tipo="culto" data-cor="#FFB020" data-destino="dashboard.html">Culto</button>
+          <button class="chip" data-title="📅 Nova escala disponível" data-message="Sua escala foi atualizada. Confira agora no aplicativo." data-tipo="escala" data-cor="#2EE896" data-destino="escala.html">Escala</button>
+          <button class="chip" data-title="📢 Aviso geral" data-message="Temos um novo comunicado disponível para todos os membros." data-tipo="aviso" data-cor="#6D28D9" data-destino="dashboard.html">Aviso</button>
+          <button class="chip" data-title="🚨 Aviso importante" data-message="Leia esta mensagem o quanto antes pelo aplicativo SINAL." data-tipo="urgente" data-cor="#FF5C5C" data-destino="dashboard.html">Urgente</button>
+          <button class="chip" data-title="🙏 Pedido de oração" data-message="A igreja convida você para unir-se em oração." data-tipo="oracao" data-cor="#6D28D9" data-destino="dashboard.html">Oração</button>
+          <button class="chip" data-title="🎉 Novo evento" data-message="Um novo evento foi publicado. Confira todos os detalhes." data-tipo="evento" data-cor="#FFB020" data-destino="cartazes.html">Evento</button>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <div class="modulo-titulo">Compor notificação</div>
+        <div class="modulo-sub">Escreva o título e a mensagem que aparecerão no celular.</div>
+
+        <div class="field">
+          <label>Título</label>
+          <input id="titulo" type="text" maxlength="60" placeholder="Ex.: Novo culto disponível">
+          <div class="counter"><span id="tituloCount">0</span>/60</div>
         </div>
 
+        <div class="field">
+          <label>Mensagem</label>
+          <textarea id="mensagem" maxlength="180" rows="4" placeholder="O que você quer comunicar..."></textarea>
+          <div class="counter"><span id="mensagemCount">0</span>/180</div>
+        </div>
+
+        <div class="row-2">
+          <div class="field">
+            <label>Abre no app em</label>
+            <select id="destino">
+              <option value="dashboard.html">📋 Culto</option>
+              <option value="escala.html">🗓️ Escala</option>
+              <option value="cartazes.html">🖼️ Cartazes</option>
+              <option value="logos.html">🏷️ Recursos</option>
+              <option value="metricas.html">📊 Métricas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Imagem (opcional)</label>
+            <input id="imagemUrl" type="url" placeholder="Link direto de uma imagem">
+          </div>
+        </div>
+
+        <div class="preview-wrap">
+          <div class="preview-label">Preview da notificação</div>
+          <div class="preview-notif">
+            <div class="preview-top">
+              <img src="icon-192.png" class="preview-icon">
+              <div class="preview-app">SINAL</div>
+              <div class="preview-tempo">agora</div>
+            </div>
+            <div class="preview-titulo" id="previewTitulo">Título da notificação</div>
+            <div class="preview-mensagem" id="previewMensagem">A mensagem aparecerá aqui conforme você digita.</div>
+            <img id="previewImagem" class="preview-img">
+          </div>
+        </div>
+
+        <button id="btnEnviar" class="btn-enviar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span id="btnText">Enviar notificação</span>
+        </button>
+      </div>
+
     </div>
+  </div>
 
-</section>
+  <!-- ====== AVISOS ====== -->
+  <div id="secao-avisos" class="secao">
+    <div class="main-header">
+      <div class="main-titulo">Avisos</div>
+      <div class="main-sub">Comunicados oficiais que aparecem no Mural do app.</div>
+    </div>
+    <div class="main-corpo">
+      <div class="modulo">
+        <div class="modulo-titulo">Publicar aviso</div>
+        <div class="modulo-sub">O aviso vai aparecer no Mural do app com um selo de "Aviso Oficial".</div>
 
+        <div class="field">
+          <label>Título</label>
+          <input id="avisoTitulo" type="text" maxlength="60" placeholder="Ex.: Reunião de líderes">
+        </div>
+        <div class="field">
+          <label>Conteúdo</label>
+          <textarea id="avisoConteudo" rows="4" placeholder="O que a equipe precisa saber..."></textarea>
+        </div>
+        <div class="field">
+          <label>Categoria</label>
+          <select id="avisoCategoria">
+            <option value="Geral">Geral</option>
+            <option value="Reunião">Reunião</option>
+            <option value="Mudança">Mudança de horário/local</option>
+            <option value="Urgente">Urgente</option>
+          </select>
+        </div>
+        <button id="btnPublicarAviso" class="btn-enviar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span id="avisoBtnText">Publicar aviso</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
-<footer class="footer">
+  <!-- ====== EVENTOS ====== -->
+  <div id="secao-eventos" class="secao">
+    <div class="main-header">
+      <div class="main-titulo">Eventos</div>
+      <div class="main-sub">Agenda especial da igreja, visível na aba Eventos do app.</div>
+    </div>
+    <div class="main-corpo">
+      <div class="modulo">
+        <div class="modulo-titulo">Publicar evento</div>
 
-    <div>
+        <div class="field">
+          <label>Nome do evento</label>
+          <input id="eventoNome" type="text" maxlength="60" placeholder="Ex.: Congresso de Jovens">
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>Data</label>
+            <input id="eventoData" type="date">
+          </div>
+          <div class="field">
+            <label>Horário</label>
+            <input id="eventoHorario" type="text" placeholder="Ex.: 19h30">
+          </div>
+        </div>
+        <div class="field">
+          <label>Local</label>
+          <input id="eventoLocal" type="text" placeholder="Ex.: Templo sede">
+        </div>
+        <div class="field">
+          <label>Descrição</label>
+          <textarea id="eventoDescricao" rows="3" placeholder="Detalhes do evento..."></textarea>
+        </div>
+        <div class="field">
+          <label>Banner (opcional)</label>
+          <input id="eventoBanner" type="url" placeholder="Link direto de uma imagem (ex: ImgBB)">
+        </div>
+        <button id="btnPublicarEvento" class="btn-enviar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="1.5" fill="currentColor"/></svg>
+          <span id="eventoBtnText">Publicar evento</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
-        <strong>SINAL</strong>
+  <!-- ====== USUÁRIOS ====== -->
+  <div id="secao-usuarios" class="secao">
+    <div class="main-header">
+      <div class="main-titulo">Usuários</div>
+      <div class="main-sub">Gerencie quem tem acesso ao app.</div>
+    </div>
+    <div class="main-corpo">
 
-        <span>
-            Painel Administrativo
-        </span>
+      <div class="modulo">
+        <div class="modulo-titulo">Cadastrar novo usuário</div>
+        <div class="modulo-sub">Cria uma conta de acesso direto pelo painel, sem precisar usar o link de cadastro.</div>
+        <div class="row-2">
+          <div class="field">
+            <label>Nome</label>
+            <input id="novoUsuarioNome" type="text" placeholder="ex: João Pedro">
+          </div>
+          <div class="field">
+            <label>Senha</label>
+            <input id="novoUsuarioSenha" type="password" placeholder="mínimo 6 caracteres" minlength="6">
+          </div>
+        </div>
+        <div class="field">
+          <label>Tipo de acesso</label>
+          <select id="novoUsuarioPapel">
+            <option value="membro">Membro — equipe de mídia (pode criar e editar)</option>
+            <option value="visitante">Visitante — só visualização (pastor, liderança)</option>
+            <option value="admin">Admin — acesso total</option>
+          </select>
+        </div>
+        <button id="btnCadastrarUsuario" class="btn-enviar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          <span id="cadUsuarioBtnText">Cadastrar usuário</span>
+        </button>
+      </div>
+
+      <div class="modulo">
+        <div class="modulo-titulo">Membros cadastrados</div>
+        <div class="field" style="margin-bottom:16px;">
+          <input id="buscaUsuario" type="text" placeholder="Pesquisar por nome...">
+        </div>
+        <div id="listaUsuarios"></div>
+      </div>
 
     </div>
+  </div>
 
-    <small>
+  <!-- ====== HISTÓRICO ====== -->
+  <div id="secao-historico" class="secao">
+    <div class="main-header">
+      <div class="main-titulo">Histórico</div>
+      <div class="main-sub">Últimas 20 notificações enviadas.</div>
+    </div>
+    <div class="main-corpo">
+      <div class="modulo">
+        <div id="historico">
+          <div class="history-empty">
+            <div class="history-empty-icone">🔔</div>
+            <p style="font-size:13px;">Nenhuma notificação enviada ainda.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        Firebase • Netlify Functions • FCM
+  <!-- ====== CONFIGURAÇÕES ====== -->
+  <div id="secao-configuracoes" class="secao">
+    <div class="main-header">
+      <div class="main-titulo">Configurações</div>
+      <div class="main-sub">Informações gerais do app.</div>
+    </div>
+    <div class="main-corpo">
+      <div class="modulo">
+        <div class="modulo-titulo">Informações da igreja</div>
 
-    </small>
+        <div class="field">
+          <label>Nome da igreja</label>
+          <input id="cfgNomeIgreja" type="text" placeholder="Ex.: IEADRN Parque Verde">
+        </div>
+        <div class="field">
+          <label>Logo (link da imagem)</label>
+          <input id="cfgLogo" type="url" placeholder="Link direto de uma imagem">
+        </div>
+        <div class="field">
+          <label>Cor principal</label>
+          <input id="cfgCor" type="color" value="#FFB020" style="height:44px; padding:4px; cursor:pointer;">
+        </div>
+        <div class="field">
+          <label>Horários dos cultos</label>
+          <textarea id="cfgHorarios" rows="3" placeholder="Ex.: Domingo 18h - Culto da Família"></textarea>
+        </div>
+        <div class="field">
+          <label>Links úteis</label>
+          <textarea id="cfgLinks" rows="2" placeholder="Ex.: Instagram: instagram.com/suaigreja"></textarea>
+        </div>
+        <div class="field">
+          <label>Contato</label>
+          <input id="cfgContato" type="text" placeholder="Ex.: (11) 99999-9999">
+        </div>
+        <button id="btnSalvarConfig" class="btn-enviar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span id="cfgBtnText">Salvar configurações</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
-</footer>
+</main>
 
+<!-- Nav mobile -->
+<nav class="mobile-nav">
+  <button class="mobile-nav-btn active" data-secao="dashboard">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Home
+  </button>
+  <button class="mobile-nav-btn" data-secao="notificacoes">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    Push
+  </button>
+  <button class="mobile-nav-btn" data-secao="avisos">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Avisos
+  </button>
+  <button class="mobile-nav-btn" data-secao="usuarios">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Users
+  </button>
+  <button class="mobile-nav-btn" data-secao="historico">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3M3.05 11a9 9 0 1 0 .5-3M3 4v4h4"/></svg>
+    Hist.
+  </button>
+</nav>
 
-</div>
-
-
-
-<!-- TOAST -->
-
+<!-- Toast -->
 <div id="toast" class="toast hidden">
-
-    <div class="toast-icon">
-
-        ✅
-
-    </div>
-
-    <div class="toast-content">
-
-        <strong id="toastTitulo">
-
-            Sucesso
-
-        </strong>
-
-        <p id="toastMensagem">
-
-            Operação realizada.
-
-        </p>
-
-    </div>
-
+  <div class="toast-icone">✅</div>
+  <div class="toast-content">
+    <strong id="toastTitulo">Sucesso</strong>
+    <p id="toastMensagem">Operação realizada.</p>
+  </div>
 </div>
 
-
-
-<!-- MODAL -->
-
+<!-- Modal confirmar envio -->
 <div id="confirmModal" class="modal hidden">
-
-    <div class="modal-card">
-
-        <h2>
-
-            Enviar notificação?
-
-        </h2>
-
-        <p>
-
-            Esta notificação será enviada para todos os dispositivos cadastrados.
-
-        </p>
-
-        <div class="modal-buttons">
-
-            <button
-                id="cancelarEnvio"
-                class="btn-secondary">
-
-                Cancelar
-
-            </button>
-
-            <button
-                id="confirmarEnvio"
-                class="btn-primary">
-
-                Enviar
-
-            </button>
-
-        </div>
-
+  <div class="modal-card">
+    <h2>Enviar notificação?</h2>
+    <p>Esta notificação será enviada para todos os dispositivos cadastrados.</p>
+    <div class="modal-buttons">
+      <button id="cancelarEnvio" class="btn-secundario">Cancelar</button>
+      <button id="confirmarEnvio" class="btn-enviar" style="flex:1;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Enviar
+      </button>
     </div>
-
+  </div>
 </div>
 
-
-
-<!-- Modal: cadastrar usuário -->
+<!-- Modal cadastrar usuário (legado, mantido por compatibilidade) -->
 <div id="novoUsuarioModal" class="modal hidden">
-    <div class="modal-card">
-        <h2>Cadastrar usuário</h2>
-        <form id="novoUsuarioForm">
-            <div class="field">
-                <label>Nome completo</label>
-                <input type="text" id="novoUsuarioNome" required placeholder="Ex.: João Silva">
-            </div>
-            <div class="field">
-                <label>Senha</label>
-                <input type="password" id="novoUsuarioSenha" required minlength="6" placeholder="Mínimo 6 caracteres">
-            </div>
-            <div class="field">
-                <label>Papel</label>
-                <select id="novoUsuarioPapel">
-                    <option value="membro">Membro</option>
-                    <option value="admin">Admin</option>
-                    <option value="visitante">Visitante</option>
-                </select>
-            </div>
-            <div class="modal-buttons">
-                <button type="button" class="btn-secondary" id="cancelarNovoUsuario">Cancelar</button>
-                <button type="submit" class="btn-primary">Cadastrar</button>
-            </div>
-        </form>
-    </div>
+  <div class="modal-card">
+    <h2>Cadastrar usuário</h2>
+    <form id="novoUsuarioForm">
+      <div class="field"><label>Nome completo</label><input type="text" id="novoUsuarioNomeModal" placeholder="Ex.: João Silva"></div>
+      <div class="field"><label>Senha</label><input type="password" id="novoUsuarioSenhaModal" minlength="6" placeholder="Mínimo 6 caracteres"></div>
+      <div class="field"><label>Papel</label><select id="novoUsuarioPapelModal"><option value="membro">Membro</option><option value="admin">Admin</option><option value="visitante">Visitante</option></select></div>
+      <div class="modal-buttons">
+        <button type="button" class="btn-secundario" id="cancelarNovoUsuario">Cancelar</button>
+        <button type="submit" class="btn-enviar" style="flex:1;">Cadastrar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-
-    
-<!-- LOADING -->
-
+<!-- Loading -->
 <div id="loadingScreen" class="loading hidden">
-
-    <div class="loader"></div>
-
-    <span>
-
-        Enviando notificação...
-
-    </span>
-
+  <div class="loader"></div>
+  <span>Enviando notificação...</span>
 </div>
 
+<!-- Navegação entre seções -->
+<script>
+  const navBtns = document.querySelectorAll('[data-secao]');
+  const secoes = document.querySelectorAll('.secao');
 
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const alvo = btn.dataset.secao;
+
+      secoes.forEach(s => s.classList.remove('ativa'));
+      document.getElementById('secao-' + alvo).classList.add('ativa');
+
+      navBtns.forEach(b => {
+        if (b.dataset.secao === alvo) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    });
+  });
+</script>
 
 <script type="module" src="admin.js"></script>
-
 </body>
-
 </html>
