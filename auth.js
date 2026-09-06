@@ -33,8 +33,21 @@ if (form) {
     const senha = document.getElementById("senha").value;
     const email = nomeParaEmail(nome);
 
-    try {
+        try {
       await signInWithEmailAndPassword(auth, email, senha);
+      
+      // Verifica se o app está em manutenção
+      const cfgSnap = await getDoc(doc(db, "configuracoes", "app"));
+      if (cfgSnap.exists() && cfgSnap.data().modoManutencao === "on") {
+        // Verifica se é admin
+        const usuarioSnap = await getDoc(doc(db, "usuarios", auth.currentUser.uid));
+        const papel = usuarioSnap.data()?.papel;
+        if (papel !== "admin") {
+          window.location.href = "manutencao.html";
+          return;
+        }
+      }
+      
       window.location.href = "dashboard.html";
     } catch (err) {
       errorBox.classList.add("active");
@@ -53,7 +66,7 @@ export function exigirLogin(callback) {
     // Admin (papel=admin) passa mesmo durante manutenção.
     try {
       const cfgSnap = await getDoc(doc(db, "configuracoes", "app"));
-      if (cfgSnap.exists() && cfgSnap.data().manutencao === true) {
+        if (cfgSnap.exists() && cfgSnap.data().modoManutencao === "on") {
         // Se for admin logado, deixa passar — admin nunca trava
         if (user) {
           const usuarioSnap = await getDoc(doc(db, "usuarios", user.uid));
