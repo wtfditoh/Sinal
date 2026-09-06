@@ -37,9 +37,12 @@
   }
 
   .login-mark {
-    width: 72px;
-    height: 72px;
     margin: 0 auto 28px;
+    animation: girar 8s linear infinite;
+  }
+
+  @keyframes girar {
+    to { transform: rotate(360deg); }
   }
 
   .manutencao-titulo {
@@ -97,21 +100,21 @@
     border-radius: 99px;
     overflow: hidden;
     margin-bottom: 28px;
+    position: relative;
   }
 
   .barra-fill {
+    position: absolute;
     height: 100%;
     width: 40%;
     border-radius: 99px;
     background: linear-gradient(90deg, #6D28D9, #FFB020, #2EE896);
-    background-size: 200% 100%;
-    animation: barra 2.5s ease-in-out infinite;
+    animation: deslizar 1.8s ease-in-out infinite;
   }
 
-  @keyframes barra {
-    0% { width: 20%; background-position: 0% 0%; }
-    50% { width: 75%; background-position: 100% 0%; }
-    100% { width: 20%; background-position: 0% 0%; }
+  @keyframes deslizar {
+    0% { left: -40%; }
+    100% { left: 100%; }
   }
 
   .btn-recarregar {
@@ -125,6 +128,7 @@
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 8px 20px -6px rgba(255,176,32,0.4);
+    font-family: 'Inter', sans-serif;
   }
 
   .btn-recarregar:hover {
