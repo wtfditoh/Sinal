@@ -140,6 +140,12 @@
     transform: translateY(0);
   }
 
+  .btn-recarregar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
   .rodape {
     margin-top: 28px;
     font-family: 'JetBrains Mono', monospace;
@@ -167,20 +173,58 @@
   <div class="card-aviso">
     <div class="card-icone">🔧</div>
     <div>
-      <div class="card-titulo">Atualização em andamento</div>
-      <div class="card-texto">Estou trabalhando em melhorias e correções.<br>Já já está tudo de volta.</div>
+      <div class="card-titulo">Manutenção em andamento</div>
+      <div class="card-texto">Nossa equipe está trabalhando.<br>Não vai demorar muito.</div>
     </div>
   </div>
 
   <div class="barra"><div class="barra-fill"></div></div>
 
-  <button class="btn-recarregar" onclick="window.location.reload()">
+  <button class="btn-recarregar" id="btnTentarNovamente">
     Tentar novamente
   </button>
 
   <div class="rodape">SINAL • Sistema de Mídia da Igreja</div>
 
 </div>
+
+<script type="module">
+  import { db, auth } from "./firebase-config.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  document.getElementById("btnTentarNovamente").addEventListener("click", async () => {
+    const btn = document.getElementById("btnTentarNovamente");
+    btn.textContent = "Verificando...";
+    btn.disabled = true;
+
+    try {
+      const snap = await getDoc(doc(db, "configuracoes", "app"));
+      const emManutencao = snap.exists() && snap.data().modoManutencao === "on";
+
+      if (emManutencao) {
+        btn.textContent = "Ainda em manutenção...";
+        setTimeout(() => {
+          btn.textContent = "Tentar novamente";
+          btn.disabled = false;
+        }, 2000);
+      } else {
+        // Manutenção desativada! Verifica se está logado
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            window.location.href = "dashboard.html";
+          } else {
+            window.location.href = "index.html";
+          }
+        });
+      }
+    } catch (erro) {
+      console.error("Erro ao verificar:", erro);
+      btn.textContent = "Tentar novamente";
+      btn.disabled = false;
+    }
+  });
+</script>
 
 </body>
 </html>
