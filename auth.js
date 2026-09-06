@@ -48,6 +48,32 @@ if (form) {
 // e devolve os dados do usuário (nome, papel) já carregados do Firestore.
 export function exigirLogin(callback) {
   onAuthStateChanged(auth, async (user) => {
+
+    // Checa manutenção PRIMEIRO, antes de qualquer outra coisa.
+    // Admin (papel=admin) passa mesmo durante manutenção.
+    try {
+      const cfgSnap = await getDoc(doc(db, "configuracoes", "app"));
+      if (cfgSnap.exists() && cfgSnap.data().manutencao === true) {
+        // Se for admin logado, deixa passar — admin nunca trava
+        if (user) {
+          const usuarioSnap = await getDoc(doc(db, "usuarios", user.uid));
+          const papel = usuarioSnap.data()?.papel;
+          if (papel === "admin") {
+            // Admin passa, continua o fluxo normal abaixo
+          } else {
+            window.location.href = "manutencao.html";
+            return;
+          }
+        } else {
+          window.location.href = "manutencao.html";
+          return;
+        }
+      }
+    } catch (e) {
+      // Se der erro ao checar, deixa passar (fail-open — melhor mostrar o app do que travar)
+      console.warn("Não foi possível verificar manutenção:", e);
+    }
+
     if (!user) {
       window.location.href = "index.html";
       return;
