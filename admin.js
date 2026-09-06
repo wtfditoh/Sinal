@@ -916,7 +916,7 @@ async function carregarModoManutencao() {
   try {
     const snap = await getDocs(query(collection(db, "configuracoes")));
     const docCfg = snap.docs.find((d) => d.id === "app");
-    const emManutencao = docCfg?.data()?.manutencao === true;
+    const emManutencao = docCfg?.data()?.modoManutencao === "on";
     aplicarEstado(emManutencao);
   } catch (e) {
     status.textContent = "Erro ao verificar.";
@@ -928,11 +928,10 @@ async function carregarModoManutencao() {
     aplicarEstado(novoEstado);
 
     try {
-      await setDoc(doc(db, "configuracoes", "app"), {
-        manutencao: novoEstado,
-        atualizadoEm: serverTimestamp()
-      }, { merge: true });
-
+     await setDoc(doc(db, "configuracoes", "app"), {
+  modoManutencao: novoEstado ? "on" : "off",
+  atualizadoEm: serverTimestamp()
+}, { merge: true });
       mostrarToast(
         novoEstado ? "Manutenção ativada" : "Manutenção desativada",
         novoEstado
