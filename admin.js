@@ -890,6 +890,66 @@ atualizarDashboard();
 
 
 // ===============================
+// MÓDULO: CADASTRAR USUÁRIO
+// ===============================
+
+const btnCadastrarUsuario = document.getElementById("btnCadastrarUsuario");
+
+if (btnCadastrarUsuario) {
+  btnCadastrarUsuario.addEventListener("click", async () => {
+    
+    const nome = document.getElementById("novoUsuarioNome").value.trim();
+    const senha = document.getElementById("novoUsuarioSenha").value;
+    const papel = document.getElementById("novoUsuarioPapel").value;
+    
+    if (!nome || !senha) {
+      mostrarToast("Atenção", "Preencha nome e senha.");
+      return;
+    }
+    
+    if (senha.length < 6) {
+      mostrarToast("Atenção", "A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    
+    const btnText = document.getElementById("cadUsuarioBtnText");
+    btnCadastrarUsuario.disabled = true;
+    btnText.textContent = "Cadastrando...";
+    
+    try {
+      const resposta = await fetch("/.netlify/functions/criar-usuario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, senha, papel })
+      });
+      
+      const dados = await resposta.json();
+      
+      if (!resposta.ok) {
+        throw new Error(dados.erro || "Erro ao cadastrar");
+      }
+      
+      mostrarToast("Sucesso", `Usuário ${nome} cadastrado!`);
+      
+      document.getElementById("novoUsuarioNome").value = "";
+      document.getElementById("novoUsuarioSenha").value = "";
+      document.getElementById("novoUsuarioPapel").value = "membro";
+      
+      carregarUsuarios();
+      atualizarDashboard();
+      
+    } catch (erro) {
+      console.error("Erro ao cadastrar:", erro);
+      mostrarToast("Erro", erro.message || "Não foi possível cadastrar o usuário.");
+    } finally {
+      btnCadastrarUsuario.disabled = false;
+      btnText.textContent = "Cadastrar usuário";
+    }
+  });
+}
+
+
+// ===============================
 // MODO MANUTENÇÃO
 // ===============================
 
