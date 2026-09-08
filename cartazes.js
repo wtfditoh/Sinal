@@ -13,6 +13,9 @@ import {
   setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+const IMGBB_KEY = "5e3b2c6eae12635e0d9b00e9af54edb6";
+let cartazEnviando = false;
+
 let usuarioAtual = null;
 let cartazesCache = new Map();
 
