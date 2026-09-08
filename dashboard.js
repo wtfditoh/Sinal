@@ -68,6 +68,36 @@ function escapeHtml(texto) {
   return div.innerHTML;
 }
 
+// Função para baixar uma imagem
+window.baixarImagem = function(url, nomeArquivo) {
+  fetch(url)
+    .then(res => res.blob())
+    .then(blob => {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = nomeArquivo || "imagem.jpg";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+    })
+    .catch(() => {
+      window.open(url, "_blank");
+    });
+};
+
+// Função para baixar várias imagens
+window.baixarVarias = async function(urls, prefixo) {
+  for (let i = 0; i < urls.length; i++) {
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        window.baixarImagem(urls[i], `${prefixo}-${i + 1}.jpg`);
+        resolve();
+      }, 500);
+    });
+  }
+};
+
 // ---------- Carregar cultos do mês (tempo real) ----------
 let unsubscribe = null;
 
