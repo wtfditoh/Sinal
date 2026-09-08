@@ -14,24 +14,6 @@ import {
   getDoc, getDocs, setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Função global de download de imagem
-window.baixarImagem = function(url, nomeArquivo) {
-  fetch(url)
-    .then(res => res.blob())
-    .then(blob => {
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = nomeArquivo || "imagem.jpg";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(link.href);
-    })
-    .catch(() => {
-      window.open(url, "_blank");
-    });
-};
-
 const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 
 let usuarioAtual = null;
@@ -154,6 +136,137 @@ function carregarProximoCulto() {
   });
 }
 
+// ---- Modal de detalhe do culto ----
+
+const IMGBB_KEY = "5e3b2c6eae12635e0d9b00e9af54edb6";
+
+async function abrirModalCultoDetalhe(id) {
+  const c = cultosCache.get(id);
+  if (!c) return;
+
+  const overlay = document.getElementById("cultoDetalheOverlay");
+  const el = (sel) => document.getElementById(sel);
+
+  // Preenche os campos de info
+  el("detalheData").textContent = formatarData(c.data);
+  el("detalheTipo").textContent = c.tipo || "Culto";
+  el("detalheTema").textContent = c.tema || "—";
+  el("detalhePregador").textContent = c.pregador || "—";
+  el("detalheVersiculo").textContent = c.versiculo || "—";
+  el("detalheEventoParte").textContent = c.eventoParte || "—";
+  el("detalheStatus").textContent = c.status === "postado"
+    ? `✓ Postado por ${c.postadoPor || "—"}`
+    : "Pendente";
+  el("detalheStatus").className = `detalhe-status ${c.status === "postado" ? "postado" : "pendente"}`;
+
+  // Fotos do formulário de líder
+  const fotosPredefinidas = [];
+  if (c.fotoPregador) fotosPredefinidas.push({ url: c.fotoPregador, legenda: "Pregador" });
+  if (c.fotoLouvor)   fotosPredefinidas.push({ url: c.fotoLouvor,   legenda: "Louvor" });
+
+  // Carrega galeria do Firestore + fotos do formulário
+  await renderGaleriaCulto(id, fotosPredefinidas);
+
+  // Carrega escalados do dia
+  await renderEscaladosDia(c.data);
+
+  overlay.dataset.cultoAberto = id;
+  overlay.classList.add("active");
+}
+
+async function renderGaleriaCulto(cultoId, fotosPredefinidas = []) {
+  const container = document.getElementById("detalheGaleria");
+  container.innerHTML = "";
+
+  // Fotos já salvas no Firestore
+  let fotosSalvas = [];
+  try {
+    const snap = await getDocs(
+      query(collection(db, "cultos", cultoId, "fotos"), orderBy("criadoEm", "desc"))
+    );
+    fotosSalvas = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (e) { /* subcoleção ainda vazia é ok */ }
+
+  const todasFotos = [
+    ...fotosPredefinidas.map((f) => ({ ...f, predefinida: true })),
+    ...fotosSalvas
+  ];
+
+  if (todasFotos.length === 0) {
+    container.innerHTML = `<div class="galeria-vazia">Nenhuma foto ainda. Adicione abaixo ↓</div>`;
+  } else {
+    container.innerHTML = todasFotos.map((foto, i) => `
+      <div class="galeria-item" style="animation-delay:${i*0.04}s;">
+        <div class="galeria-thumb carregando">
+          <img src="${escapeHtml(foto.url)}" alt="" onload="this.parentElement.classList.remove('carregando')" onerror="this.parentElement.classList.remove('carregando')">
+        </div>
+        ${foto.legenda ? `<div class="galeria-legenda">${escapeHtml(foto.legenda)}</div>` : ""}
+        ${foto.id ? `<button class="galeria-del" data-foto-id="${foto.id}" data-culto-id="${cultoId}" title="Remover">✕</button>` : ""}
+      </div>
+    `).join("");
+
+    container.querySelectorAll(".galeria-del").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        await deleteDoc(doc(db, "cultos", btn.dataset.cultoId, "fotos", btn.dataset.fotoId));
+        renderGaleriaCulto(cultoId, fotosPredefinidas);
+      });
+    });
+  }
+}
+
+async function renderEscaladosDia(dataCulto) {
+  const container = document.getElementById("detalheEscalados");
+  container.innerHTML = "";
+  if (!dataCulto) { container.innerHTML = `<span class="detalhe-vazio">—</span>`; return; }
+
+  try {
+    const d = dataCulto.toDate();
+    const inicio = new Date(d); inicio.setHours(0,0,0,0);
+    const fim    = new Date(d); fim.setHours(23,59,59,999);
+    const snap = await getDocs(query(
+      collection(db, "escalas"),
+      where("data", ">=", Timestamp.fromDate(inicio)),
+      where("data", "<=", Timestamp.fromDate(fim))
+    ));
+
+    if (snap.empty) {
+      container.innerHTML = `<span class="detalhe-vazio">Ninguém escalado nesse dia ainda.</span>`;
+    } else {
+      container.innerHTML = snap.docs.map((d) => {
+        const e = d.data();
+        return `<div class="detalhe-escalado">
+          <span class="escala-funcao-tag">${escapeHtml(e.funcao)}</span>
+          <span>${escapeHtml(e.pessoa)}</span>
+          ${e.confirmado ? `<span style="color:var(--green); font-size:11px;">✓ confirmado</span>` : ""}
+        </div>`;
+      }).join("");
+    }
+  } catch(e) {
+    container.innerHTML = `<span class="detalhe-vazio">—</span>`;
+  }
+}
+
+// Upload automático pro ImgBB e salva na subcoleção
+async function uploadFotoCulto(cultoId, arquivo) {
+  const form = new FormData();
+  form.append("image", arquivo);
+
+  const resp = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+    method: "POST", body: form
+  });
+  const data = await resp.json();
+  if (!data.success) throw new Error("Falha no upload");
+
+  await addDoc(collection(db, "cultos", cultoId, "fotos"), {
+    url: data.data.url,
+    thumb: data.data.thumb?.url || data.data.url,
+    criadoEm: serverTimestamp(),
+    enviadoPor: usuarioAtual?.nome || "—"
+  });
+
+  return data.data.url;
+}
+
 function formatarHorarioEdicao(timestamp) {
   if (!timestamp) return "";
   const d = timestamp.toDate();
@@ -185,73 +298,45 @@ function renderCultos(docs) {
 
     const card = document.createElement("div");
     card.className = "culto-card";
+    card.dataset.cultoId = id;
     card.style.animationDelay = `${index * 0.05}s`;
-    // Verifica se é hoje
-const dataCulto = c.data.toDate();
-const hoje = new Date();
-const ehHoje = dataCulto.getDate() === hoje.getDate() && 
-               dataCulto.getMonth() === hoje.getMonth() && 
-               dataCulto.getFullYear() === hoje.getFullYear();
-
-if (ehHoje) card.classList.add("hoje");
-
-card.innerHTML = `
-  <div class="culto-top">
-    <div class="tally ${isPostado ? "postado" : "pendente"}"></div>
-    <div class="culto-data">${formatarData(c.data)}${ehHoje ? " · HOJE" : ""}</div>
-    <div class="culto-status-label ${isPostado ? "postado" : "pendente"}">
-      ${isPostado ? "postado" : "pendente"}
-    </div>
-  </div>
-  <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
-  ${c.tema ? `<div class="culto-tema">📌 ${escapeHtml(c.tema)}</div>` : ""}
-  ${c.pregador ? `<div class="culto-tema">🎤 ${escapeHtml(c.pregador)}</div>` : ""}
-  ${c.eventoParte ? `<div class="culto-tema">📎 ${escapeHtml(c.eventoParte)}</div>` : ""}
-  ${c.versiculo
-    ? `<div class="culto-versiculo">"${escapeHtml(c.versiculo)}"</div>`
-    : `<div class="culto-versiculo culto-versiculo-vazio">Versículo da pregação ainda não adicionado</div>`
-  }
-  ${c.fotoPregadorUrl || c.fotoLouvorUrl ? `
-    <div class="culto-foto-mini">
-      ${c.fotoPregadorUrl ? `
-        <div>
-          <div class="culto-foto-item" onclick="window.open('${c.fotoPregadorUrl}', '_blank')">
-            <img src="${c.fotoPregadorUrl}" alt="Pregador" loading="lazy">
-          </div>
-          <div class="culto-foto-label">pregador</div>
+    card.innerHTML = `
+      <div class="culto-top">
+        <div class="tally ${isPostado ? "postado" : "pendente"}"></div>
+        <div class="culto-data">${formatarData(c.data)}</div>
+        <div class="culto-status-label ${isPostado ? "postado" : "pendente"}">
+          ${isPostado ? "postado" : "pendente"}
+        </div>
+      </div>
+      <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
+      ${c.tema ? `<div class="culto-tema">📌 ${escapeHtml(c.tema)}</div>` : ""}
+      ${c.pregador ? `<div class="culto-tema">🎤 ${escapeHtml(c.pregador)}</div>` : ""}
+      ${c.eventoParte ? `<div class="culto-tema">📎 ${escapeHtml(c.eventoParte)}</div>` : ""}
+      ${c.versiculo
+        ? `<div class="culto-versiculo">"${escapeHtml(c.versiculo)}"</div>`
+        : `<div class="culto-versiculo culto-versiculo-vazio">Versículo da pregação ainda não adicionado</div>`
+      }
+      ${c.origemPublica ? `<div class="culto-origem-form">📝 preenchido pelo formulário de líderes</div>` : ""}
+      <div class="checklist-dia">
+        ${renderChecklistItem(id, "foto", "📸 Foto", c.checklist?.foto)}
+        ${renderChecklistItem(id, "story", "📱 Story", c.checklist?.story)}
+        ${renderChecklistItem(id, "feed", "📰 Feed", c.checklist?.feed)}
+      </div>
+      <div class="culto-actions">
+        ${isPostado
+          ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
+          : `<button class="btn btn-mark" data-id="${id}" data-action="marcar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Marcar como postado</button>`
+        }
+        <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
+        <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+      </div>
+      ${isPostado || c.editadoPor ? `
+        <div class="culto-detalhes-audit">
+          ${isPostado ? `<div class="culto-postado-por">✓ postado por ${escapeHtml(c.postadoPor) || "—"}</div>` : ""}
+          ${c.editadoPor ? `<div class="culto-postado-por">✎ editado por ${escapeHtml(c.editadoPor)}${formatarHorarioEdicao(c.editadoEm)}</div>` : ""}
         </div>
       ` : ""}
-      ${c.fotoLouvorUrl ? `
-        <div>
-          <div class="culto-foto-item" onclick="window.open('${c.fotoLouvorUrl}', '_blank')">
-            <img src="${c.fotoLouvorUrl}" alt="Louvor" loading="lazy">
-          </div>
-          <div class="culto-foto-label">louvor</div>
-        </div>
-      ` : ""}
-    </div>
-  ` : ""}
-  ${c.origemPublica ? `<div class="culto-origem-form">📝 preenchido pelo formulário de líderes</div>` : ""}
-  <div class="checklist-dia">
-    ${renderChecklistItem(id, "foto", "📸 Foto", c.checklist?.foto)}
-    ${renderChecklistItem(id, "story", "📱 Story", c.checklist?.story)}
-    ${renderChecklistItem(id, "feed", "📰 Feed", c.checklist?.feed)}
-  </div>
-  <div class="culto-actions">
-    ${isPostado
-      ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
-      : `<button class="btn btn-mark" data-id="${id}" data-action="marcar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Marcar como postado</button>`
-    }
-    <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
-    <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
-  </div>
-  ${isPostado || c.editadoPor ? `
-    <div class="culto-detalhes-audit">
-      ${isPostado ? `<div class="culto-postado-por">✓ postado por ${escapeHtml(c.postadoPor) || "—"}</div>` : ""}
-      ${c.editadoPor ? `<div class="culto-postado-por">✎ editado por ${escapeHtml(c.editadoPor)}${formatarHorarioEdicao(c.editadoEm)}</div>` : ""}
-    </div>
-  ` : ""}
-`;
+    `;
     listaCultos.appendChild(card);
   });
 
@@ -276,12 +361,24 @@ card.innerHTML = `
   });
 
   listaCultos.querySelectorAll("button[data-action]").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation(); // evita que o clique no botão abra o modal
       const acao = btn.dataset.action;
       const id = btn.dataset.id;
       if (acao === "marcar" || acao === "desmarcar") toggleStatus(id, acao);
       else if (acao === "editar") abrirModalEdicao(id);
       else if (acao === "excluir") excluirCulto(id);
+    });
+  });
+
+  // Clique no corpo do card (fora dos botões) abre o modal de detalhe
+  listaCultos.querySelectorAll(".culto-card").forEach((card) => {
+    card.style.cursor = "pointer";
+    card.addEventListener("click", (e) => {
+      // Ignora se clicou num botão, input ou label
+      if (e.target.closest("button, input, label, a")) return;
+      const id = card.dataset.cultoId;
+      if (id) abrirModalCultoDetalhe(id);
     });
   });
 }
@@ -511,22 +608,22 @@ function carregarSolicitacoes() {
       const s = docSnap.data();
       const id = docSnap.id;
       solicitacoesCache.set(id, s);
-     if (s.status === "respondido" || s.status === "aplicado") pendentesRespondidos++;
+      if (s.status === "respondido") pendentesRespondidos++;
 
       const item = document.createElement("div");
       item.className = "solicitacao-item";
-     const statusLabel = {
-  aguardando: s.visualizadoEm ? "👁️ visualizado, aguardando resposta" : "aguardando resposta",
-  respondido: "respondido, revisar",
-  aplicado: "✅ concluído — ver"
-};
+      const statusLabel = {
+        aguardando: s.visualizadoEm ? "👁️ visualizado, aguardando resposta" : "aguardando resposta",
+        respondido: "respondido, revisar",
+        aplicado: "já aplicado"
+      };
       item.innerHTML = `
         <div class="solicitacao-info">
           <div class="solicitacao-titulo">${escapeHtml(s.titulo)}</div>
           <div class="solicitacao-status ${s.status}">${statusLabel[s.status] || s.status}</div>
         </div>
         ${s.status === "aguardando" ? `<button class="btn" data-id="${id}" data-acao="link"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Link</button>` : ""}
-        ${s.status === "respondido" || s.status === "aplicado" ? `<button class="btn btn-mark" data-id="${id}" data-acao="ver"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg> Ver</button>` : ""}
+        ${s.status === "respondido" ? `<button class="btn btn-mark" data-id="${id}" data-acao="ver"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg> Ver</button>` : ""}
         <button class="btn btn-excluir" data-id="${id}" data-acao="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
       `;
       listaSolicitacoes.appendChild(item);
@@ -637,65 +734,29 @@ function abrirModalResposta(id) {
   respostaAtualId = id;
   respostaModalTitulo.textContent = s.titulo;
   const r = s.resposta;
-  
-  // Esconde o botão "Aplicar" se já foi aplicado
-  const btnAplicar = document.getElementById("respostaAplicarBtn");
-  if (s.status === "aplicado") {
-    btnAplicar.style.display = "none";
-  } else {
-    btnAplicar.style.display = "block";
-  }
-  
   respostaModalCorpo.innerHTML = `
     <div class="resposta-linha"><strong>Preenchido por</strong>${escapeHtml(r.nomeLider) || "—"}</div>
     ${r.pregador ? `<div class="resposta-linha"><strong>Pregador</strong>${escapeHtml(r.pregador)}</div>` : ""}
     ${r.tema ? `<div class="resposta-linha"><strong>Tema</strong>${escapeHtml(r.tema)}</div>` : ""}
     ${r.versiculo ? `<div class="resposta-linha"><strong>Versículo</strong>${escapeHtml(r.versiculo)}</div>` : ""}
     ${r.eventoParte ? `<div class="resposta-linha"><strong>Evento à parte</strong>${escapeHtml(r.eventoParte)}</div>` : ""}
-    ${r.fotoPregadorUrl ? `
-      <div class="resposta-linha">
-        <strong>Foto do pregador</strong>
-        <img src="${r.fotoPregadorUrl}" alt="Foto do pregador" 
-             style="width:100%; border-radius:8px; margin-top:8px; cursor:pointer;"
-             onclick="window.open('${r.fotoPregadorUrl}', '_blank')">
-        <button type="button" class="btn" style="margin-top:8px; width:100%;" 
-                onclick="window.baixarImagem('${r.fotoPregadorUrl}', 'pregador.jpg')">
-          📥 Download
-        </button>
-      </div>
-    ` : ""}
-    ${r.fotoLouvorUrl ? `
-      <div class="resposta-linha">
-        <strong>Foto do ministério de louvor</strong>
-        <img src="${r.fotoLouvorUrl}" alt="Foto do ministério" 
-             style="width:100%; border-radius:8px; margin-top:8px; cursor:pointer;"
-             onclick="window.open('${r.fotoLouvorUrl}', '_blank')">
-        <button type="button" class="btn" style="margin-top:8px; width:100%;" 
-                onclick="window.baixarImagem('${r.fotoLouvorUrl}', 'louvor.jpg')">
-          📥 Download
-        </button>
-      </div>
-    ` : ""}
   `;
   respostaModalOverlay.classList.add("active");
 }
 
-// Fecha o modal
 document.getElementById("respostaFecharBtn").addEventListener("click", () => {
   respostaModalOverlay.classList.remove("active");
 });
-
 respostaModalOverlay.addEventListener("click", (e) => {
   if (e.target === respostaModalOverlay) respostaModalOverlay.classList.remove("active");
 });
 
-// Aplica ao culto (event listener separado!)
 document.getElementById("respostaAplicarBtn").addEventListener("click", async () => {
   const s = solicitacoesCache.get(respostaAtualId);
   if (!s) return;
   respostaModalOverlay.classList.remove("active");
 
-  // Abre o modal de culto já preenchido com a resposta
+  // Abre o modal de culto já preenchido com a resposta, pra revisão antes de salvar
   abrirModalCriacao();
   if (s.dataCulto) document.getElementById("cData").value = formatarDataInput(s.dataCulto);
   document.getElementById("cTipo").value = s.titulo;
@@ -1065,4 +1126,53 @@ document.getElementById("muralForm").addEventListener("submit", async (e) => {
   });
 
   input.value = "";
+});
+
+
+// ---- Modal detalhe: fechar e upload ----
+
+document.getElementById("cultoDetalheFecharBtn").addEventListener("click", () => {
+  document.getElementById("cultoDetalheOverlay").classList.remove("active");
+});
+
+document.getElementById("cultoDetalheOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("cultoDetalheOverlay")) {
+    document.getElementById("cultoDetalheOverlay").classList.remove("active");
+  }
+});
+
+document.getElementById("galeriaFileInput").addEventListener("change", async (e) => {
+  const arquivos = [...e.target.files];
+  if (!arquivos.length) return;
+
+  const overlay = document.getElementById("cultoDetalheOverlay");
+  const cultoId = overlay.dataset.cultoAberto;
+  if (!cultoId) return;
+
+  const status = document.getElementById("galeriaUploadStatus");
+  status.style.display = "block";
+  status.textContent = `⏳ Enviando ${arquivos.length} foto(s)...`;
+
+  let ok = 0;
+  for (const arquivo of arquivos) {
+    try {
+      await uploadFotoCulto(cultoId, arquivo);
+      ok++;
+      status.textContent = `⏳ ${ok}/${arquivos.length} foto(s) enviada(s)...`;
+    } catch (err) {
+      console.error("Erro no upload:", err);
+    }
+  }
+
+  status.textContent = `✓ ${ok} foto(s) adicionada(s) com sucesso!`;
+  setTimeout(() => { status.style.display = "none"; }, 2500);
+
+  // Recarrega a galeria
+  const c = cultosCache.get(cultoId);
+  const fotos = [];
+  if (c?.fotoPregador) fotos.push({ url: c.fotoPregador, legenda: "Pregador" });
+  if (c?.fotoLouvor)   fotos.push({ url: c.fotoLouvor,   legenda: "Louvor" });
+  await renderGaleriaCulto(cultoId, fotos);
+
+  e.target.value = "";
 });
