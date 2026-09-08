@@ -1903,3 +1903,24 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   font-size: 13px;
   padding: 20px 0;
 }
+
+.galeria-download {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.galeria-item:hover .galeria-download { opacity: 1; }
