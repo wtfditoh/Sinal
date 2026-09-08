@@ -223,17 +223,32 @@ async function renderGaleriaCulto(cultoId, fotosPredefinidas = []) {
   ];
 
   if (todasFotos.length === 0) {
-    container.innerHTML = `<div class="galeria-vazia">Nenhuma foto ainda. Adicione abaixo ↓</div>`;
-  } else {
-    container.innerHTML = todasFotos.map((foto, i) => `
+  container.innerHTML = `<div class="galeria-vazia">Nenhuma foto ainda. Adicione abaixo ↓</div>`;
+} else {
+  container.innerHTML = `
+    <div style="grid-column:1/-1; display:flex; justify-content:flex-end; margin-bottom:8px;">
+      <button type="button" class="galeria-add-btn" onclick="window.baixarVarias([${todasFotos.map(f => `'${f.url}'`).join(",")}], 'culto')">
+        📥 Baixar todas (${todasFotos.length})
+      </button>
+    </div>
+    ${todasFotos.map((foto, i) => `
       <div class="galeria-item" style="animation-delay:${i*0.04}s;">
         <div class="galeria-thumb carregando">
           <img src="${escapeHtml(foto.url)}" alt="" onload="this.parentElement.classList.remove('carregando')" onerror="this.parentElement.classList.remove('carregando')">
         </div>
         ${foto.legenda ? `<div class="galeria-legenda">${escapeHtml(foto.legenda)}</div>` : ""}
+        <button class="galeria-download" data-url="${foto.url}" title="Baixar" style="position:absolute; bottom:5px; right:5px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,0.7); border:none; color:#fff; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;">📥</button>
         ${foto.id ? `<button class="galeria-del" data-foto-id="${foto.id}" data-culto-id="${cultoId}" title="Remover">✕</button>` : ""}
       </div>
-    `).join("");
+    `).join("")}
+  `;
+
+  container.querySelectorAll(".galeria-download").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.baixarImagem(btn.dataset.url, "foto-culto.jpg");
+    });
+  });
 
     container.querySelectorAll(".galeria-del").forEach((btn) => {
       btn.addEventListener("click", async () => {
