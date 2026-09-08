@@ -91,14 +91,20 @@
         <label for="pTitulo">Título / descrição</label>
         <input type="text" id="pTitulo" placeholder="ex: Cartaz Culto de Jovens" required>
       </div>
-      <div class="field">
-        <label for="pLink">Link da imagem</label>
-        <input type="url" id="pLink" placeholder="Link direto do Google Drive, Canva, etc." required>
-        <div class="field-hint">Dica pro Drive: copia o ID do arquivo no link de compartilhamento e usa nesse formato: <code>drive.google.com/uc?export=view&id=SEU_ID</code>. Do Canva/Google Fotos, usa a opção "Copiar link da imagem".</div>
-        <div class="upload-box" id="linkPreviewBox" style="display:none; margin-top:8px;">
-          <img id="linkPreviewImg">
-        </div>
-      </div>
+     <div class="field">
+  <label>Imagem do cartaz</label>
+  <div class="upload-area" id="cartazUploadArea" style="border:2px dashed #2E3444; border-radius:12px; padding:30px 20px; text-align:center; cursor:pointer; background:#14171F;">
+    <div style="font-size:36px; margin-bottom:8px;" id="cartazUploadIcone">🖼️</div>
+    <div style="font-size:14px; color:#9CA3B5;" id="cartazUploadTexto">Clique para escolher o cartaz</div>
+    <div style="font-size:12px; color:#5C6478;" id="cartazUploadHint">JPG ou PNG — máx 10MB</div>
+    <input type="file" id="cartazFileInput" accept="image/*" style="display:none;">
+    <div class="upload-preview" id="cartazPreview" style="display:none; margin-top:12px;">
+      <img id="cartazPreviewImg" style="max-width:100%; max-height:200px; border-radius:8px;">
+      <button type="button" id="cartazRemover" style="margin-top:8px; background:rgba(255,92,92,0.1); border:1px solid rgba(255,92,92,0.3); color:#FF5C5C; padding:6px 12px; border-radius:6px; cursor:pointer;">Remover imagem</button>
+    </div>
+  </div>
+  <input type="hidden" id="pLink">
+</div>
       <div class="field">
         <label for="pLembreteTexto">Lembrete</label>
         <input type="text" id="pLembreteTexto" placeholder="ex: Postar até sexta 18h">
