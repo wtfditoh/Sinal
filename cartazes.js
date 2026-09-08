@@ -194,32 +194,94 @@ const modalOverlay = document.getElementById("modalOverlay");
 const cartazForm = document.getElementById("cartazForm");
 const modalTitle = document.getElementById("cartazModalTitle");
 const submitBtn = document.getElementById("cartazSubmitBtn");
-const linkInput = document.getElementById("pLink");
-const linkPreviewBox = document.getElementById("linkPreviewBox");
-const linkPreviewImg = document.getElementById("linkPreviewImg");
 let editandoId = null;
 
-linkInput.addEventListener("input", () => {
-  const url = linkInput.value.trim();
-  if (url) {
-    linkPreviewImg.src = url;
-    linkPreviewBox.style.display = "block";
-  } else {
-    linkPreviewBox.style.display = "none";
-  }
-});
-linkPreviewImg.addEventListener("error", () => {
-  linkPreviewBox.style.display = "none";
-});
+// Upload de imagem do cartaz
+const cartazUploadArea = document.getElementById("cartazUploadArea");
+const cartazFileInput = document.getElementById("cartazFileInput");
+const cartazPreview = document.getElementById("cartazPreview");
+const cartazPreviewImg = document.getElementById("cartazPreviewImg");
+const cartazRemover = document.getElementById("cartazRemover");
+const cartazUploadTexto = document.getElementById("cartazUploadTexto");
+const cartazUploadHint = document.getElementById("cartazUploadHint");
+
+if (cartazUploadArea) {
+  cartazUploadArea.addEventListener("click", () => {
+    if (!cartazEnviando) cartazFileInput.click();
+  });
+}
+
+if (cartazFileInput) {
+  cartazFileInput.addEventListener("change", async (e) => {
+    const arquivo = e.target.files[0];
+    if (!arquivo) return;
+    
+    if (arquivo.size > 10 * 1024 * 1024) {
+      alert("A imagem é muito grande. Escolha um arquivo menor que 10MB.");
+      return;
+    }
+    
+    cartazEnviando = true;
+    cartazUploadIcone.textContent = "⏳";
+    cartazUploadTexto.textContent = "Enviando...";
+    cartazUploadHint.textContent = "Isso pode levar alguns segundos";
+    
+    try {
+      const formData = new FormData();
+      formData.append("key", IMGBB_KEY);
+      formData.append("image", arquivo);
+      
+      const resposta = await fetch("https://api.imgbb.com/1/upload", {
+        method: "POST",
+        body: formData
+      });
+      
+      const dados = await resposta.json();
+      
+      if (dados.success) {
+        document.getElementById("pLink").value = dados.data.url;
+        cartazPreviewImg.src = dados.data.url;
+        cartazPreview.style.display = "block";
+        cartazUploadIcone.textContent = "✅";
+        cartazUploadTexto.textContent = "Imagem enviada!";
+        cartazUploadHint.textContent = "Clique para trocar";
+      } else {
+        throw new Error("Falha no upload");
+      }
+    } catch (erro) {
+      console.error("Erro ao enviar imagem:", erro);
+      alert("Não foi possível enviar a imagem. Tente novamente.");
+      cartazUploadTexto.textContent = "Clique para escolher o cartaz";
+      cartazUploadHint.textContent = "JPG ou PNG — máx 10MB";
+    } finally {
+      cartazEnviando = false;
+    }
+  });
+}
+
+if (cartazRemover) {
+  cartazRemover.addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.getElementById("pLink").value = "";
+    cartazPreview.style.display = "none";
+    cartazFileInput.value = "";
+    cartazUploadTexto.textContent = "Clique para escolher o cartaz";
+    cartazUploadHint.textContent = "JPG ou PNG — máx 10MB";
+  });
+}
 
 document.getElementById("addBtn").addEventListener("click", () => {
   editandoId = null;
   modalTitle.textContent = "Novo cartaz";
   submitBtn.textContent = "Salvar";
   cartazForm.reset();
-  linkPreviewBox.style.display = "none";
+  cartazPreview.style.display = "none";
+  cartazUploadTexto.textContent = "Clique para escolher o cartaz";
+  cartazUploadHint.textContent = "JPG ou PNG — máx 10MB";
+  document.getElementById("pLink").value = "";
   modalOverlay.classList.add("active");
 });
+
 document.getElementById("cancelBtn").addEventListener("click", fecharModal);
 modalOverlay.addEventListener("click", (e) => {
   if (e.target === modalOverlay) fecharModal();
@@ -239,12 +301,17 @@ function abrirModalEdicao(id) {
   document.getElementById("pTitulo").value = c.titulo || "";
   document.getElementById("pLink").value = c.link || "";
   document.getElementById("pLembreteTexto").value = c.lembreteTexto || "";
-  if (c.link) {
-    linkPreviewImg.src = c.link;
-    linkPreviewBox.style.display = "block";
-  } else {
-    linkPreviewBox.style.display = "none";
-  }
+if (c.link) {
+  cartazPreviewImg.src = c.link;
+  cartazPreview.style.display = "block";
+  cartazUploadIcone.textContent = "✅";
+  cartazUploadTexto.textContent = "Imagem enviada!";
+  cartazUploadHint.textContent = "Clique para trocar";
+} else {
+  cartazPreview.style.display = "none";
+  cartazUploadTexto.textContent = "Clique para escolher o cartaz";
+  cartazUploadHint.textContent = "JPG ou PNG — máx 10MB";
+}
   if (c.lembreteData) {
     const d = c.lembreteData.toDate();
     document.getElementById("pLembreteData").value =
