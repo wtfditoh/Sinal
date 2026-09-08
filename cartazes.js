@@ -72,6 +72,67 @@ function formatarDataRelativa(timestamp) {
   return { texto: formatarDataCurta(timestamp), urgente: false };
 }
 
+// ---------- Visualizador de imagem ----------
+const visualizadorOverlay = document.getElementById("visualizadorOverlay");
+const visualizadorImg = document.getElementById("visualizadorImg");
+const visualizadorFechar = document.getElementById("visualizadorFechar");
+const visualizadorBaixar = document.getElementById("visualizadorBaixar");
+const visualizadorCompartilhar = document.getElementById("visualizadorCompartilhar");
+let imagemAtualUrl = "";
+let imagemAtualNome = "";
+
+function abrirVisualizador(url, nome) {
+  imagemAtualUrl = url;
+  imagemAtualNome = nome;
+  visualizadorImg.src = url;
+  visualizadorOverlay.classList.add("active");
+}
+
+function fecharVisualizador() {
+  visualizadorOverlay.classList.remove("active");
+}
+
+if (visualizadorFechar) {
+  visualizadorFechar.addEventListener("click", fecharVisualizador);
+}
+
+if (visualizadorOverlay) {
+  visualizadorOverlay.addEventListener("click", (e) => {
+    if (e.target === visualizadorOverlay) fecharVisualizador();
+  });
+}
+
+if (visualizadorBaixar) {
+  visualizadorBaixar.addEventListener("click", () => {
+    if (imagemAtualUrl) {
+      baixarImagem(imagemAtualUrl, imagemAtualNome, visualizadorBaixar);
+    }
+  });
+}
+
+if (visualizadorCompartilhar) {
+  visualizadorCompartilhar.addEventListener("click", async () => {
+    if (!imagemAtualUrl) return;
+    
+    try {
+      if (navigator.share) {
+        const response = await fetch(imagemAtualUrl);
+        const blob = await response.blob();
+        const file = new File([blob], imagemAtualNome || "cartaz.jpg", { type: blob.type });
+        
+        await navigator.share({
+          files: [file],
+          title: imagemAtualNome || "Cartaz"
+        });
+      } else {
+        window.open(imagemAtualUrl, "_blank");
+      }
+    } catch (erro) {
+      console.error("Erro ao compartilhar:", erro);
+    }
+  });
+}
+
 function estaAtrasado(c) {
   if (c.status === "postado" || !c.lembreteData) return false;
   const hoje = new Date();
@@ -116,31 +177,38 @@ function renderCartazes(docsOriginais) {
     const card = document.createElement("div");
     card.className = `cartaz-card ${atrasado ? "atrasado" : ""}`;
     card.style.animationDelay = `${index * 0.04}s`;
-    card.innerHTML = `
-      <div class="cartaz-thumb carregando">
-        <img src="${escapeHtml(c.link)}" alt="" onload="this.parentElement.classList.remove('carregando')" onerror="this.parentElement.textContent='🖼️'; this.parentElement.classList.remove('carregando')">
-      </div>
-      <div class="cartaz-body">
-        ${atrasado ? `<div class="cartaz-atrasado-tag">⚠️ ATRASADO</div>` : ""}
-        <div class="cartaz-titulo">${escapeHtml(c.titulo)}</div>
-        ${c.lembreteTexto ? `<div class="cartaz-lembrete ${relativa?.urgente ? "urgente" : ""}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${escapeHtml(c.lembreteTexto)}${relativa ? " · " + relativa.texto : ""}</div>` : ""}
-        <div class="cartaz-actions">
-          <div class="tally ${isPostado ? "postado" : "pendente"}" style="margin-right:2px;"></div>
-          <button class="btn btn-icone" data-baixar="${escapeHtml(c.link)}" data-nome="${escapeHtml(c.titulo)}" title="Baixar imagem">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
-          </button>
-          ${isPostado
-            ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
-            : `<button class="btn btn-mark" data-id="${id}" data-action="marcar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Postado</button>`
-          }
-          <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
-          <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          </button>
-        </div>
-      </div>
-    `;
+   card.innerHTML = `
+  <div class="cartaz-thumb carregando">
+    <img src="${escapeHtml(c.link)}" alt="" onload="this.parentElement.classList.remove('carregando')" onerror="this.parentElement.textContent='🖼️'; this.parentElement.classList.remove('carregando')">
+  </div>
+  <div class="cartaz-body">
+    ${atrasado ? `<div class="cartaz-atrasado-tag">⚠️ ATRASADO</div>` : ""}
+    <div class="cartaz-titulo">${escapeHtml(c.titulo)}</div>
+    ${c.lembreteTexto ? `<div class="cartaz-lembrete ${relativa?.urgente ? "urgente" : ""}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${escapeHtml(c.lembreteTexto)}${relativa ? " · " + relativa.texto : ""}</div>` : ""}
+    <div class="cartaz-actions">
+      <div class="tally ${isPostado ? "postado" : "pendente"}" style="margin-right:2px; flex:0 0 auto;"></div>
+      <button class="btn btn-icone" data-baixar="${escapeHtml(c.link)}" data-nome="${escapeHtml(c.titulo)}" title="Baixar imagem">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      </button>
+      ${isPostado
+        ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
+        : `<button class="btn btn-mark" data-id="${id}" data-action="marcar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Postado</button>`
+      }
+      <button class="btn" data-id="${id}" data-action="editar">Editar</button>
+      <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    </div>
+  </div>
+`;
     listaCartazes.appendChild(card);
+    
+    const thumb = card.querySelector(".cartaz-thumb");
+    if (thumb) {
+      thumb.addEventListener("click", () => {
+        abrirVisualizador(c.link, c.titulo);
+      });
+    }
   });
 
   document.getElementById("totalCartazes").textContent = docs.length;
