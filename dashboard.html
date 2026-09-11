@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>SINAL — Dashboard</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0B0D12">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <button class="avatar-btn" id="topbarAvatar"></button>
+      <div class="brand-name">SINAL</div>
+    </div>
+    <button class="icon-btn" id="logoutBtn" title="Sair">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
+  </div>
+
+  <main>
+
+    <!-- Cabeçalho da semana -->
+    <div class="dash-semana-header">
+      <div class="dash-semana-nav">
+        <button class="month-arrow" id="prevMonth">‹</button>
+        <div class="month-label" id="monthLabel">—</div>
+        <button class="month-arrow" id="nextMonth">›</button>
+      </div>
+    </div>
+
+    <!-- Próximo culto em destaque -->
+    <div class="proximo-culto-card" id="proximoCultoBox" style="display:none;">
+      <div class="proximo-culto-label">PRÓXIMO CULTO</div>
+      <div class="proximo-culto-countdown" id="proximoCultoContagem"></div>
+      <div class="proximo-culto-nome" id="proximoCultoTexto"></div>
+      <div class="proximo-culto-sub" id="proximoCultoSub"></div>
+    </div>
+
+    <!-- Stats: 3 cards + anel -->
+    <div class="dash-stats-row">
+      <div class="dash-stats-col">
+        <div class="dash-stat-card">
+          <div class="dash-stat-num" id="totalCultos">0</div>
+          <div class="dash-stat-tag">cultos</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-num red" id="totalPendentes">0</div>
+          <div class="dash-stat-tag">pendências</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-num green" id="totalPostados">0</div>
+          <div class="dash-stat-tag">postados</div>
+        </div>
+      </div>
+      <div class="dash-anel-wrap">
+        <svg viewBox="0 0 120 120" class="anel-svg">
+          <circle cx="60" cy="60" r="52" class="anel-trilho"/>
+          <circle cx="60" cy="60" r="52" class="anel-preenchido" id="anelPreenchido"/>
+        </svg>
+        <div class="anel-texto">
+          <div class="anel-pct" id="anelPct">0%</div>
+          <div class="anel-label">no ar</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botão compartilhar -->
+    <button class="acao-rapida" id="compartilharPendenciasBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+      <span>Compartilhar pendências</span>
+    </button>
+
+    <!-- Comunidade (feed + mural) -->
+    <div class="solicitacoes-section">
+      <div class="solicitacoes-header" id="feedToggle">
+        <span>💬 Comunidade</span>
+        <span class="solicitacoes-seta" id="feedSeta">▾</span>
+      </div>
+      <div class="solicitacoes-body" id="feedBody" style="display:none;">
+        <div class="sub-tabs">
+          <button class="sub-tab active" id="tabAtividade">📢 Atividade</button>
+          <button class="sub-tab" id="tabMural">📌 Mural</button>
+        </div>
+        <div id="painelAtividade">
+          <div id="listaFeed"></div>
+        </div>
+        <div id="painelMural" style="display:none;">
+          <form id="muralForm" style="display:flex; gap:8px; margin-bottom:12px;">
+            <input type="text" id="muralInput" maxlength="140" placeholder="Deixa um recado pra galera..." style="flex:1; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-size:13px;">
+            <button type="submit" class="btn btn-primary" style="flex-shrink:0;">Postar</button>
+          </form>
+          <div id="listaMural"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pedidos (líderes + ajuda interna) -->
+    <div class="solicitacoes-section">
+      <div class="solicitacoes-header" id="pedidosSectionToggle">
+        <span>📨 Pedidos</span>
+        <span class="solicitacoes-badge" id="pedidosSectionBadge" style="display:none;">0</span>
+        <span class="solicitacoes-seta" id="pedidosSectionSeta">▾</span>
+      </div>
+      <div class="solicitacoes-body" id="pedidosSectionBody" style="display:none;">
+        <div class="sub-tabs">
+          <button class="sub-tab active" id="tabLideres">🔗 Pra líderes</button>
+          <button class="sub-tab" id="tabAjuda">🆘 Ajuda interna</button>
+        </div>
+        <div id="painelLideres">
+          <button class="btn btn-primary" id="novaSolicitacaoBtn" style="width:100%; margin-bottom:10px;">+ Gerar link pra líder</button>
+          <div id="listaSolicitacoes"></div>
+        </div>
+        <div id="painelAjuda" style="display:none;">
+          <button class="btn btn-primary" id="novoPedidoBtn" style="width:100%; margin-bottom:10px;">+ Novo pedido</button>
+          <div id="listaPedidos"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de cultos -->
+    <div class="dash-cultos-titulo">Cultos do mês</div>
+    <div id="listaCultos">
+      <div class="skeleton skeleton-culto"></div>
+      <div class="skeleton skeleton-culto"></div>
+    </div>
+
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg></div>
+      <p>Nenhum culto cadastrado nesse mês ainda.<br>Toca no + pra adicionar o primeiro.</p>
+    </div>
+
+  </main>
+
+  <button class="fab-inner" id="addBtn" title="Novo culto"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <a href="dashboard.html" class="nav-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h6"/></svg> Culto
+      </a>
+      <a href="escala.html" class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Escala
+        <span class="notif-dot" id="dotEscala"></span>
+      </a>
+      <a href="cartazes.html" class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> Cartazes
+        <span class="notif-dot" id="dotCartazes"></span>
+      </a>
+      <button class="nav-item" id="btnMais">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg> Mais
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: novo culto -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title">Novo culto</div>
+    <form id="cultoForm">
+      <div class="field">
+        <label for="cData">Data</label>
+        <input type="date" id="cData" required>
+      </div>
+      <div class="field">
+        <label for="cTipo">Tipo de culto</label>
+        <input type="text" id="cTipo" placeholder="ex: Culto de Jovens, Domingo Manhã" required>
+      </div>
+      <div class="field">
+        <label for="cTema">Tema</label>
+        <input type="text" id="cTema" placeholder="ex: Fé em tempos de espera">
+      </div>
+      <div class="field">
+        <label for="cPregador">Pregador (opcional)</label>
+        <input type="text" id="cPregador" placeholder="ex: Pastor João">
+      </div>
+      <div class="field">
+        <label for="cEventoParte">Evento à parte (opcional)</label>
+        <input type="text" id="cEventoParte" placeholder="ex: Batismo logo após o culto">
+      </div>
+      <div class="field">
+        <label for="cVersiculo">Versículo-chave</label>
+        <textarea id="cVersiculo" rows="2" placeholder="ex: Hebreus 11:1"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar culto</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: nova solicitação a líder -->
+<div class="modal-overlay" id="solicitacaoModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title">Gerar link pra líder</div>
+    <form id="solicitacaoForm">
+      <div class="field">
+        <label for="sTitulo">Nome do culto/departamento</label>
+        <input type="text" id="sTitulo" required placeholder='ex: Culto de Senhoras'>
+      </div>
+      <div class="field">
+        <label for="sData">Data do culto (se já souber)</label>
+        <input type="date" id="sData">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="solicitacaoCancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Gerar link</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: link gerado -->
+<div class="modal-overlay" id="linkModalOverlay">
+  <div class="modal-sheet" style="text-align:center;">
+    <div style="margin-bottom:8px;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+    <div class="modal-title" style="text-align:center;">Link pronto!</div>
+    <p style="font-size:13px; color:var(--text-dim); margin-bottom:16px;">
+      Manda esse link pra pessoa responsável preencher.
+    </p>
+    <div class="link-box" id="linkGeradoTexto"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="linkFecharBtn">Fechar</button>
+      <button type="button" class="btn btn-primary" id="linkCopiarBtn">Copiar link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: ver/aplicar resposta -->
+<div class="modal-overlay" id="respostaModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title" id="respostaModalTitulo">Resposta</div>
+    <div id="respostaModalCorpo"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="respostaFecharBtn">Fechar</button>
+      <button type="button" class="btn btn-primary" id="respostaAplicarBtn">Aplicar ao culto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: novo pedido de ajuda -->
+<div class="modal-overlay" id="pedidoModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-title">Novo pedido</div>
+    <form id="pedidoForm">
+      <div class="field">
+        <label for="pdTitulo">O que precisa</label>
+        <input type="text" id="pdTitulo" required placeholder='ex: Cartaz pra evento de jovens'>
+      </div>
+      <div class="field">
+        <label for="pdDescricao">Detalhes</label>
+        <textarea id="pdDescricao" rows="3" placeholder="Informações que ajudam quem for fazer"></textarea>
+      </div>
+      <div class="field">
+        <label for="pdSolicitante">Quem pediu (opcional)</label>
+        <input type="text" id="pdSolicitante" placeholder="ex: Irmã Marta">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="pedidoCancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Publicar pedido</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: detalhe do culto -->
+<div class="modal-overlay" id="cultoDetalheOverlay">
+  <div class="modal-sheet" style="max-height:90vh; overflow-y:auto;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+      <div>
+        <div class="modal-title" id="detalheTipo" style="margin-bottom:2px;">Culto</div>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--text-faint);" id="detalheData"></div>
+      </div>
+      <div id="detalheStatus" class="detalhe-status pendente"></div>
+    </div>
+
+    <div class="detalhe-grid">
+      <div class="detalhe-campo"><div class="detalhe-label">Tema</div><div class="detalhe-valor" id="detalheTema"></div></div>
+      <div class="detalhe-campo"><div class="detalhe-label">Pregador</div><div class="detalhe-valor" id="detalhePregador"></div></div>
+      <div class="detalhe-campo" style="grid-column:1/-1;"><div class="detalhe-label">Versículo</div><div class="detalhe-valor" id="detalheVersiculo"></div></div>
+      <div class="detalhe-campo" style="grid-column:1/-1;"><div class="detalhe-label">Observações</div><div class="detalhe-valor" id="detalheEventoParte"></div></div>
+    </div>
+
+    <div class="detalhe-secao-titulo">Escalados no dia</div>
+    <div id="detalheEscalados" style="margin-bottom:20px;"></div>
+
+    <div class="detalhe-secao-titulo">
+      Galeria de fotos
+      <label class="galeria-add-btn" id="galeriaAddLabel">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Adicionar
+        <input type="file" id="galeriaFileInput" accept="image/*" multiple style="display:none;">
+      </label>
+    </div>
+    <div id="galeriaUploadStatus" style="display:none; font-size:12px; color:var(--text-faint); margin-bottom:8px;">⏳ Enviando fotos...</div>
+    <div id="detalheGaleria" class="galeria-grid"></div>
+
+    <div class="modal-actions" style="margin-top:20px;">
+      <button type="button" class="btn" id="cultoDetalheFecharBtn" style="width:100%;">Fechar</button>
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="dashboard.js"></script>
+</body>
+</html>
