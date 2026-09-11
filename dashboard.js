@@ -19,8 +19,8 @@ const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","ag
 let usuarioAtual = null;
 let mesAtual = new Date();
 mesAtual.setDate(1);
-let editandoId = null; // null = criando novo culto; senão, id do culto sendo editado
-let cultosCache = new Map(); // id -> dados, usado pra preencher o modal de edição
+let editandoId = null;
+let cultosCache = new Map();
 let solicitacoesCache = new Map();
 let respostaAtualId = null;
 let contagemCultosPendentes = 0;
@@ -60,7 +60,7 @@ function atualizarLabelMes() {
   monthLabel.textContent = `${MESES[mesAtual.getMonth()]} ${mesAtual.getFullYear()}`;
 }
 
-// ---------- Segurança básica de exibição (evita HTML quebrado com texto livre) ----------
+// ---------- Segurança básica de exibição ----------
 function escapeHtml(texto) {
   if (!texto) return "";
   const div = document.createElement("div");
@@ -98,12 +98,11 @@ window.baixarVarias = async function(urls, prefixo) {
   }
 };
 
-// ---------- Carregar cultos do mês (tempo real) ----------
+// ---------- Carregar cultos do mês ----------
 let unsubscribe = null;
 
 function carregarCultosDoMes() {
   atualizarLabelMes();
-
   const inicio = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), 1);
   const fim = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 1);
 
@@ -134,6 +133,7 @@ function formatarDataInput(timestamp) {
 }
 
 function carregarProximoCulto() {
+  const DIAS_SEMANA = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
   const agora = Timestamp.fromDate(new Date());
   const q = query(
     collection(db, "cultos"),
@@ -144,11 +144,7 @@ function carregarProximoCulto() {
 
   onSnapshot(q, (snapshot) => {
     const box = document.getElementById("proximoCultoBox");
-    const texto = document.getElementById("proximoCultoTexto");
-    if (snapshot.empty) {
-      box.style.display = "none";
-      return;
-    }
+    if (snapshot.empty) { box.style.display = "none"; return; }
 
     const c = snapshot.docs[0].data();
     const dataCulto = c.data.toDate();
@@ -156,18 +152,30 @@ function carregarProximoCulto() {
     const alvo0h = new Date(dataCulto); alvo0h.setHours(0,0,0,0);
     const diffDias = Math.round((alvo0h - hoje0h) / (1000 * 60 * 60 * 24));
 
-    let label;
-    if (diffDias === 0) { label = `🔴 É HOJE: ${c.tipo || "Culto"}`; box.classList.add("hoje"); }
-    else if (diffDias === 1) { label = `⏳ Amanhã: ${c.tipo || "Culto"}`; box.classList.remove("hoje"); }
-    else { label = `⏳ Em ${diffDias} dias: ${c.tipo || "Culto"}`; box.classList.remove("hoje"); }
+    const contagem = document.getElementById("proximoCultoContagem");
+    if (contagem) {
+      if (diffDias === 0) { contagem.textContent = "HOJE"; box.classList.add("hoje"); }
+      else if (diffDias === 1) { contagem.textContent = "AMANHÃ"; box.classList.remove("hoje"); }
+      else { contagem.textContent = `EM ${diffDias} DIAS`; box.classList.remove("hoje"); }
+    }
 
-    texto.textContent = label;
+    const nomeEl = document.getElementById("proximoCultoTexto");
+    if (nomeEl) nomeEl.textContent = c.tipo || "Culto";
+
+    const subEl = document.getElementById("proximoCultoSub");
+    if (subEl) {
+      const diaSemana = DIAS_SEMANA[dataCulto.getDay()];
+      const horario = dataCulto.getHours() !== 0
+        ? ` · ${String(dataCulto.getHours()).padStart(2,"0")}:${String(dataCulto.getMinutes()).padStart(2,"0")}`
+        : "";
+      subEl.textContent = `${diaSemana}${horario}`;
+    }
+
     box.style.display = "block";
   });
 }
 
 // ---- Modal de detalhe do culto ----
-
 const IMGBB_KEY = "5e3b2c6eae12635e0d9b00e9af54edb6";
 
 async function abrirModalCultoDetalhe(id) {
@@ -177,7 +185,6 @@ async function abrirModalCultoDetalhe(id) {
   const overlay = document.getElementById("cultoDetalheOverlay");
   const el = (sel) => document.getElementById(sel);
 
-  // Preenche os campos de info
   el("detalheData").textContent = formatarData(c.data);
   el("detalheTipo").textContent = c.tipo || "Culto";
   el("detalheTema").textContent = c.tema || "—";
@@ -189,15 +196,11 @@ async function abrirModalCultoDetalhe(id) {
     : "Pendente";
   el("detalheStatus").className = `detalhe-status ${c.status === "postado" ? "postado" : "pendente"}`;
 
-  // Fotos do formulário de líder
   const fotosPredefinidas = [];
   if (c.fotoPregador) fotosPredefinidas.push({ url: c.fotoPregador, legenda: "Pregador" });
   if (c.fotoLouvor)   fotosPredefinidas.push({ url: c.fotoLouvor,   legenda: "Louvor" });
 
-  // Carrega galeria do Firestore + fotos do formulário
   await renderGaleriaCulto(id, fotosPredefinidas);
-
-  // Carrega escalados do dia
   await renderEscaladosDia(c.data);
 
   overlay.dataset.cultoAberto = id;
@@ -208,14 +211,13 @@ async function renderGaleriaCulto(cultoId, fotosPredefinidas = []) {
   const container = document.getElementById("detalheGaleria");
   container.innerHTML = "";
 
-  // Fotos já salvas no Firestore
   let fotosSalvas = [];
   try {
     const snap = await getDocs(
       query(collection(db, "cultos", cultoId, "fotos"), orderBy("criadoEm", "desc"))
     );
     fotosSalvas = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  } catch (e) { /* subcoleção ainda vazia é ok */ }
+  } catch (e) { /* vazio é ok */ }
 
   const todasFotos = [
     ...fotosPredefinidas.map((f) => ({ ...f, predefinida: true })),
@@ -223,8 +225,10 @@ async function renderGaleriaCulto(cultoId, fotosPredefinidas = []) {
   ];
 
   if (todasFotos.length === 0) {
-  container.innerHTML = `<div class="galeria-vazia">Nenhuma foto ainda. Adicione abaixo ↓</div>`;
-} else {
+    container.innerHTML = `<div class="galeria-vazia">Nenhuma foto ainda. Adicione abaixo ↓</div>`;
+    return;
+  }
+
   container.innerHTML = `
     <div style="grid-column:1/-1; display:flex; justify-content:flex-end; margin-bottom:8px;">
       <button type="button" class="galeria-add-btn" onclick="window.baixarVarias([${todasFotos.map(f => `'${f.url}'`).join(",")}], 'culto')">
@@ -250,13 +254,12 @@ async function renderGaleriaCulto(cultoId, fotosPredefinidas = []) {
     });
   });
 
-    container.querySelectorAll(".galeria-del").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        await deleteDoc(doc(db, "cultos", btn.dataset.cultoId, "fotos", btn.dataset.fotoId));
-        renderGaleriaCulto(cultoId, fotosPredefinidas);
-      });
+  container.querySelectorAll(".galeria-del").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      await deleteDoc(doc(db, "cultos", btn.dataset.cultoId, "fotos", btn.dataset.fotoId));
+      renderGaleriaCulto(cultoId, fotosPredefinidas);
     });
-  }
+  });
 }
 
 async function renderEscaladosDia(dataCulto) {
@@ -291,7 +294,6 @@ async function renderEscaladosDia(dataCulto) {
   }
 }
 
-// Upload automático pro ImgBB e salva na subcoleção
 async function uploadFotoCulto(cultoId, arquivo) {
   const form = new FormData();
   form.append("image", arquivo);
@@ -326,11 +328,7 @@ function renderCultos(docs) {
   listaCultos.innerHTML = "";
   cultosCache.clear();
 
-  if (docs.length === 0) {
-    emptyState.style.display = "block";
-  } else {
-    emptyState.style.display = "none";
-  }
+  emptyState.style.display = docs.length === 0 ? "block" : "none";
 
   let postados = 0, pendentes = 0;
 
@@ -345,42 +343,42 @@ function renderCultos(docs) {
     card.className = "culto-card";
     card.dataset.cultoId = id;
     card.style.animationDelay = `${index * 0.05}s`;
+
+    const d = c.data?.toDate ? c.data.toDate() : new Date();
+    const diaNum = String(d.getDate()).padStart(2,"0");
+    const mesAbrev = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"][d.getMonth()];
+    const subTitulo = c.tema
+      ? escapeHtml(c.tema)
+      : c.pregador
+        ? `🎤 ${escapeHtml(c.pregador)}`
+        : c.versiculo
+          ? "Versículo pendente"
+          : "Sem detalhes ainda";
+
+    const totalCheck = [c.checklist?.foto, c.checklist?.story, c.checklist?.feed].filter(Boolean).length;
+
     card.innerHTML = `
-      <div class="culto-top">
-        <div class="tally ${isPostado ? "postado" : "pendente"}"></div>
-        <div class="culto-data">${formatarData(c.data)}</div>
-        <div class="culto-status-label ${isPostado ? "postado" : "pendente"}">
-          ${isPostado ? "postado" : "pendente"}
+      <div class="culto-data-badge ${isPostado ? "postado" : ""}">
+        <div class="culto-data-badge-dia">${diaNum}</div>
+        <div class="culto-data-badge-mes">${mesAbrev}</div>
+      </div>
+      <div class="culto-corpo">
+        <div class="culto-linha-top">
+          <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
+          <div class="culto-status-dot ${isPostado ? "postado" : "pendente"}"></div>
+        </div>
+        <div class="culto-tema">${subTitulo}</div>
+        <div class="culto-meta-row">
+          ${totalCheck > 0 ? `<span class="culto-meta-item">${totalCheck}/3 check</span>` : ""}
+          ${c.origemPublica ? `<span class="culto-meta-item amber">📝 líder</span>` : ""}
         </div>
       </div>
-      <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
-      ${c.tema ? `<div class="culto-tema">📌 ${escapeHtml(c.tema)}</div>` : ""}
-      ${c.pregador ? `<div class="culto-tema">🎤 ${escapeHtml(c.pregador)}</div>` : ""}
-      ${c.eventoParte ? `<div class="culto-tema">📎 ${escapeHtml(c.eventoParte)}</div>` : ""}
-      ${c.versiculo
-        ? `<div class="culto-versiculo">"${escapeHtml(c.versiculo)}"</div>`
-        : `<div class="culto-versiculo culto-versiculo-vazio">Versículo da pregação ainda não adicionado</div>`
-      }
-      ${c.origemPublica ? `<div class="culto-origem-form">📝 preenchido pelo formulário de líderes</div>` : ""}
-      <div class="checklist-dia">
-        ${renderChecklistItem(id, "foto", "📸 Foto", c.checklist?.foto)}
-        ${renderChecklistItem(id, "story", "📱 Story", c.checklist?.story)}
-        ${renderChecklistItem(id, "feed", "📰 Feed", c.checklist?.feed)}
-      </div>
-      <div class="culto-actions">
-        ${isPostado
-          ? `<button class="btn btn-undo" data-id="${id}" data-action="desmarcar">Desmarcar</button>`
-          : `<button class="btn btn-mark" data-id="${id}" data-action="marcar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Marcar como postado</button>`
+      <button class="culto-quick-btn ${isPostado ? "undo" : "mark"}" data-id="${id}" data-action="${isPostado ? "desmarcar" : "marcar"}" title="${isPostado ? "Desmarcar" : "Marcar como postado"}">
+        ${isPostado 
+          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>` 
+          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`
         }
-        <button class="btn" data-id="${id}" data-action="editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Editar</button>
-        <button class="btn btn-excluir" data-id="${id}" data-action="excluir" title="Excluir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
-      </div>
-      ${isPostado || c.editadoPor ? `
-        <div class="culto-detalhes-audit">
-          ${isPostado ? `<div class="culto-postado-por">✓ postado por ${escapeHtml(c.postadoPor) || "—"}</div>` : ""}
-          ${c.editadoPor ? `<div class="culto-postado-por">✎ editado por ${escapeHtml(c.editadoPor)}${formatarHorarioEdicao(c.editadoEm)}</div>` : ""}
-        </div>
-      ` : ""}
+      </button>
     `;
     listaCultos.appendChild(card);
   });
@@ -395,32 +393,23 @@ function renderCultos(docs) {
   const anelPct = document.getElementById("anelPct");
   if (anelPreenchido) {
     const pct = docs.length ? Math.round((postados / docs.length) * 100) : 0;
-    const circunferencia = 327; // 2 * PI * 52
+    const circunferencia = 327;
     const offset = circunferencia - (circunferencia * pct) / 100;
     anelPreenchido.style.strokeDashoffset = offset;
     anelPct.textContent = `${pct}%`;
   }
 
-  listaCultos.querySelectorAll(".checklist-item").forEach((btn) => {
-    btn.addEventListener("click", () => toggleChecklistItem(btn.dataset.culto, btn.dataset.chave, btn));
-  });
-
-  listaCultos.querySelectorAll("button[data-action]").forEach((btn) => {
+  // Botão rápido de postar/desmarcar
+  listaCultos.querySelectorAll(".culto-quick-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      e.stopPropagation(); // evita que o clique no botão abra o modal
-      const acao = btn.dataset.action;
-      const id = btn.dataset.id;
-      if (acao === "marcar" || acao === "desmarcar") toggleStatus(id, acao);
-      else if (acao === "editar") abrirModalEdicao(id);
-      else if (acao === "excluir") excluirCulto(id);
+      e.stopPropagation();
+      toggleStatus(btn.dataset.id, btn.dataset.action);
     });
   });
 
-  // Clique no corpo do card (fora dos botões) abre o modal de detalhe
+  // Clique no card abre modal
   listaCultos.querySelectorAll(".culto-card").forEach((card) => {
-    card.style.cursor = "pointer";
     card.addEventListener("click", (e) => {
-      // Ignora se clicou num botão, input ou label
       if (e.target.closest("button, input, label, a")) return;
       const id = card.dataset.cultoId;
       if (id) abrirModalCultoDetalhe(id);
@@ -512,9 +501,9 @@ function fecharModal() {
 
 cultoForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const dataInput = document.getElementById("cData").value; // yyyy-mm-dd
+  const dataInput = document.getElementById("cData").value;
   const [ano, mes, dia] = dataInput.split("-").map(Number);
-  const dataCulto = new Date(ano, mes - 1, dia, 12, 0); // meio-dia evita fuso
+  const dataCulto = new Date(ano, mes - 1, dia, 12, 0);
 
   const payload = {
     data: Timestamp.fromDate(dataCulto),
@@ -555,8 +544,7 @@ cultoForm.addEventListener("submit", async (e) => {
   fecharModal();
 });
 
-// ---------- Notificações (bolinha vermelha) ----------
-// Compara a última atualização de cada coleção com a última visita do usuário.
+// ---------- Notificações ----------
 async function checarNotificacoes() {
   const visitaRef = doc(db, "visitas", usuarioAtual.uid);
   const visitaSnap = await getDoc(visitaRef);
@@ -565,7 +553,6 @@ async function checarNotificacoes() {
   checarColecao("escalas", visitas.ultimaVisitaEscalas, "dotEscala");
   checarColecao("cartazes", visitas.ultimaVisitaCartazes, "dotCartazes");
 
-  // Marca a visita ao dashboard como agora (não bloqueante)
   setDoc(visitaRef, { ultimaVisitaDashboard: serverTimestamp() }, { merge: true });
 }
 
@@ -594,7 +581,7 @@ document.getElementById("feedToggle").addEventListener("click", () => {
   seta.classList.toggle("aberta", !aberta);
 });
 
-// ---------- Seção unificada "Pedidos" (líderes + ajuda interna) ----------
+// ---------- Seção unificada "Pedidos" ----------
 let contagemLideresRespondidos = 0;
 let contagemPedidosAbertos = 0;
 
@@ -639,7 +626,6 @@ tabAjuda.addEventListener("click", () => {
 });
 
 // ---------- Solicitações a líderes ----------
-// (o toggle de abrir/fechar agora é único, ver seção "Pedidos" unificada mais abaixo)
 const listaSolicitacoes = document.getElementById("listaSolicitacoes");
 
 function carregarSolicitacoes() {
@@ -763,9 +749,7 @@ document.getElementById("linkCopiarBtn").addEventListener("click", async () => {
       btn.textContent = "Copiado!";
       setTimeout(() => { btn.textContent = "Copiar link"; }, 1800);
     }
-  } catch (e) {
-    // usuário cancelou o compartilhamento, ignora
-  }
+  } catch (e) { /* cancelado */ }
 });
 
 // ---------- Modal: ver resposta / aplicar ----------
@@ -801,7 +785,6 @@ document.getElementById("respostaAplicarBtn").addEventListener("click", async ()
   if (!s) return;
   respostaModalOverlay.classList.remove("active");
 
-  // Abre o modal de culto já preenchido com a resposta, pra revisão antes de salvar
   abrirModalCriacao();
   if (s.dataCulto) document.getElementById("cData").value = formatarDataInput(s.dataCulto);
   document.getElementById("cTipo").value = s.titulo;
@@ -813,7 +796,7 @@ document.getElementById("respostaAplicarBtn").addEventListener("click", async ()
   await updateDoc(doc(db, "solicitacoes", respostaAtualId), { status: "aplicado" });
 });
 
-// ---------- Compartilhar pendências no zap (como imagem) ----------
+// ---------- Compartilhar pendências no zap ----------
 document.getElementById("compartilharPendenciasBtn").addEventListener("click", compartilharPendencias);
 
 async function compartilharPendencias() {
@@ -889,7 +872,6 @@ function gerarImagemPendencias(cultos, cartazes, pedidos) {
     ctx.fillStyle = "#0E1016";
     ctx.fillRect(0, 0, largura, altura);
 
-    // cabeçalho
     ctx.beginPath();
     ctx.arc(margem + 14, 44, 14, 0, Math.PI * 2);
     const anelGrad = ctx.createLinearGradient(margem, 30, margem + 28, 58);
@@ -957,6 +939,8 @@ function gerarImagemPendencias(cultos, cartazes, pedidos) {
     canvas.toBlob((blob) => resolve(blob), "image/png");
   });
 }
+
+// ---------- Pedidos de ajuda interna ----------
 let pedidosCache = new Map();
 const listaPedidos = document.getElementById("listaPedidos");
 
@@ -1099,7 +1083,7 @@ pedidoForm.addEventListener("submit", async (e) => {
   pedidoModalOverlay.classList.remove("active");
 });
 
-// ---------- Mural da equipe (sub-aba dentro de Comunidade) ----------
+// ---------- Mural da equipe ----------
 document.getElementById("tabAtividade").addEventListener("click", () => {
   document.getElementById("tabAtividade").classList.add("active");
   document.getElementById("tabMural").classList.remove("active");
@@ -1173,11 +1157,24 @@ document.getElementById("muralForm").addEventListener("submit", async (e) => {
   input.value = "";
 });
 
-
-// ---- Modal detalhe: fechar e upload ----
+// ---- Modal detalhe: fechar, editar, excluir e upload ----
 
 document.getElementById("cultoDetalheFecharBtn").addEventListener("click", () => {
   document.getElementById("cultoDetalheOverlay").classList.remove("active");
+});
+
+document.getElementById("detalheEditarBtn").addEventListener("click", () => {
+  const id = document.getElementById("cultoDetalheOverlay").dataset.cultoAberto;
+  if (!id) return;
+  document.getElementById("cultoDetalheOverlay").classList.remove("active");
+  abrirModalEdicao(id);
+});
+
+document.getElementById("detalheExcluirBtn").addEventListener("click", async () => {
+  const id = document.getElementById("cultoDetalheOverlay").dataset.cultoAberto;
+  if (!id) return;
+  document.getElementById("cultoDetalheOverlay").classList.remove("active");
+  await excluirCulto(id);
 });
 
 document.getElementById("cultoDetalheOverlay").addEventListener("click", (e) => {
@@ -1212,7 +1209,6 @@ document.getElementById("galeriaFileInput").addEventListener("change", async (e)
   status.textContent = `✓ ${ok} foto(s) adicionada(s) com sucesso!`;
   setTimeout(() => { status.style.display = "none"; }, 2500);
 
-  // Recarrega a galeria
   const c = cultosCache.get(cultoId);
   const fotos = [];
   if (c?.fotoPregador) fotos.push({ url: c.fotoPregador, legenda: "Pregador" });
