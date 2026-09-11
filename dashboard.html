@@ -30,17 +30,37 @@
 
   <main>
 
-    <div class="proximo-culto" id="proximoCultoBox" style="display:none;">
-      <span id="proximoCultoTexto"></span>
-    </div>
-
-    <div class="hero-mes">
-      <div class="hero-mes-nav">
+    <div class="dash-semana-header">
+      <div class="dash-semana-nav">
         <button class="month-arrow" id="prevMonth">‹</button>
         <div class="month-label" id="monthLabel">—</div>
         <button class="month-arrow" id="nextMonth">›</button>
       </div>
-      <div class="anel-progresso">
+    </div>
+
+    <div class="proximo-culto-card" id="proximoCultoBox" style="display:none;">
+      <div class="proximo-culto-label">PRÓXIMO CULTO</div>
+      <div class="proximo-culto-countdown" id="proximoCultoContagem"></div>
+      <div class="proximo-culto-nome" id="proximoCultoTexto"></div>
+      <div class="proximo-culto-sub" id="proximoCultoSub"></div>
+    </div>
+
+    <div class="dash-stats-row">
+      <div class="dash-stats-col">
+        <div class="dash-stat-card">
+          <span class="dash-stat-num" id="totalCultos">0</span>
+          <span class="dash-stat-tag">cultos</span>
+        </div>
+        <div class="dash-stat-card">
+          <span class="dash-stat-num green" id="totalPostados">0</span>
+          <span class="dash-stat-tag">postados</span>
+        </div>
+        <div class="dash-stat-card">
+          <span class="dash-stat-num red" id="totalPendentes">0</span>
+          <span class="dash-stat-tag">pendentes</span>
+        </div>
+      </div>
+      <div class="dash-anel-wrap">
         <svg viewBox="0 0 120 120" class="anel-svg">
           <circle cx="60" cy="60" r="52" class="anel-trilho"/>
           <circle cx="60" cy="60" r="52" class="anel-preenchido" id="anelPreenchido"/>
@@ -49,21 +69,6 @@
           <div class="anel-pct" id="anelPct">0%</div>
           <div class="anel-label">no ar</div>
         </div>
-      </div>
-    </div>
-
-    <div class="summary-strip">
-      <div class="summary-chip">
-        <div class="summary-num" id="totalCultos">0</div>
-        <div class="summary-tag">cultos</div>
-      </div>
-      <div class="summary-chip">
-        <div class="summary-num green" id="totalPostados">0</div>
-        <div class="summary-tag">postados</div>
-      </div>
-      <div class="summary-chip">
-        <div class="summary-num red" id="totalPendentes">0</div>
-        <div class="summary-tag">pendentes</div>
       </div>
     </div>
 
@@ -78,16 +83,13 @@
         <span class="solicitacoes-seta" id="feedSeta">▾</span>
       </div>
       <div class="solicitacoes-body" id="feedBody" style="display:none;">
-
         <div class="sub-tabs">
           <button class="sub-tab active" id="tabAtividade">📢 Atividade</button>
           <button class="sub-tab" id="tabMural">📌 Mural</button>
         </div>
-
         <div id="painelAtividade">
           <div id="listaFeed"></div>
         </div>
-
         <div id="painelMural" style="display:none;">
           <form id="muralForm" style="display:flex; gap:8px; margin-bottom:12px;">
             <input type="text" id="muralInput" maxlength="140" placeholder="Deixa um recado pra galera..." style="flex:1; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-size:13px;">
@@ -95,7 +97,6 @@
           </form>
           <div id="listaMural"></div>
         </div>
-
       </div>
     </div>
 
@@ -106,25 +107,22 @@
         <span class="solicitacoes-seta" id="pedidosSectionSeta">▾</span>
       </div>
       <div class="solicitacoes-body" id="pedidosSectionBody" style="display:none;">
-
         <div class="sub-tabs">
           <button class="sub-tab active" id="tabLideres">🔗 Pra líderes</button>
           <button class="sub-tab" id="tabAjuda">🆘 Ajuda interna</button>
         </div>
-
         <div id="painelLideres">
           <button class="btn btn-primary" id="novaSolicitacaoBtn" style="width:100%; margin-bottom:10px;">+ Gerar link pra líder</button>
           <div id="listaSolicitacoes"></div>
         </div>
-
         <div id="painelAjuda" style="display:none;">
           <button class="btn btn-primary" id="novoPedidoBtn" style="width:100%; margin-bottom:10px;">+ Novo pedido</button>
           <div id="listaPedidos"></div>
         </div>
-
       </div>
     </div>
 
+    <div class="dash-cultos-titulo">Cultos do mês</div>
     <div id="listaCultos">
       <div class="skeleton skeleton-culto"></div>
       <div class="skeleton skeleton-culto"></div>
@@ -305,7 +303,9 @@
     <div id="detalheGaleria" class="galeria-grid"></div>
 
     <div class="modal-actions" style="margin-top:20px;">
-      <button type="button" class="btn" id="cultoDetalheFecharBtn" style="width:100%;">Fechar</button>
+      <button type="button" class="btn" id="detalheEditarBtn">✎ Editar</button>
+      <button type="button" class="btn btn-excluir" id="detalheExcluirBtn" style="flex:0 0 auto;">🗑</button>
+      <button type="button" class="btn" id="cultoDetalheFecharBtn" style="flex:1;">Fechar</button>
     </div>
 
   </div>
