@@ -162,15 +162,12 @@ function carregarProximoCulto() {
     const nomeEl = document.getElementById("proximoCultoTexto");
     if (nomeEl) nomeEl.textContent = c.tipo || "Culto";
 
-    const subEl = document.getElementById("proximoCultoSub");
+        const subEl = document.getElementById("proximoCultoSub");
     if (subEl) {
       const diaSemana = DIAS_SEMANA[dataCulto.getDay()];
-      const horario = dataCulto.getHours() !== 0
-        ? ` · ${String(dataCulto.getHours()).padStart(2,"0")}:${String(dataCulto.getMinutes()).padStart(2,"0")}`
-        : "";
-      subEl.textContent = `${diaSemana}${horario}`;
+      const diaMes = `${String(dataCulto.getDate()).padStart(2,"0")}/${String(dataCulto.getMonth()+1).padStart(2,"0")}`;
+      subEl.textContent = `${diaSemana} · ${diaMes}`;
     }
-
     box.style.display = "block";
   });
 }
