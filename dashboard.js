@@ -362,7 +362,7 @@ function renderCultos(docs) {
       <div class="culto-corpo">
         <div class="culto-linha-top">
           <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
-          <div class="culto-status-dot ${isPostado ? "postado" : "pendente"}"></div>
+         <div class="culto-status-dot ${isPostado ? "postado" : "pendente"}">${isPostado ? "postado" : "pendente"}</div>
         </div>
         <div class="culto-tema">${subTitulo}</div>
         <div class="culto-meta-row">
