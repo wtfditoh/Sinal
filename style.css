@@ -617,7 +617,12 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   margin-bottom: 22px;
   box-shadow: 0 16px 32px -20px rgba(0,0,0,0.7);
 }
-.anel-grande { width: 92px; height: 92px; }
+.anel-grande {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  flex-shrink: 0;
+}
 .anel-grande .anel-pct { font-size: 22px; }
 .metrica-hero-info { flex: 1; }
 .metrica-hero-linha {
