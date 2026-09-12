@@ -233,18 +233,24 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   min-width: 0;
 }
 .culto-status-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 20px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 .culto-status-dot.pendente {
-  background: var(--red);
-  box-shadow: 0 0 8px 2px rgba(255,92,92,0.5);
-  animation: pulse-red 1.8s ease-in-out infinite;
+  color: var(--red);
+  background: rgba(255,92,92,0.12);
+  border: 1px solid rgba(255,92,92,0.25);
 }
 .culto-status-dot.postado {
-  background: var(--green);
-  box-shadow: 0 0 8px 2px rgba(46,232,150,0.5);
+  color: var(--green);
+  background: rgba(46,232,150,0.12);
+  border: 1px solid rgba(46,232,150,0.25);
 }
 .culto-tema {
   font-size: 12.5px;
