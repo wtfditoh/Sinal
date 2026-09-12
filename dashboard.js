@@ -365,9 +365,11 @@ function renderCultos(docs) {
          <div class="culto-status-dot ${isPostado ? "postado" : "pendente"}">${isPostado ? "postado" : "pendente"}</div>
         </div>
         <div class="culto-tema">${subTitulo}</div>
-        <div class="culto-meta-row">
-          ${totalCheck > 0 ? `<span class="culto-meta-item">${totalCheck}/3 check</span>` : ""}
-          ${c.origemPublica ? `<span class="culto-meta-item amber">📝 líder</span>` : ""}
+                <div class="culto-checklist-row">
+          <span class="culto-check ${c.checklist?.foto ? "feito" : ""}" title="Foto">📸</span>
+          <span class="culto-check ${c.checklist?.story ? "feito" : ""}" title="Story">📱</span>
+          <span class="culto-check ${c.checklist?.feed ? "feito" : ""}" title="Feed">📰</span>
+          ${c.origemPublica ? `<span class="culto-meta-item amber" style="margin-left:auto;">📝 líder</span>` : ""}
         </div>
       </div>
       <button class="culto-quick-btn ${isPostado ? "undo" : "mark"}" data-id="${id}" data-action="${isPostado ? "desmarcar" : "marcar"}" title="${isPostado ? "Desmarcar" : "Marcar como postado"}">
