@@ -177,7 +177,7 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 14px 14px;
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -1875,4 +1875,21 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+.culto-checklist-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.culto-check {
+  font-size: 11px;
+  opacity: 0.25;
+  transition: opacity 0.15s;
+  filter: grayscale(1);
+}
+.culto-check.feito {
+  opacity: 1;
+  filter: grayscale(0);
 }
