@@ -208,6 +208,15 @@
 
   <div class="controles">
 
+    <!-- Tamanho do anel -->
+    <div class="grupo">
+      <div class="grupo-label">
+        <span>Tamanho do círculo</span>
+        <span class="valor" id="escalaValor">70%</span>
+      </div>
+      <input type="range" min="30" max="95" value="70" class="slider" id="escalaSlider">
+    </div>
+
     <!-- Rotação do gradiente -->
     <div class="grupo">
       <div class="grupo-label">
@@ -219,7 +228,7 @@
 
     <!-- Tamanho -->
     <div class="grupo">
-      <div class="grupo-label"><span>Tamanho</span></div>
+      <div class="grupo-label"><span>Resolução do arquivo</span></div>
       <div class="botoes-grupo">
         <button class="opcao" data-tam="192">192</button>
         <button class="opcao ativo" data-tam="512">512</button>
@@ -248,16 +257,19 @@
 
   <div class="aviso">
     💡 Cada ângulo parece um "frame" diferente da logo girando.<br>
-    Pra mudar, arrasta o slider. Baixa quantos quiser.
+    Pra ícone de app, usa 70% ou menos pra ficar com "respiro" nas bordas.
   </div>
 
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    const escalaSlider = document.getElementById('escalaSlider');
+    const escalaValor = document.getElementById('escalaValor');
     const anguloSlider = document.getElementById('anguloSlider');
     const anguloValor = document.getElementById('anguloValor');
     const btnBaixar = document.getElementById('btnBaixar');
 
+    let escala = 0.70;
     let angulo = 0;
     let tamanho = 512;
     let fundo = 'solido';
@@ -274,10 +286,12 @@
 
       const CX = S / 2;
       const CY = S / 2;
-      const RAIO_EXTERNO = S * 0.42;
+      // escala define quanto o círculo ocupa do quadrado (raio = metade * escala)
+      const RAIO_EXTERNO = (S / 2) * escala;
       const RAIO_INTERNO = RAIO_EXTERNO * (2 / 3);
 
       ctx.clearRect(0, 0, S, S);
+      ctx.globalCompositeOperation = 'source-over';
 
       // 1. Fundo
       if (fundo === 'solido') {
@@ -287,21 +301,28 @@
         ctx.fillStyle = COR_FUNDO;
         ctx.fillRect(0, 0, S, S);
 
-        // Radial laranja no canto superior esquerdo
+        // Radial laranja (topo-esquerda)
         const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, S * 0.9);
-        g1.addColorStop(0, 'rgba(255, 176, 32, 0.18)');
+        g1.addColorStop(0, 'rgba(255, 176, 32, 0.22)');
         g1.addColorStop(1, 'rgba(255, 176, 32, 0)');
         ctx.fillStyle = g1;
         ctx.fillRect(0, 0, S, S);
 
-        // Radial verde no canto inferior direito
+        // Radial verde (base-direita)
         const g2 = ctx.createRadialGradient(S, S, 0, S, S, S * 0.9);
-        g2.addColorStop(0, 'rgba(46, 232, 150, 0.14)');
+        g2.addColorStop(0, 'rgba(46, 232, 150, 0.16)');
         g2.addColorStop(1, 'rgba(46, 232, 150, 0)');
         ctx.fillStyle = g2;
         ctx.fillRect(0, 0, S, S);
+
+        // Radial vermelho (topo-direita, sutil)
+        const g3 = ctx.createRadialGradient(S, 0, 0, S, 0, S * 0.75);
+        g3.addColorStop(0, 'rgba(255, 92, 92, 0.10)');
+        g3.addColorStop(1, 'rgba(255, 92, 92, 0)');
+        ctx.fillStyle = g3;
+        ctx.fillRect(0, 0, S, S);
       }
-      // Se for 'transparente', não desenha fundo nenhum
+      // Se for 'transparente', não desenha fundo
 
       // 2. Anel externo com gradiente cônico rotacionado
       const rad = (angulo * Math.PI) / 180;
@@ -317,15 +338,22 @@
       ctx.fill();
 
       // 3. Miolo
-      if (fundo === 'transparente') {
-        // Fura o meio pra ficar transparente de verdade
+      if (fundo === 'gradiente') {
+        // No modo degradê, o miolo também fica transparente,
+        // então o degradê do fundo aparece por baixo → parece contínuo
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(CX, CY, RAIO_INTERNO, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+      } else if (fundo === 'transparente') {
         ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
         ctx.arc(CX, CY, RAIO_INTERNO, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
       } else {
-        // Pinta o miolo com a cor de fundo
+        // Sólido: pinta o miolo com a cor de fundo
         ctx.beginPath();
         ctx.arc(CX, CY, RAIO_INTERNO, 0, Math.PI * 2);
         ctx.fillStyle = COR_FUNDO;
@@ -347,6 +375,12 @@
     }
 
     // Eventos
+    escalaSlider.addEventListener('input', () => {
+      escala = parseInt(escalaSlider.value, 10) / 100;
+      escalaValor.textContent = escalaSlider.value + '%';
+      desenhar();
+    });
+
     anguloSlider.addEventListener('input', () => {
       angulo = parseInt(anguloSlider.value, 10);
       anguloValor.textContent = angulo + '°';
