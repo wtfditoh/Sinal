@@ -1,11 +1,8 @@
 // ========================================
 // CONFIGURAÇÃO DOS PRESETS
 // ========================================
-// Coloque seus arquivos .cube na pasta "luts/"
-// e cadastre aqui:
-
 const PRESETS = [
-  { nome: "Meu Preset", arquivo: "luts/Feed2026.cube" },
+  { nome: "Meu Preset", arquivo: "luts/preset.cube" },
 ];
 
 // ========================================
@@ -30,6 +27,18 @@ let imagemOriginal = null;
 let presetsCarregados = [];
 let presetAtual = null;
 let intensidade = 1.0;
+
+// ---- LUT vermelha hardcoded pra debug ----
+const LUT_DEBUG_VERMELHO = {
+  nome: "🔴 Teste Vermelho",
+  size: 2,
+  data: new Float32Array([
+    0,0,0,  1,0,0,
+    0,1,0,  1,1,0,
+    0,0,1,  1,0,1,
+    0,1,1,  1,1,1,
+  ]),
+};
 
 const VERTEX_SHADER = `#version 300 es
   in vec2 a_position;
@@ -66,14 +75,15 @@ const FRAGMENT_SHADER = `#version 300 es
   }
 `;
 
-// Vertices: sem flip, sem UNPACK_FLIP
+// Coordenadas de textura INVERTIDAS no eixo Y pra corrigir a orientação
+// (ponta de baixo da tela pega o topo da imagem)
 const VERTICES = new Float32Array([
-  -1, -1,  0, 0,
-   1, -1,  1, 0,
-  -1,  1,  0, 1,
-  -1,  1,  0, 1,
-   1, -1,  1, 0,
-   1,  1,  1, 1,
+  -1, -1,  0, 1,
+   1, -1,  1, 1,
+  -1,  1,  0, 0,
+  -1,  1,  0, 0,
+   1, -1,  1, 1,
+   1,  1,  1, 0,
 ]);
 
 function compilarShader(contexto, tipo, fonte) {
@@ -117,7 +127,6 @@ function configurarQuad(contexto, prog) {
   contexto.vertexAttribPointer(texLoc, 2, contexto.FLOAT, false, 16, 8);
 }
 
-// Converte Float32 [0..1] pra Uint8 [0..255] com alpha
 function lutFloatParaRGBA8(lutSize, lutData) {
   const total = lutSize * lutSize * lutSize;
   const pixels = new Uint8Array(total * 4);
@@ -175,7 +184,7 @@ function initWebGL() {
 
 async function carregarCube(url) {
   const resposta = await fetch(url);
-  if (!resposta.ok) throw new Error("Não achou: " + url);
+  if (!resposta.ok) throw new Error("Não achou: " + url + " (status " + resposta.status + ")");
   const texto = await resposta.text();
 
   const linhas = texto.split(/\r?\n/);
@@ -189,7 +198,7 @@ async function carregarCube(url) {
     if (l.startsWith("TITLE") || l.startsWith("DOMAIN_MIN") || l.startsWith("DOMAIN_MAX")) continue;
 
     const partes = l.split(/\s+/);
-    if (partes.length === 3) {
+    if (partes.length >= 3) {
       const r = parseFloat(partes[0]);
       const g = parseFloat(partes[1]);
       const b = parseFloat(partes[2]);
@@ -197,11 +206,39 @@ async function carregarCube(url) {
     }
   }
 
+  console.log(`📦 LUT ${url}: size=${size}, valores=${dados.length}, esperado=${size*size*size*3}`);
+
   if (!size || dados.length !== size * size * size * 3) {
-    throw new Error("LUT inválida. Esperado " + (size*size*size*3) + " valores, recebido " + dados.length);
+    throw new Error("LUT inválida. Esperado " + (size*size*size*3) + " valores, veio " + dados.length);
   }
 
-  return { size, data: new Float32Array(dados) };
+  // Verifica se é uma LUT identidade (não faz nada)
+  let ehIdentidade = true;
+  for (let i = 0; i < size * size * size; i++) {
+    const r = Math.round(dados[i*3] * 100) / 100;
+    const g = Math.round(dados[i*3+1] * 100) / 100;
+    const b = Math.round(dados[i*3+2] * 100) / 100;
+    // Posição no cubo: i = r_idx + g_idx*size + b_idx*size*size
+    const bIdx = Math.floor(i / (size * size));
+    const resto = i % (size * size);
+    const gIdx = Math.floor(resto / size);
+    const rIdx = resto % size;
+    const rEsperado = Math.round((rIdx / (size - 1)) * 100) / 100;
+    const gEsperado = Math.round((gIdx / (size - 1)) * 100) / 100;
+    const bEsperado = Math.round((bIdx / (size - 1)) * 100) / 100;
+    if (Math.abs(r - rEsperado) > 0.02 || Math.abs(g - gEsperado) > 0.02 || Math.abs(b - bEsperado) > 0.02) {
+      ehIdentidade = false;
+      break;
+    }
+  }
+
+  if (ehIdentidade) {
+    console.warn("⚠️ Essa LUT é IDENTIDADE (não muda nada). O conversor não funcionou.");
+  } else {
+    console.log("✅ LUT válida e com efeito!");
+  }
+
+  return { size, data: new Float32Array(dados), ehIdentidade };
 }
 
 function carregarImagem(file) {
@@ -297,8 +334,7 @@ async function carregarTodosPresets() {
   for (const p of PRESETS) {
     try {
       const lut = await carregarCube(p.arquivo);
-      carregados.push({ nome: p.nome, size: lut.size, data: lut.data });
-      console.log("Preset carregado:", p.nome, lut.size + "x" + lut.size + "x" + lut.size);
+      carregados.push({ nome: p.nome, size: lut.size, data: lut.data, ehIdentidade: lut.ehIdentidade });
     } catch (erro) {
       console.error("Falha ao carregar " + p.nome + ":", erro);
     }
@@ -309,11 +345,6 @@ async function carregarTodosPresets() {
 function montarListaPresets() {
   listaPresets.innerHTML = "";
 
-  if (presetsCarregados.length === 0) {
-    listaPresets.innerHTML = `<div style="color:var(--text-faint); font-size:12px; padding:12px;">Nenhum preset. Verifique a pasta luts/</div>`;
-    return;
-  }
-
   // Botão "Original"
   const btnOrig = document.createElement("button");
   btnOrig.className = "editor-preset ativo";
@@ -322,23 +353,45 @@ function montarListaPresets() {
   listaPresets.appendChild(btnOrig);
   renderThumb(btnOrig.querySelector("canvas"), null);
 
-  // Botões de cada preset
+  // Presets carregados
   presetsCarregados.forEach((p, i) => {
     const btn = document.createElement("button");
     btn.className = "editor-preset";
     btn.dataset.index = i;
-    btn.innerHTML = `<div class="editor-preset-thumb"><canvas></canvas></div><div class="editor-preset-nome">${p.nome}</div>`;
+    const aviso = p.ehIdentidade ? " ⚠️" : "";
+    btn.innerHTML = `<div class="editor-preset-thumb"><canvas></canvas></div><div class="editor-preset-nome">${p.nome}${aviso}</div>`;
     listaPresets.appendChild(btn);
     renderThumb(btn.querySelector("canvas"), p);
   });
 
+  // Botão de teste vermelho (sempre por último)
+  const btnTeste = document.createElement("button");
+  btnTeste.className = "editor-preset";
+  btnTeste.dataset.index = "teste";
+  btnTeste.innerHTML = `<div class="editor-preset-thumb"><canvas></canvas></div><div class="editor-preset-nome">🔴 Teste</div>`;
+  listaPresets.appendChild(btnTeste);
+  renderThumb(btnTeste.querySelector("canvas"), LUT_DEBUG_VERMELHO);
+
+  // Handlers
   listaPresets.querySelectorAll(".editor-preset").forEach((btn) => {
     btn.addEventListener("click", () => {
       listaPresets.querySelectorAll(".editor-preset").forEach((b) => b.classList.remove("ativo"));
       btn.classList.add("ativo");
-      const idx = parseInt(btn.dataset.index, 10);
-      presetAtual = idx === -1 ? null : presetsCarregados[idx];
+      const idx = btn.dataset.index;
+
+      if (idx === "-1") presetAtual = null;
+      else if (idx === "teste") presetAtual = LUT_DEBUG_VERMELHO;
+      else presetAtual = presetsCarregados[parseInt(idx, 10)];
+
       desenhar();
+
+      if (idx === "teste") {
+        editorStatus.textContent = "🔴 Se a foto ficou vermelha, o código está OK! O problema é seu arquivo .cube.";
+      } else if (presetAtual?.ehIdentidade) {
+        editorStatus.textContent = "⚠️ Esse preset é identidade (não muda nada). Reconverte o arquivo.";
+      } else {
+        editorStatus.textContent = "";
+      }
     });
   });
 }
@@ -437,13 +490,6 @@ fileInput.addEventListener("change", async (e) => {
 
     desenhar();
     montarListaPresets();
-
-    const faltando = PRESETS.length - presetsCarregados.length;
-    if (faltando > 0) {
-      editorStatus.textContent = `⚠️ ${faltando} preset(s) não carregado(s)`;
-    } else if (presetsCarregados.length > 0) {
-      editorStatus.textContent = `✓ ${presetsCarregados.length} preset(s) prontos`;
-    }
   } catch (erro) {
     console.error(erro);
     alert("Erro ao carregar a foto.");
@@ -462,10 +508,4 @@ intensidadeSlider.addEventListener("input", () => {
 (async () => {
   if (!initWebGL()) return;
   await carregarTodosPresets();
-
-  if (presetsCarregados.length > 0) {
-    editorStatus.textContent = `✓ ${presetsCarregados.length} preset(s) prontos`;
-  } else if (PRESETS.length > 0) {
-    editorStatus.textContent = `⚠️ Nenhum preset carregado. Verifique a pasta luts/`;
-  }
 })();
