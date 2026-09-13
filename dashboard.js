@@ -354,8 +354,6 @@ function renderCultos(docs) {
 
     const totalCheck = [c.checklist?.foto, c.checklist?.story, c.checklist?.feed].filter(Boolean).length;
 
-        const totalCheck = [c.checklist?.foto, c.checklist?.story, c.checklist?.feed].filter(Boolean).length;
-
     card.className = `culto-card ${isPostado ? "postado" : ""}`;
     card.innerHTML = `
       <div class="culto-card-top" data-action="abrir">
@@ -406,20 +404,30 @@ function renderCultos(docs) {
     anelPct.textContent = `${pct}%`;
   }
 
-  // Botão rápido de postar/desmarcar
-  listaCultos.querySelectorAll(".culto-quick-btn").forEach((btn) => {
+  // Checklist clicável
+  listaCultos.querySelectorAll(".culto-check").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      toggleStatus(btn.dataset.id, btn.dataset.action);
+      const cultoId = btn.closest(".culto-card").dataset.cultoId;
+      toggleChecklistItem(cultoId, btn.dataset.chave, btn);
     });
   });
 
-  // Clique no card abre modal
-  listaCultos.querySelectorAll(".culto-card").forEach((card) => {
-    card.addEventListener("click", (e) => {
-      if (e.target.closest("button, input, label, a")) return;
-      const id = card.dataset.cultoId;
-      if (id) abrirModalCultoDetalhe(id);
+  // Botão de postar/desmarcar
+  listaCultos.querySelectorAll(".culto-btn-acao").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const cultoId = btn.closest(".culto-card").dataset.cultoId;
+      const isPostado = btn.classList.contains("undo");
+      toggleStatus(cultoId, isPostado ? "desmarcar" : "marcar");
+    });
+  });
+
+  // Clique no topo abre modal
+  listaCultos.querySelectorAll(".culto-card-top").forEach((top) => {
+    top.addEventListener("click", () => {
+      const cultoId = top.closest(".culto-card").dataset.cultoId;
+      if (cultoId) abrirModalCultoDetalhe(cultoId);
     });
   });
 }
