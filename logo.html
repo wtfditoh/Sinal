@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SINAL — Gerador de Logo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Inter:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #08090D;
+    color: #F5F6F8;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 24px;
+    background-image:
+      radial-gradient(circle at 12% -5%, rgba(255, 176, 32, 0.10), transparent 42%),
+      radial-gradient(circle at 88% 105%, rgba(52, 211, 153, 0.08), transparent 42%);
+  }
+
+  .titulo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    text-align: center;
+  }
+
+  .subtitulo {
+    font-size: 13px;
+    color: #9CA3B5;
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.6;
+    margin-top: -14px;
+  }
+
+  .canvas-wrap {
+    padding: 24px;
+    border-radius: 24px;
+    background:
+      linear-gradient(#14171F, #14171F) padding-box,
+      linear-gradient(135deg, #2EE896, #FFB020, #FF5C5C) border-box;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  canvas {
+    width: 320px;
+    height: 320px;
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  .botoes {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 500px;
+  }
+
+  button {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #FFC454, #FFB020);
+    color: #17130A;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 8px 20px -6px rgba(255, 176, 32, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px -6px rgba(255, 176, 32, 0.55);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  button.secundario {
+    background: transparent;
+    border: 1px solid #2E3444;
+    color: #F5F6F8;
+    box-shadow: none;
+  }
+
+  button.secundario:hover {
+    border-color: #FFB020;
+    color: #FFB020;
+    box-shadow: none;
+  }
+
+  .aviso {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #5C6478;
+    text-align: center;
+    max-width: 420px;
+    line-height: 1.7;
+    margin-top: 8px;
+  }
+
+  .preview-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #5C6478;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+  <div class="titulo">Gerador de Logo SINAL</div>
+  <p class="subtitulo">
+    Mesma logo que aparece no login e no app.<br>
+    Baixa em <strong>1024×1024</strong> com qualidade máxima.
+  </p>
+
+  <div class="preview-info">preview</div>
+  <div class="canvas-wrap">
+    <canvas id="canvas" width="1024" height="1024"></canvas>
+  </div>
+
+  <div class="botoes">
+    <button onclick="baixar('escuro')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      Com fundo escuro
+    </button>
+    <button class="secundario" onclick="baixar('transparente')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
+      </svg>
+      Fundo transparente
+    </button>
+  </div>
+
+  <div class="aviso">
+    💡 "Fundo transparente" é ideal pra usar em cima de outras imagens ou posts.<br>
+    "Fundo escuro" é perfeito pra ícone de app e avatar.
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const SIZE = 1024;
+    const CX = SIZE / 2;
+    const CY = SIZE / 2;
+
+    // Proporções fiéis ao CSS:
+    // .login-mark: 48px, ::after = 32px  →  32/48 = 0.666 (2/3)
+    // .brand-mark: 30px, ::after = 20px  →  20/30 = 0.666 (2/3)
+    const RAIO_EXTERNO = SIZE * 0.42;
+    const RAIO_INTERNO = RAIO_EXTERNO * (2 / 3);
+
+    // Cores exatas do style.css
+    const COR_VERDE = '#2EE896';
+    const COR_AMBAR = '#FFB020';
+    const COR_VERMELHO = '#FF5C5C';
+    const COR_FUNDO = '#08090D';
+
+    function desenhar(transparente) {
+      ctx.clearRect(0, 0, SIZE, SIZE);
+
+      // 1. Fundo (se não for transparente)
+      if (!transparente) {
+        ctx.fillStyle = COR_FUNDO;
+        ctx.fillRect(0, 0, SIZE, SIZE);
+      }
+
+      // 2. Anel externo com gradiente cônico
+      // (mesma lógica do conic-gradient(from 180deg, verde, âmbar, vermelho, verde))
+      const gradiente = ctx.createConicGradient(Math.PI, CX, CY);
+      gradiente.addColorStop(0, COR_VERDE);
+      gradiente.addColorStop(1 / 3, COR_AMBAR);
+      gradiente.addColorStop(2 / 3, COR_VERMELHO);
+      gradiente.addColorStop(1, COR_VERDE);
+
+      ctx.beginPath();
+      ctx.arc(CX, CY, RAIO_EXTERNO, 0, Math.PI * 2);
+      ctx.fillStyle = gradiente;
+      ctx.fill();
+
+      // 3. Miolo (o círculo de dentro)
+      if (transparente) {
+        // Fura o meio pra ficar transparente
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(CX, CY, RAIO_INTERNO, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+      } else {
+        // Pinta o meio com a cor de fundo escuro
+        ctx.beginPath();
+        ctx.arc(CX, CY, RAIO_INTERNO, 0, Math.PI * 2);
+        ctx.fillStyle = COR_FUNDO;
+        ctx.fill();
+      }
+    }
+
+    function baixar(tipo) {
+      const transparente = tipo === 'transparente';
+      desenhar(transparente);
+
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sinal-logo-${SIZE}x${SIZE}-${tipo}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        // Restaura o preview opaco depois do download
+        setTimeout(() => desenhar(false), 100);
+      }, 'image/png');
+    }
+
+    // Preview inicial com fundo escuro
+    desenhar(false);
+  </script>
+
+</body>
+</html>
