@@ -28,7 +28,25 @@ exports.handler = async (event) => {
   }
 
   try {
+    // ===== LOGS DE DEBUG =====
+    console.log("🚀 Função ia chamada");
+    console.log("Chave existe?", !!process.env.GROQ_API_KEY);
+    console.log("Tamanho da chave:", process.env.GROQ_API_KEY?.length || 0);
+    console.log("Primeiros 8 chars:", process.env.GROQ_API_KEY?.slice(0, 8) || "VAZIO");
+    // =========================
+
     const { prompt } = JSON.parse(event.body);
+
+    if (!prompt || !prompt.trim()) {
+      console.log("❌ Prompt vazio");
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ erro: "Prompt vazio" })
+      };
+    }
+
+    console.log("📤 Enviando pra Groq...");
 
     const resposta = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -39,8 +57,9 @@ exports.handler = async (event) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "meta-llama/llama-4-scout-17b-16e-instruct",
           temperature: 0.8,
+          max_tokens: 1024,
           messages: [
             {
               role: "system",
@@ -56,9 +75,14 @@ exports.handler = async (event) => {
       }
     );
 
+    console.log("📥 Status da Groq:", resposta.status);
+
     const data = await resposta.json();
 
+    console.log("📥 Dados recebidos:", JSON.stringify(data).slice(0, 500));
+
     if (!resposta.ok) {
+      console.error("❌ Erro da Groq:", JSON.stringify(data));
       return {
         statusCode: resposta.status,
         headers,
@@ -66,20 +90,36 @@ exports.handler = async (event) => {
       };
     }
 
+    const textoResposta = data.choices?.[0]?.message?.content;
+
+    if (!textoResposta) {
+      console.error("❌ Resposta sem conteúdo:", JSON.stringify(data));
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ erro: "IA não retornou texto" })
+      };
+    }
+
+    console.log("✅ Sucesso! Resposta gerada.");
+
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        resposta: data.choices[0].message.content
+        resposta: textoResposta
       })
     };
 
   } catch (erro) {
+    console.error("💥 Erro na função:", erro);
+    console.error("Stack:", erro.stack);
+
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({
-        erro: erro.message
+        erro: erro.message || "Erro interno"
       })
     };
   }
