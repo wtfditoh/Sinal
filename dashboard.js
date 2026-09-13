@@ -354,28 +354,36 @@ function renderCultos(docs) {
 
     const totalCheck = [c.checklist?.foto, c.checklist?.story, c.checklist?.feed].filter(Boolean).length;
 
+        const totalCheck = [c.checklist?.foto, c.checklist?.story, c.checklist?.feed].filter(Boolean).length;
+
+    card.className = `culto-card ${isPostado ? "postado" : ""}`;
     card.innerHTML = `
-      <div class="culto-data-badge ${isPostado ? "postado" : ""}">
-        <div class="culto-data-badge-dia">${diaNum}</div>
-        <div class="culto-data-badge-mes">${mesAbrev}</div>
-      </div>
-      <div class="culto-corpo">
-        <div class="culto-linha-top">
+      <div class="culto-card-top" data-action="abrir">
+        <div class="culto-data-badge">
+          <div class="culto-data-badge-dia">${diaNum}</div>
+          <div class="culto-data-badge-mes">${mesAbrev}</div>
+        </div>
+        <div class="culto-info">
           <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
-         <div class="culto-status-dot ${isPostado ? "postado" : "pendente"}">${isPostado ? "postado" : "pendente"}</div>
+          <div class="culto-tema">${subTitulo}</div>
         </div>
-        <div class="culto-tema">${subTitulo}</div>
-                <div class="culto-checklist-row">
-          <span class="culto-check ${c.checklist?.foto ? "feito" : ""}" title="Foto">📸</span>
-          <span class="culto-check ${c.checklist?.story ? "feito" : ""}" title="Story">📱</span>
-          <span class="culto-check ${c.checklist?.feed ? "feito" : ""}" title="Feed">📰</span>
-          ${c.origemPublica ? `<span class="culto-meta-item amber" style="margin-left:auto;">📝 líder</span>` : ""}
-        </div>
+        ${c.origemPublica ? `<div class="culto-tag-lider">📝 líder</div>` : ""}
       </div>
-      <button class="culto-quick-btn ${isPostado ? "undo" : "mark"}" data-id="${id}" data-action="${isPostado ? "desmarcar" : "marcar"}" title="${isPostado ? "Desmarcar" : "Marcar como postado"}">
+      <div class="culto-checklist">
+        <button class="culto-check ${c.checklist?.foto ? "feito" : ""}" data-chave="foto">
+          📸 Foto
+        </button>
+        <button class="culto-check ${c.checklist?.story ? "feito" : ""}" data-chave="story">
+          📱 Story
+        </button>
+        <button class="culto-check ${c.checklist?.feed ? "feito" : ""}" data-chave="feed">
+          📰 Feed
+        </button>
+      </div>
+      <button class="culto-btn-acao ${isPostado ? "undo" : ""}" data-action="status">
         ${isPostado 
-          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>` 
-          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`
+          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg> Desmarcar postagem`
+          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Marcar como postado`
         }
       </button>
     `;
