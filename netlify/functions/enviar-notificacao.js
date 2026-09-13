@@ -15,9 +15,56 @@ const messaging = getMessaging();
 
 exports.handler = async (event) => {
 
+  // HEADERS CORS pra evitar problemas de preflight
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS"
+  };
+
+  // Trata requisição OPTIONS (preflight) — não tem body, só confirma
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers,
+      body: ""
+    };
+  }
+
+  // Garante que é POST
+  if (event.httpMethod !== "POST") {
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ erro: "Método não permitido. Use POST." })
+    };
+  }
+
   try {
 
-    const { titulo, mensagem, link, imagem, id } = JSON.parse(event.body);
+    // Verifica se tem body antes de tentar parsear
+    if (!event.body || event.body.trim() === "") {
+      console.error("Body vazio recebido. Event completo:", JSON.stringify(event));
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ erro: "Corpo da requisição vazio" })
+      };
+    }
+
+    let dados;
+    try {
+      dados = JSON.parse(event.body);
+    } catch (e) {
+      console.error("Erro ao parsear JSON:", event.body);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ erro: "JSON inválido no corpo da requisição" })
+      };
+    }
+
+    const { titulo, mensagem, link, imagem, id } = dados;
 
     // Busca usuários com token de notificação
     const usuarios = await db.collection("usuarios").get();
@@ -35,6 +82,7 @@ exports.handler = async (event) => {
     if (tokens.length === 0) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({
           erro: "Nenhum token encontrado"
         })
@@ -104,6 +152,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({
         enviados: totalEnviados,
         falhas: totalFalhas,
@@ -113,10 +162,11 @@ exports.handler = async (event) => {
 
   } catch (erro) {
 
-    console.error(erro);
+    console.error("Erro no envio:", erro);
 
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         erro: erro.message
       })
