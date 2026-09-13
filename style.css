@@ -172,26 +172,50 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   .tally.pendente { animation: none; }
 }
 
-/* ---------- Cards de culto (novo dashboard) ---------- */
+/* ---------- Cards de culto ---------- */
 .culto-card {
-  background: var(--bg-elevated);
+  background: linear-gradient(135deg, var(--card) 0%, var(--bg-elevated) 100%);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 14px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
   animation: slideFadeIn 0.3s ease backwards;
 }
-.culto-card:hover { border-color: #3a4152; background: var(--card-hover); }
-.culto-card:active { transform: scale(0.99); }
+.culto-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  background: var(--red);
+  transition: background 0.2s;
+}
+.culto-card.postado::before {
+  background: var(--green);
+}
+.culto-card:hover {
+  border-color: #3a4152;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -12px rgba(0,0,0,0.5);
+}
+.culto-card.postado {
+  background: linear-gradient(135deg, rgba(46,232,150,0.04) 0%, var(--bg-elevated) 100%);
+}
+
+/* Topo: badge + tipo + tema */
+.culto-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
 
 .culto-data-badge {
   flex-shrink: 0;
-  width: 44px;
+  width: 46px;
   text-align: center;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -203,6 +227,7 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   font-weight: 700;
   font-size: 18px;
   line-height: 1;
+  color: var(--text);
 }
 .culto-data-badge-mes {
   font-family: var(--font-mono);
@@ -212,45 +237,21 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   color: var(--text-faint);
   margin-top: 2px;
 }
-.culto-data-badge.postado { border-color: rgba(46,232,150,0.3); }
-.culto-data-badge.postado .culto-data-badge-dia { color: var(--green); }
-
-.culto-corpo { flex: 1; min-width: 0; }
-.culto-linha-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 3px;
+.culto-card.postado .culto-data-badge {
+  border-color: rgba(46,232,150,0.35);
+  background: rgba(46,232,150,0.06);
 }
+.culto-card.postado .culto-data-badge-dia { color: var(--green); }
+
+.culto-info { flex: 1; min-width: 0; }
 .culto-tipo {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 15px;
+  margin-bottom: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1;
-  min-width: 0;
-}
-.culto-status-dot {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  padding: 2px 7px;
-  border-radius: 20px;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.culto-status-dot.pendente {
-  color: var(--red);
-  background: rgba(255,92,92,0.12);
-  border: 1px solid rgba(255,92,92,0.25);
-}
-.culto-status-dot.postado {
-  color: var(--green);
-  background: rgba(46,232,150,0.12);
-  border: 1px solid rgba(46,232,150,0.25);
 }
 .culto-tema {
   font-size: 12.5px;
@@ -258,44 +259,87 @@ main { flex: 1; padding: 20px; padding-bottom: 90px; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 4px;
 }
-.culto-meta-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.culto-meta-item {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  color: var(--text-faint);
-  letter-spacing: 0.3px;
-}
-.culto-meta-item.amber { color: var(--amber); }
 
-.culto-quick-btn {
+.culto-tag-lider {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--amber);
+  background: rgba(255,176,32,0.1);
+  border: 1px solid rgba(255,176,32,0.25);
+  padding: 2px 6px;
+  border-radius: 20px;
   flex-shrink: 0;
-  width: 36px; height: 36px;
+  align-self: flex-start;
+}
+
+/* Checklist visual */
+.culto-checklist {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.culto-check {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 6px;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg);
-  color: var(--text-dim);
-  display: flex; align-items: center; justify-content: center;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
 }
-.culto-quick-btn.mark {
+.culto-check:hover {
+  border-color: #3a4152;
+  color: var(--text-dim);
+}
+.culto-check.feito {
   background: rgba(46,232,150,0.1);
   border-color: rgba(46,232,150,0.35);
   color: var(--green);
 }
-.culto-quick-btn.mark:hover { background: rgba(46,232,150,0.2); }
-.culto-quick-btn.undo {
-  background: rgba(255,92,92,0.08);
+.culto-check:active { transform: scale(0.96); }
+
+/* Botão de ação */
+.culto-btn-acao {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px;
+  border-radius: 12px;
+  border: 1px solid rgba(46,232,150,0.35);
+  background: linear-gradient(135deg, rgba(46,232,150,0.15), rgba(46,232,150,0.05));
+  color: var(--green);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.culto-btn-acao:hover {
+  background: linear-gradient(135deg, rgba(46,232,150,0.25), rgba(46,232,150,0.1));
+  transform: translateY(-1px);
+}
+.culto-btn-acao:active { transform: translateY(0); }
+
+.culto-btn-acao.undo {
   border-color: rgba(255,92,92,0.3);
+  background: linear-gradient(135deg, rgba(255,92,92,0.1), rgba(255,92,92,0.03));
   color: var(--red);
 }
-.culto-quick-btn.undo:hover { background: rgba(255,92,92,0.18); }
+.culto-btn-acao.undo:hover {
+  background: linear-gradient(135deg, rgba(255,92,92,0.2), rgba(255,92,92,0.08));
+}
 
 /* ---------- Month selector ---------- */
 .month-nav {
