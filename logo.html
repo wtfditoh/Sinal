@@ -279,52 +279,55 @@
     const COR_VERMELHO = '#FF5C5C';
     const COR_FUNDO = '#08090D';
 
-    function desenhar() {
+      function desenhar() {
       const S = tamanho;
       canvas.width = S;
       canvas.height = S;
 
       const CX = S / 2;
       const CY = S / 2;
-      // escala define quanto o círculo ocupa do quadrado (raio = metade * escala)
       const RAIO_EXTERNO = (S / 2) * escala;
       const RAIO_INTERNO = RAIO_EXTERNO * (2 / 3);
 
       ctx.clearRect(0, 0, S, S);
       ctx.globalCompositeOperation = 'source-over';
 
-      // 1. Fundo
-      if (fundo === 'solido') {
-        ctx.fillStyle = COR_FUNDO;
-        ctx.fillRect(0, 0, S, S);
-      } else if (fundo === 'gradiente') {
-        ctx.fillStyle = COR_FUNDO;
-        ctx.fillRect(0, 0, S, S);
+      // Função que desenha o fundo (sólido ou degradê)
+      function desenharFundo() {
+        if (fundo === 'solido') {
+          ctx.fillStyle = COR_FUNDO;
+          ctx.fillRect(0, 0, S, S);
+        } else if (fundo === 'gradiente') {
+          ctx.fillStyle = COR_FUNDO;
+          ctx.fillRect(0, 0, S, S);
 
-        // Radial laranja (topo-esquerda)
-        const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, S * 0.9);
-        g1.addColorStop(0, 'rgba(255, 176, 32, 0.22)');
-        g1.addColorStop(1, 'rgba(255, 176, 32, 0)');
-        ctx.fillStyle = g1;
-        ctx.fillRect(0, 0, S, S);
+          // Radial laranja (topo-esquerda)
+          const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, S * 0.9);
+          g1.addColorStop(0, 'rgba(255, 176, 32, 0.22)');
+          g1.addColorStop(1, 'rgba(255, 176, 32, 0)');
+          ctx.fillStyle = g1;
+          ctx.fillRect(0, 0, S, S);
 
-        // Radial verde (base-direita)
-        const g2 = ctx.createRadialGradient(S, S, 0, S, S, S * 0.9);
-        g2.addColorStop(0, 'rgba(46, 232, 150, 0.16)');
-        g2.addColorStop(1, 'rgba(46, 232, 150, 0)');
-        ctx.fillStyle = g2;
-        ctx.fillRect(0, 0, S, S);
+          // Radial verde (base-direita)
+          const g2 = ctx.createRadialGradient(S, S, 0, S, S, S * 0.9);
+          g2.addColorStop(0, 'rgba(46, 232, 150, 0.16)');
+          g2.addColorStop(1, 'rgba(46, 232, 150, 0)');
+          ctx.fillStyle = g2;
+          ctx.fillRect(0, 0, S, S);
 
-        // Radial vermelho (topo-direita, sutil)
-        const g3 = ctx.createRadialGradient(S, 0, 0, S, 0, S * 0.75);
-        g3.addColorStop(0, 'rgba(255, 92, 92, 0.10)');
-        g3.addColorStop(1, 'rgba(255, 92, 92, 0)');
-        ctx.fillStyle = g3;
-        ctx.fillRect(0, 0, S, S);
+          // Radial vermelho (topo-direita)
+          const g3 = ctx.createRadialGradient(S, 0, 0, S, 0, S * 0.75);
+          g3.addColorStop(0, 'rgba(255, 92, 92, 0.10)');
+          g3.addColorStop(1, 'rgba(255, 92, 92, 0)');
+          ctx.fillStyle = g3;
+          ctx.fillRect(0, 0, S, S);
+        }
       }
-      // Se for 'transparente', não desenha fundo
 
-      // 2. Anel externo com gradiente cônico rotacionado
+      // 1. Fundo base
+      desenharFundo();
+
+      // 2. Anel externo com gradiente cônico
       const rad = (angulo * Math.PI) / 180;
       const gradiente = ctx.createConicGradient(Math.PI + rad, CX, CY);
       gradiente.addColorStop(0, COR_VERDE);
@@ -338,20 +341,28 @@
       ctx.fill();
 
       // 3. Miolo
-      if (fundo === 'gradiente') {
-        // No modo degradê, o miolo também fica transparente,
-        // então o degradê do fundo aparece por baixo → parece contínuo
+      if (fundo === 'transparente') {
+        // Fura de verdade (transparente)
         ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
         ctx.arc(CX, CY, RAIO_INTERNO, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
-      } else if (fundo === 'transparente') {
+      } else if (fundo === 'gradiente') {
+        // Fura o miolo, depois redesenha o fundo só na área do miolo
         ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
         ctx.arc(CX, CY, RAIO_INTERNO, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
+
+        // Recorta pra desenhar só dentro do círculo interno
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(CX, CY, RAIO_INTERNO, 0, Math.PI * 2);
+        ctx.clip();
+        desenharFundo();
+        ctx.restore();
       } else {
         // Sólido: pinta o miolo com a cor de fundo
         ctx.beginPath();
