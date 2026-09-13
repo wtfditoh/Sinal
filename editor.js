@@ -5,7 +5,7 @@
 // e cadastre aqui:
 
 const PRESETS = [
-  { nome: "Meu Preset", arquivo: "luts/preset.cube" },
+  { nome: "Meu Preset", arquivo: "luts/Feed2026.cube" },
 ];
 
 // ========================================
