@@ -112,45 +112,82 @@ export async function sair() {
 }
 
 // ==========================================
-// Verifica permissão de notificação e mostra
-// o botão de ativar caso esteja bloqueada
+// Notificações: pede permissão E registra token
 // ==========================================
-function verificarPermissaoNotificacao() {
+
+async function iniciarNotificacoes() {
   if (!("Notification" in window)) return;
 
   const btn = document.getElementById("btnAtivarNotif");
-  if (!btn) return;
 
-  if (Notification.permission === "default") {
-    // Nunca perguntou — mostra o botão pra ativar
+  // Importa dinamicamente o módulo de notificações
+  let registrarTokenNotificacao, escutarNotificacoes;
+  try {
+    const mod = await import("./notificacoes.js");
+    registrarTokenNotificacao = mod.registrarTokenNotificacao;
+    escutarNotificacoes = mod.escutarNotificacoes;
+  } catch (e) {
+    console.warn("Módulo de notificações não encontrado:", e);
+    return;
+  }
+
+  const { auth } = await import("./firebase-config.js");
+
+  // Helper: espera o usuário logar e registra o token
+  function registrarQuandoLogar() {
+    const check = setInterval(() => {
+      if (auth.currentUser) {
+        clearInterval(check);
+        registrarTokenNotificacao(auth.currentUser);
+        escutarNotificacoes();
+      }
+    }, 500);
+    // Para de checar depois de 20s
+    setTimeout(() => clearInterval(check), 20000);
+  }
+
+  // Já autorizado → registra direto
+  if (Notification.permission === "granted") {
+    if (btn) btn.style.display = "none";
+    registrarQuandoLogar();
+    return;
+  }
+
+  // Negado → mostra botão com instruções
+  if (Notification.permission === "denied") {
+    if (btn) {
+      btn.style.display = "flex";
+      btn.onclick = () => {
+        alert(
+          "As notificações estão bloqueadas.\n\n" +
+          "Pra liberar:\n" +
+          "1. Abre o Chrome\n" +
+          "2. Menu → Configurações do site\n" +
+          "3. Ativa Notificações pra sinalpv.netlify.app\n" +
+          "4. Recarrega o app"
+        );
+      };
+    }
+    return;
+  }
+
+  // Nunca perguntou → mostra botão pra ativar
+  if (btn) {
     btn.style.display = "flex";
-    btn.addEventListener("click", async () => {
+    btn.onclick = async () => {
       const resultado = await Notification.requestPermission();
+
       if (resultado === "granted") {
         btn.style.display = "none";
-        // Recarrega pra registrar o token FCM corretamente
-        window.location.reload();
+        if (auth.currentUser) {
+          await registrarTokenNotificacao(auth.currentUser);
+          escutarNotificacoes();
+        }
+        // Recarrega depois de 1s pra garantir que o token foi salvo
+        setTimeout(() => window.location.reload(), 1000);
       }
-    });
-  } else if (Notification.permission === "denied") {
-    // Bloqueado — mostra botão que explica como desbloquear
-    btn.style.display = "flex";
-    btn.addEventListener("click", () => {
-      alert(
-        "As notificações estão bloqueadas.\\n\\n" +
-        "Pra liberar:\\n" +
-        "1. Abre o Chrome\\n" +
-        "2. Vai em Configurações do site\\n" +
-        "3. Ativa Notificações pra sinalpv.netlify.app\\n" +
-        "4. Recarrega o app"
-      );
-    });
-  } else {
-    // Já permitido
-    btn.style.display = "none";
+    };
   }
 }
 
-// Chama a verificação quando a página carrega
-// (usa setTimeout pra garantir que o DOM já montou o botão)
-setTimeout(verificarPermissaoNotificacao, 500);
+setTimeout(iniciarNotificacoes, 800);
