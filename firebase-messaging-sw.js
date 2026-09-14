@@ -18,7 +18,8 @@ const messaging = firebase.messaging();
 
 // ⚡ ESSENCIAL: processa notificações em segundo plano
 messaging.onBackgroundMessage((payload) => {
-  console.log("📬 Notificação em background:", payload);
+  console.log("📬 Notificação em background recebida:", payload);
+});
 
   const titulo = payload.notification?.title || "SINAL";
   const opcoes = {
