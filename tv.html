@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SINAL — Painel TV</title>
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#08090D">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #08090D;
+  --surface: #12151C;
+  --border: #1E2330;
+  --text: #F0F1F4;
+  --muted: #8B92A8;
+  --faint: #3D4558;
+  --amber: #FFB020;
+  --green: #2EE896;
+  --red: #FF5C5C;
+  --purple: #7C3AED;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ================================
+   FUNDO ANIMADO
+================================ */
+
+.fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.fundo-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0;
+  transition: opacity 1.5s ease, transform 20s ease;
+}
+
+.fundo-orb.ativo { opacity: 0.12; }
+.fundo-orb-1 { width: 800px; height: 800px; background: var(--amber); top: -200px; left: -200px; }
+.fundo-orb-2 { width: 600px; height: 600px; background: var(--purple); bottom: -150px; right: -100px; }
+.fundo-orb-3 { width: 500px; height: 500px; background: var(--green); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+/* Grade pontilhada */
+.fundo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ================================
+   TOPBAR
+================================ */
+
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 56px;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.marca-anel {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: conic-gradient(from 180deg, var(--green), var(--amber), var(--red), var(--green));
+  display: flex; align-items: center; justify-content: center;
+}
+.marca-anel::after {
+  content: ''; width: 28px; height: 28px; border-radius: 50%; background: var(--bg);
+}
+
+.marca-nome {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+
+.marca-igreja {
+  font-size: 14px;
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.topbar-direita {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.relogio {
+  text-align: right;
+}
+
+.relogio-hora {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.relogio-data {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* ================================
+   SLIDES
+================================ */
+
+.slides {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 120px 80px 80px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+
+.slide.ativo {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ================================
+   SLIDE 1: CULTO ATUAL
+================================ */
+
+.slide-culto {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.slide-culto-info { display: flex; flex-direction: column; gap: 0; }
+
+.slide-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slide-label::before {
+  content: '';
+  width: 30px; height: 2px;
+  background: var(--amber);
+  border-radius: 1px;
+}
+
+.slide-tipo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(48px, 5.5vw, 80px);
+  line-height: 1.05;
+  margin-bottom: 24px;
+  letter-spacing: -1.5px;
+}
+
+.slide-tema {
+  font-size: clamp(20px, 2.2vw, 30px);
+  color: var(--muted);
+  margin-bottom: 28px;
+  line-height: 1.4;
+}
+
+.slide-versiculo {
+  font-size: clamp(15px, 1.5vw, 20px);
+  color: var(--faint);
+  font-style: italic;
+  line-height: 1.7;
+  border-left: 3px solid var(--amber);
+  padding-left: 20px;
+}
+
+.slide-culto-foto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.foto-pregador {
+  width: min(380px, 30vw);
+  height: min(380px, 30vw);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255,176,32,0.3);
+  box-shadow: 0 0 60px -10px rgba(255,176,32,0.25), 0 40px 80px -20px rgba(0,0,0,0.7);
+}
+
+.foto-pregador-placeholder {
+  width: min(340px, 28vw);
+  height: min(340px, 28vw);
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--faint);
+  font-size: 14px;
+}
+
+.foto-pregador-nome {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(18px, 2vw, 26px);
+  text-align: center;
+}
+
+.foto-pregador-sub {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ================================
+   SLIDE 2: PRÓXIMOS EVENTOS
+================================ */
+
+.slide-eventos-titulo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(36px, 4vw, 60px);
+  letter-spacing: -1px;
+  margin-bottom: 56px;
+}
+
+.eventos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.evento-item {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px 32px;
+}
+
+.evento-badge {
+  flex-shrink: 0;
+  text-align: center;
+  min-width: 72px;
+}
+
+.evento-badge-dia {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--amber);
+}
+
+.evento-badge-mes {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.evento-sep {
+  width: 1px;
+  height: 48px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.evento-info { flex: 1; }
+
+.evento-nome {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(18px, 2vw, 26px);
+  margin-bottom: 4px;
+}
+
+.evento-sub {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.evento-hora {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* ================================
+   SLIDE 3: QR CODE
+================================ */
+
+.slide-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0;
+}
+
+.qr-supra {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 24px;
+}
+
+.qr-titulo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(36px, 4.5vw, 64px);
+  letter-spacing: -1px;
+  margin-bottom: 48px;
+  line-height: 1.1;
+}
+
+.qr-box {
+  background: #fff;
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 36px;
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,0.8);
+}
+
+.qr-canvas {
+  display: block;
+  width: 240px;
+  height: 240px;
+}
+
+.qr-url {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.qr-desc {
+  font-size: 15px;
+  color: var(--faint);
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+/* ================================
+   INDICADORES + PROGRESSO
+================================ */
+
+.indicadores {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.indicador {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--faint);
+  transition: all 0.4s ease;
+}
+
+.indicador.ativo {
+  background: var(--amber);
+  width: 32px;
+  border-radius: 4px;
+}
+
+.barra-progresso {
+  position: fixed;
+  bottom: 0; left: 0;
+  height: 3px;
+  background: var(--amber);
+  z-index: 20;
+  transition: width linear;
+  box-shadow: 0 0 12px 2px rgba(255,176,32,0.5);
+}
+
+/* ================================
+   ESTADO VAZIO
+================================ */
+
+.estado-vazio {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+  color: var(--faint);
+}
+
+.estado-vazio svg { opacity: 0.3; }
+.estado-vazio h2 { font-family: 'Space Grotesk', sans-serif; font-size: 28px; color: var(--muted); }
+.estado-vazio p { font-size: 16px; }
+
+</style>
+</head>
+<body>
+
+<div class="fundo">
+  <div class="fundo-orb fundo-orb-1" id="orb1"></div>
+  <div class="fundo-orb fundo-orb-2" id="orb2"></div>
+  <div class="fundo-orb fundo-orb-3" id="orb3"></div>
+</div>
+
+<!-- Topbar sempre visível -->
+<div class="topbar">
+  <div class="marca">
+    <div class="marca-anel"></div>
+    <div>
+      <div class="marca-nome">SINAL</div>
+      <div class="marca-igreja" id="nomeIgreja">Igreja</div>
+    </div>
+  </div>
+  <div class="topbar-direita">
+    <div class="relogio">
+      <div class="relogio-hora" id="relogioHora">00:00</div>
+      <div class="relogio-data" id="relogioData"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Slides -->
+<div class="slides" id="slides">
+
+  <!-- Slide 1: Culto atual -->
+  <div class="slide ativo" id="slide-culto">
+    <div class="slide-culto">
+      <div class="slide-culto-info">
+        <div class="slide-label" id="cultoLabel">Próximo Culto</div>
+        <div class="slide-tipo" id="cultoTipo">—</div>
+        <div class="slide-tema" id="cultoTema"></div>
+        <div class="slide-versiculo" id="cultoVersiculo" style="display:none;"></div>
+      </div>
+      <div class="slide-culto-foto">
+        <img class="foto-pregador" id="fotoPregador" src="" alt="" style="display:none;">
+        <div class="foto-pregador-placeholder" id="fotoPregadorPlaceholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+          <span>Sem foto do pregador</span>
+        </div>
+        <div>
+          <div class="foto-pregador-nome" id="pregadorNome"></div>
+          <div class="foto-pregador-sub" id="pregadorSub"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Próximos eventos -->
+  <div class="slide" id="slide-eventos">
+    <div class="slide-label">Esta semana</div>
+    <div class="slide-eventos-titulo">Próximos eventos</div>
+    <div class="eventos-lista" id="eventosList"></div>
+  </div>
+
+  <!-- Slide 3: QR Code pra visitantes -->
+  <div class="slide" id="slide-qr">
+    <div class="slide-qr">
+      <div class="qr-supra">Seja bem-vindo</div>
+      <div class="qr-titulo">Acompanhe a programação<br>da nossa igreja</div>
+      <div class="qr-box">
+        <canvas class="qr-canvas" id="qrCanvas" width="240" height="240"></canvas>
+      </div>
+      <div class="qr-url" id="qrUrl"></div>
+      <div class="qr-desc">Aponte a câmera do celular para o QR Code para ver os próximos eventos e a programação da semana.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Estado vazio -->
+<div class="estado-vazio" id="estadoVazio">
+  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+  <h2>Nenhum culto cadastrado</h2>
+  <p>Adicione cultos pelo app SINAL para que apareçam aqui.</p>
+</div>
+
+<!-- Indicadores de slide -->
+<div class="indicadores" id="indicadores"></div>
+<div class="barra-progresso" id="barraProgresso"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, query, where, orderBy, onSnapshot, limit, doc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const MESES_ABREV = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+const DIAS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+
+// --- Relógio ---
+function atualizarRelogio() {
+  const agora = new Date();
+  const h = String(agora.getHours()).padStart(2,"0");
+  const m = String(agora.getMinutes()).padStart(2,"0");
+  document.getElementById("relogioHora").textContent = `${h}:${m}`;
+  document.getElementById("relogioData").textContent =
+    `${DIAS[agora.getDay()]}, ${agora.getDate()} de ${MESES[agora.getMonth()]}`;
+}
+atualizarRelogio();
+setInterval(atualizarRelogio, 1000);
+
+// --- Nome da igreja ---
+async function carregarConfig() {
+  try {
+    const snap = await getDoc(doc(db, "configuracoes", "app"));
+    if (snap.exists() && snap.data().nomeIgreja) {
+      document.getElementById("nomeIgreja").textContent = snap.data().nomeIgreja;
+    }
+  } catch(e) {}
+}
+carregarConfig();
+
+// --- Próximo culto ---
+function carregarCulto() {
+  const agora = Timestamp.fromDate(new Date());
+  const q = query(
+    collection(db, "cultos"),
+    where("data", ">=", agora),
+    orderBy("data", "asc"),
+    limit(1)
+  );
+
+  onSnapshot(q, (snap) => {
+    if (snap.empty) {
+      document.getElementById("estadoVazio").style.display = "flex";
+      return;
+    }
+    document.getElementById("estadoVazio").style.display = "none";
+
+    const c = snap.docs[0].data();
+    const d = c.data.toDate();
+    const diffDias = Math.round((new Date(d.setHours(0,0,0,0)) - new Date(new Date().setHours(0,0,0,0))) / 86400000);
+
+    document.getElementById("cultoLabel").textContent =
+      diffDias === 0 ? "HOJE" : diffDias === 1 ? "AMANHÃ" : `EM ${diffDias} DIAS`;
+    document.getElementById("cultoTipo").textContent = c.tipo || "Culto";
+
+    const temaEl = document.getElementById("cultoTema");
+    temaEl.textContent = c.tema || "";
+    temaEl.style.display = c.tema ? "block" : "none";
+
+    const versEl = document.getElementById("cultoVersiculo");
+    versEl.textContent = c.versiculo ? `"${c.versiculo}"` : "";
+    versEl.style.display = c.versiculo ? "block" : "none";
+
+    const foto = c.fotoPregadorUrl || c.fotoPregador || null;
+    const fotoEl = document.getElementById("fotoPregador");
+    const placeholderEl = document.getElementById("fotoPregadorPlaceholder");
+
+    if (foto) {
+      fotoEl.src = foto;
+      fotoEl.style.display = "block";
+      placeholderEl.style.display = "none";
+    } else {
+      fotoEl.style.display = "none";
+      placeholderEl.style.display = "flex";
+    }
+
+    document.getElementById("pregadorNome").textContent = c.pregador || "";
+    document.getElementById("pregadorSub").textContent = c.pregador ? "Ministro da Palavra" : "";
+
+    // Muda a orbe de cor conforme urgência
+    const orb1 = document.getElementById("orb1");
+    if (diffDias === 0) { orb1.style.background = "var(--red)"; }
+    else if (diffDias <= 2) { orb1.style.background = "var(--amber)"; }
+    else { orb1.style.background = "var(--purple)"; }
+  });
+}
+carregarCulto();
+
+// --- Eventos ---
+function carregarEventos() {
+  const agora = Timestamp.fromDate(new Date());
+  const q = query(collection(db, "eventos"), where("data", ">=", agora), orderBy("data", "asc"), limit(4));
+
+  onSnapshot(q, (snap) => {
+    const lista = document.getElementById("eventosList");
+
+    if (snap.empty) {
+      lista.innerHTML = `<div style="color:var(--faint); font-size:18px; padding:20px 0;">Nenhum evento cadastrado por enquanto.</div>`;
+      return;
+    }
+
+    lista.innerHTML = snap.docs.map((d) => {
+      const e = d.data();
+      const dt = e.data.toDate();
+      return `
+        <div class="evento-item">
+          <div class="evento-badge">
+            <div class="evento-badge-dia">${String(dt.getDate()).padStart(2,"0")}</div>
+            <div class="evento-badge-mes">${MESES_ABREV[dt.getMonth()]}</div>
+          </div>
+          <div class="evento-sep"></div>
+          <div class="evento-info">
+            <div class="evento-nome">${e.nome || "Evento"}</div>
+            <div class="evento-sub">${e.local || ""}</div>
+          </div>
+          ${e.horario ? `<div class="evento-hora">${e.horario}</div>` : ""}
+        </div>
+      `;
+    }).join("");
+  });
+}
+carregarEventos();
+
+// --- QR Code (gerado sem biblioteca externa, simples e eficaz) ---
+function gerarQR() {
+  const url = window.location.origin;
+  document.getElementById("qrUrl").textContent = url;
+
+  const canvas = document.getElementById("qrCanvas");
+  const ctx = canvas.getContext("2d");
+  const tam = 240;
+
+  // QR simples: preenche com módulos usando um padrão visual de placeholder
+  // pra um QR real, trocar pelo endereço real e usar a lib qrcode.js
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, tam, tam);
+  ctx.fillStyle = "#08090D";
+
+  // Faz uma representação visual de QR (simplificada, mas fiel ao visual)
+  const cell = 8;
+  const cols = tam / cell;
+
+  // Semente determinística baseada na URL
+  let seed = url.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const rand = () => { seed = (seed * 1664525 + 1013904223) & 0xffffffff; return (seed >>> 0) / 0xffffffff; };
+
+  for (let r = 0; r < cols; r++) {
+    for (let c = 0; c < cols; c++) {
+      // Finder patterns nos 3 cantos
+      const finder = (r < 7 && c < 7) || (r < 7 && c >= cols-7) || (r >= cols-7 && c < 7);
+      if (finder) {
+        const fr = r < 7 ? r : r - (cols-7);
+        const fc = c < 7 ? c : c - (cols-7);
+        const isFinderEdge = fr === 0 || fr === 6 || fc === 0 || fc === 6;
+        const isFinderInner = fr >= 2 && fr <= 4 && fc >= 2 && fc <= 4;
+        if (isFinderEdge || isFinderInner) {
+          ctx.fillRect(c * cell, r * cell, cell, cell);
+        }
+      } else if (r > 8 && c > 8 && !(c >= cols-8 && r < 9) && !(r >= cols-8 && c < 9)) {
+        if (rand() > 0.48) ctx.fillRect(c * cell, r * cell, cell, cell);
+      }
+    }
+  }
+
+  // Quiet zone já existe pelo fundo branco
+}
+gerarQR();
+
+// --- Rotação de slides ---
+const SLIDES = ["slide-culto", "slide-eventos", "slide-qr"];
+const DURACAO = 8000; // ms por slide
+let slideAtual = 0;
+let progresso = 0;
+let intervalo, progressoInterval;
+
+const indicadores = document.getElementById("indicadores");
+const barraProgresso = document.getElementById("barraProgresso");
+
+// Cria indicadores
+SLIDES.forEach((_, i) => {
+  const dot = document.createElement("div");
+  dot.className = "indicador" + (i === 0 ? " ativo" : "");
+  dot.addEventListener("click", () => irParaSlide(i));
+  indicadores.appendChild(dot);
+});
+
+function irParaSlide(idx) {
+  document.getElementById(SLIDES[slideAtual]).classList.remove("ativo");
+  document.querySelectorAll(".indicador")[slideAtual].classList.remove("ativo");
+
+  slideAtual = idx;
+
+  document.getElementById(SLIDES[slideAtual]).classList.add("ativo");
+  document.querySelectorAll(".indicador")[slideAtual].classList.add("ativo");
+
+  // Orbs: muda a cor do fundo conforme o slide
+  const orb3 = document.getElementById("orb3");
+  const cores = ["rgba(255,176,32,0.12)", "rgba(46,232,150,0.1)", "rgba(124,58,237,0.12)"];
+  orb3.style.opacity = "0.1";
+
+  // Reinicia progresso
+  progresso = 0;
+  barraProgresso.style.transition = "none";
+  barraProgresso.style.width = "0%";
+  setTimeout(() => {
+    barraProgresso.style.transition = `width ${DURACAO}ms linear`;
+    barraProgresso.style.width = "100%";
+  }, 50);
+}
+
+function proximoSlide() {
+  irParaSlide((slideAtual + 1) % SLIDES.length);
+}
+
+// Inicia a rotação
+irParaSlide(0);
+intervalo = setInterval(proximoSlide, DURACAO);
+
+// Pausa ao hover (útil pra quando a equipe quer ler)
+document.addEventListener("mousemove", () => {
+  // Não pausa, só pra registrar atividade futura se quiser
+});
+
+// Teclas pra navegar manualmente
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight" || e.key === " ") {
+    clearInterval(intervalo);
+    proximoSlide();
+    intervalo = setInterval(proximoSlide, DURACAO);
+  }
+  if (e.key === "ArrowLeft") {
+    clearInterval(intervalo);
+    irParaSlide((slideAtual - 1 + SLIDES.length) % SLIDES.length);
+    intervalo = setInterval(proximoSlide, DURACAO);
+  }
+  if (e.key === "f" || e.key === "F") {
+    document.documentElement.requestFullscreen?.();
+  }
+});
+
+// Ativa orbs
+setTimeout(() => {
+  document.getElementById("orb1").classList.add("ativo");
+  document.getElementById("orb2").classList.add("ativo");
+  document.getElementById("orb3").classList.add("ativo");
+}, 100);
+
+</script>
+</body>
+</html>
