@@ -524,12 +524,12 @@ html, body {
   <div class="slide" id="slide-qr">
     <div class="slide-qr">
       <div class="qr-supra">Seja bem-vindo</div>
-      <div class="qr-titulo">Acompanhe a programação<br>da nossa igreja</div>
+      <div class="qr-titulo">Veja os próximos cultos<br>e eventos</div>
       <div class="qr-box">
         <canvas class="qr-canvas" id="qrCanvas" width="240" height="240"></canvas>
       </div>
       <div class="qr-url" id="qrUrl"></div>
-      <div class="qr-desc">Aponte a câmera do celular para o QR Code para ver os próximos eventos e a programação da semana.</div>
+      <div class="qr-desc">Aponte a câmera do celular para ver a programação completa. Siga também <strong style="color:var(--amber);">@ieadrn.pv</strong> no Instagram.</div>
     </div>
   </div>
 
@@ -546,6 +546,7 @@ html, body {
 <div class="indicadores" id="indicadores"></div>
 <div class="barra-progresso" id="barraProgresso"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, query, where, orderBy, onSnapshot, limit, doc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -674,48 +675,26 @@ function carregarEventos() {
 }
 carregarEventos();
 
-// --- QR Code (gerado sem biblioteca externa, simples e eficaz) ---
+// --- QR Code real apontando pra agenda pública ---
 function gerarQR() {
-  const url = window.location.origin;
+  const url = window.location.origin + "/agenda.html";
   document.getElementById("qrUrl").textContent = url;
 
   const canvas = document.getElementById("qrCanvas");
-  const ctx = canvas.getContext("2d");
-  const tam = 240;
 
-  // QR simples: preenche com módulos usando um padrão visual de placeholder
-  // pra um QR real, trocar pelo endereço real e usar a lib qrcode.js
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, tam, tam);
-  ctx.fillStyle = "#08090D";
-
-  // Faz uma representação visual de QR (simplificada, mas fiel ao visual)
-  const cell = 8;
-  const cols = tam / cell;
-
-  // Semente determinística baseada na URL
-  let seed = url.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  const rand = () => { seed = (seed * 1664525 + 1013904223) & 0xffffffff; return (seed >>> 0) / 0xffffffff; };
-
-  for (let r = 0; r < cols; r++) {
-    for (let c = 0; c < cols; c++) {
-      // Finder patterns nos 3 cantos
-      const finder = (r < 7 && c < 7) || (r < 7 && c >= cols-7) || (r >= cols-7 && c < 7);
-      if (finder) {
-        const fr = r < 7 ? r : r - (cols-7);
-        const fc = c < 7 ? c : c - (cols-7);
-        const isFinderEdge = fr === 0 || fr === 6 || fc === 0 || fc === 6;
-        const isFinderInner = fr >= 2 && fr <= 4 && fc >= 2 && fc <= 4;
-        if (isFinderEdge || isFinderInner) {
-          ctx.fillRect(c * cell, r * cell, cell, cell);
-        }
-      } else if (r > 8 && c > 8 && !(c >= cols-8 && r < 9) && !(r >= cols-8 && c < 9)) {
-        if (rand() > 0.48) ctx.fillRect(c * cell, r * cell, cell, cell);
-      }
-    }
-  }
-
-  // Quiet zone já existe pelo fundo branco
+  // Usa a lib QRCode.js (carregada via script abaixo)
+  // Se não carregar ainda, tenta depois
+  const tentar = () => {
+    if (typeof QRCode === "undefined") { setTimeout(tentar, 200); return; }
+    QRCode.toCanvas(canvas, url, {
+      width: 240,
+      margin: 2,
+      color: { dark: "#08090D", light: "#ffffff" }
+    }, (err) => {
+      if (err) console.error("QR erro:", err);
+    });
+  };
+  tentar();
 }
 gerarQR();
 
