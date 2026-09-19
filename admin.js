@@ -5,7 +5,7 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  collection, addDoc, updateDoc, setDoc, doc, getDocs,
+  collection, addDoc, updateDoc, setDoc, doc, getDocs, deleteDoc,
   query, where, orderBy, limit, serverTimestamp, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -1008,3 +1008,282 @@ async function carregarModoManutencao() {
 }
 
 carregarModoManutencao();
+
+// ===============================
+// MÓDULO: AGENDA PÚBLICA
+// ===============================
+
+const IMGBB_KEY_ADMIN = "5e3b2c6eae12635e0d9b00e9af54edb6";
+
+let agEnviando = false;
+
+const agUploadArea = document.getElementById("agUploadArea");
+const agFileInput = document.getElementById("agFileInput");
+const agPreview = document.getElementById("agPreview");
+const agPreviewImg = document.getElementById("agPreviewImg");
+const agRemoverBanner = document.getElementById("agRemoverBanner");
+const agUploadIcone = document.getElementById("agUploadIcone");
+const agUploadTexto = document.getElementById("agUploadTexto");
+const agUploadHint = document.getElementById("agUploadHint");
+
+// --- Upload de banner ---
+
+if (agUploadArea) {
+  agUploadArea.addEventListener("click", () => {
+    if (!agEnviando) agFileInput.click();
+  });
+}
+
+if (agFileInput) {
+  agFileInput.addEventListener("change", async (e) => {
+    const arquivo = e.target.files[0];
+    if (!arquivo) return;
+
+    if (arquivo.size > 10 * 1024 * 1024) {
+      mostrarToast("Atenção", "Imagem muito grande. Máximo 10MB.");
+      return;
+    }
+
+    agEnviando = true;
+    agUploadIcone.textContent = "⏳";
+    agUploadTexto.textContent = "Enviando...";
+    agUploadHint.textContent = "Aguarde";
+
+    try {
+      const formData = new FormData();
+      formData.append("key", IMGBB_KEY_ADMIN);
+      formData.append("image", arquivo);
+
+      const resposta = await fetch("https://api.imgbb.com/1/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      const dados = await resposta.json();
+
+      if (dados.success) {
+        document.getElementById("agBannerUrl").value = dados.data.url;
+        agPreviewImg.src = dados.data.url;
+        agPreview.style.display = "block";
+        agUploadIcone.textContent = "✅";
+        agUploadTexto.textContent = "Banner pronto!";
+        agUploadHint.textContent = "Clique pra trocar";
+      } else {
+        throw new Error("Falha no upload");
+      }
+    } catch (erro) {
+      console.error("Erro upload banner:", erro);
+      mostrarToast("Erro", "Não foi possível enviar o banner.");
+      agUploadIcone.textContent = "🖼️";
+      agUploadTexto.textContent = "Clique pra escolher o banner";
+      agUploadHint.textContent = "JPG ou PNG — máx 10MB";
+    } finally {
+      agEnviando = false;
+    }
+  });
+}
+
+if (agRemoverBanner) {
+  agRemoverBanner.addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.getElementById("agBannerUrl").value = "";
+    agPreview.style.display = "none";
+    agFileInput.value = "";
+    agUploadIcone.textContent = "🖼️";
+    agUploadTexto.textContent = "Clique pra escolher o banner";
+    agUploadHint.textContent = "JPG ou PNG — máx 10MB";
+  });
+}
+
+// --- Publicar item na agenda ---
+
+const btnPublicarAgenda = document.getElementById("btnPublicarAgenda");
+
+if (btnPublicarAgenda) {
+  btnPublicarAgenda.addEventListener("click", async () => {
+
+    const titulo = document.getElementById("agTitulo").value.trim();
+    const tipo = document.getElementById("agTipo").value;
+    const dataInput = document.getElementById("agData").value;
+    const horario = document.getElementById("agHorario").value.trim();
+    const local = document.getElementById("agLocal").value.trim();
+    const pregador = document.getElementById("agPregador").value.trim();
+    const descricao = document.getElementById("agDescricao").value.trim();
+    const bannerUrl = document.getElementById("agBannerUrl").value.trim();
+    const notificar = document.getElementById("agNotificar").checked;
+
+    if (!titulo || !dataInput) {
+      mostrarToast("Atenção", "Preenche pelo menos título e data.");
+      return;
+    }
+
+    const btnText = document.getElementById("agBtnText");
+    btnPublicarAgenda.disabled = true;
+    btnText.textContent = "Publicando...";
+
+    try {
+      const [ano, mes, dia] = dataInput.split("-").map(Number);
+      const dataAgenda = Timestamp.fromDate(new Date(ano, mes - 1, dia, 12, 0));
+
+      await addDoc(collection(db, "agenda"), {
+        titulo,
+        tipo,
+        data: dataAgenda,
+        horario: horario || null,
+        local: local || null,
+        pregador: pregador || null,
+        descricao: descricao || null,
+        banner: bannerUrl || null,
+        criadoPor: usuarioAtual?.uid || "admin",
+        criadoEm: serverTimestamp()
+      });
+
+      // Notificação opcional
+      if (notificar) {
+        const linkCompleto = `${window.location.origin}/agenda.html`;
+        const dataFormatada = `${String(dia).padStart(2,"0")}/${String(mes).padStart(2,"0")}`;
+        const tituloNotif = tipo === "evento" ? `🎉 ${titulo}` : `📅 ${titulo}`;
+        const msgNotif = `${dataFormatada}${horario ? " às " + horario : ""}${local ? " · " + local : ""}. Confira a agenda.`;
+
+        const registro = await addDoc(collection(db, "notificacoes"), {
+          titulo: tituloNotif,
+          mensagem: msgNotif,
+          tipo: tipo === "evento" ? "evento" : "culto",
+          cor: tipo === "evento" ? "#6D28D9" : "#FFB020",
+          destino: "agenda.html",
+          imagemUrl: bannerUrl || null,
+          enviadoPor: usuarioAtual?.email || "admin",
+          data: serverTimestamp(),
+          totalEnviados: 0,
+          status: "enviando"
+        });
+
+        const resposta = await fetch("/.netlify/functions/enviar-notificacao", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            titulo: tituloNotif,
+            mensagem: msgNotif,
+            link: linkCompleto,
+            imagem: bannerUrl || null
+          })
+        });
+
+        if (resposta.ok) {
+          const resultado = await resposta.json();
+          await updateDoc(doc(db, "notificacoes", registro.id), {
+            totalEnviados: resultado.enviados || 0,
+            status: "enviada"
+          });
+        }
+
+        carregarHistorico();
+        atualizarDashboard();
+      }
+
+      mostrarToast("Sucesso", notificar
+        ? "Item publicado e notificação enviada!"
+        : "Item publicado na agenda!"
+      );
+
+      // Limpa formulário
+      document.getElementById("agTitulo").value = "";
+      document.getElementById("agHorario").value = "";
+      document.getElementById("agLocal").value = "";
+      document.getElementById("agPregador").value = "";
+      document.getElementById("agDescricao").value = "";
+      document.getElementById("agBannerUrl").value = "";
+      document.getElementById("agNotificar").checked = false;
+      agPreview.style.display = "none";
+      agFileInput.value = "";
+      agUploadIcone.textContent = "🖼️";
+      agUploadTexto.textContent = "Clique pra escolher o banner";
+      agUploadHint.textContent = "JPG ou PNG — máx 10MB";
+
+      carregarAgendaAdmin();
+
+    } catch (erro) {
+      console.error("Erro ao publicar na agenda:", erro);
+      mostrarToast("Erro", "Não foi possível publicar. Tenta de novo.");
+    } finally {
+      btnPublicarAgenda.disabled = false;
+      btnText.textContent = "Publicar na agenda";
+    }
+
+  });
+}
+
+// --- Listar itens ---
+
+async function carregarAgendaAdmin() {
+  const container = document.getElementById("listaAgendaAdmin");
+  if (!container) return;
+
+  try {
+    const q = query(collection(db, "agenda"), orderBy("data", "asc"));
+    const resultado = await getDocs(q);
+
+    if (resultado.empty) {
+      container.innerHTML = '<p style="color:var(--faint); font-size:13px;">Nenhum item na agenda ainda.</p>';
+      return;
+    }
+
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+    container.innerHTML = resultado.docs.map((docSnap) => {
+      const item = docSnap.data();
+      const id = docSnap.id;
+      const d = item.data.toDate();
+      const alvo = new Date(d); alvo.setHours(0,0,0,0);
+      const passado = alvo < hoje;
+      const dataFmt = `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+
+      return `
+        <div class="usuario-item" style="opacity:${passado ? 0.5 : 1};">
+          <div class="usuario-avatar" style="background:${item.tipo === "evento" ? "rgba(109,40,217,0.15)" : "rgba(255,176,32,0.12)"}; color:${item.tipo === "evento" ? "#A78BFA" : "#FFB020"};">
+            ${item.tipo === "evento" ? "🎉" : "📅"}
+          </div>
+          <div class="usuario-info">
+            <div class="usuario-nome">${escapeHtml(item.titulo)}</div>
+            <div class="usuario-meta">
+              ${dataFmt}${item.horario ? " · " + escapeHtml(item.horario) : ""}${item.local ? " · " + escapeHtml(item.local) : ""}${passado ? " · passado" : ""}
+            </div>
+            ${item.descricao ? `<div style="font-size:12.5px; color:var(--dim); margin-bottom:10px; line-height:1.5;">${escapeHtml(item.descricao)}</div>` : ""}
+            <div class="usuario-acoes">
+              <button type="button" class="usuario-btn perigo" data-id="${id}" data-acao="excluir-agenda">🗑 Excluir</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // Handler excluir
+    container.querySelectorAll('[data-acao="excluir-agenda"]').forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Excluir esse item da agenda pública?")) return;
+        btn.disabled = true;
+        btn.textContent = "Excluindo...";
+        try {
+          await deleteDoc(doc(db, "agenda", btn.dataset.id));
+          mostrarToast("Sucesso", "Item removido.");
+          carregarAgendaAdmin();
+        } catch (e) {
+          console.error(e);
+          mostrarToast("Erro", "Não foi possível excluir.");
+          btn.disabled = false;
+          btn.textContent = "🗑 Excluir";
+        }
+      });
+    });
+
+  } catch (erro) {
+    console.error("Erro ao carregar agenda admin:", erro);
+    container.innerHTML = '<p style="color:var(--red); font-size:13px;">Erro ao carregar.</p>';
+  }
+}
+
+// Adiciona deleteDoc aos imports (se ainda não tiver)
+// (já deveria ter nos imports do topo, confere depois)
+
+// Chama ao iniciar
+carregarAgendaAdmin();
