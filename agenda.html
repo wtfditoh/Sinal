@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SINAL — Agenda</title>
+<meta name="description" content="Próximos cultos e eventos da igreja">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#08090D">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #08090D;
+  --surface: #12151C;
+  --border: #1E2330;
+  --text: #F0F1F4;
+  --muted: #8B92A8;
+  --faint: #3D4558;
+  --amber: #FFB020;
+  --green: #2EE896;
+  --red: #FF5C5C;
+  --radius: 16px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 80% -10%, rgba(255,176,32,0.08), transparent),
+    radial-gradient(ellipse 40% 40% at 10% 100%, rgba(46,232,150,0.05), transparent);
+}
+
+.shell {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* Topo */
+.topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.anel {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: conic-gradient(from 180deg, #2EE896, #FFB020, #FF5C5C, #2EE896);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.anel::after {
+  content: ''; width: 24px; height: 24px;
+  border-radius: 50%; background: var(--bg);
+}
+
+.topo-info h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.3px;
+}
+
+.topo-info p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Instagram */
+.insta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,176,32,0.08);
+  border: 1px solid rgba(255,176,32,0.2);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--amber);
+  text-decoration: none;
+  margin-bottom: 32px;
+  transition: background 0.15s;
+}
+.insta-link:hover { background: rgba(255,176,32,0.14); }
+
+/* Seção */
+.secao-titulo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.secao-titulo::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Card de culto */
+.culto-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  animation: entrar 0.3s ease backwards;
+}
+
+@keyframes entrar {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.culto-badge {
+  flex-shrink: 0;
+  text-align: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 8px;
+  min-width: 52px;
+}
+.culto-badge-dia {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+}
+.culto-badge-mes {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.culto-badge.hoje { border-color: rgba(255,92,92,0.4); }
+.culto-badge.hoje .culto-badge-dia { color: var(--red); }
+.culto-badge.breve { border-color: rgba(255,176,32,0.3); }
+.culto-badge.breve .culto-badge-dia { color: var(--amber); }
+
+.culto-corpo { flex: 1; min-width: 0; }
+.culto-tipo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+.culto-tema {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.culto-pregador {
+  font-size: 12.5px;
+  color: var(--faint);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.culto-dia-semana {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.culto-dia-semana.hoje { background: rgba(255,92,92,0.12); color: var(--red); }
+.culto-dia-semana.normal { background: rgba(255,255,255,0.04); color: var(--faint); }
+
+/* Card de evento */
+.evento-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  animation: entrar 0.3s ease backwards;
+}
+
+.evento-badge {
+  flex-shrink: 0;
+  text-align: center;
+  background: rgba(255,176,32,0.08);
+  border: 1px solid rgba(255,176,32,0.2);
+  border-radius: 12px;
+  padding: 10px 8px;
+  min-width: 52px;
+}
+.evento-badge-dia {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--amber);
+}
+.evento-badge-mes {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--amber);
+  opacity: 0.6;
+  margin-top: 3px;
+}
+
+.evento-corpo { flex: 1; min-width: 0; }
+.evento-nome {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+.evento-desc {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.evento-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.evento-meta span {
+  font-size: 12px;
+  color: var(--faint);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Banner foto evento */
+.evento-banner {
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 12px;
+  max-height: 200px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+/* Estado vazio */
+.vazio {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--faint);
+  font-size: 14px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+/* Skeleton */
+@keyframes shimmer {
+  0% { background-position: -300% 0; }
+  100% { background-position: 300% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, #1a1d26 50%, var(--surface) 75%);
+  background-size: 300% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.skeleton-culto { height: 90px; margin-bottom: 10px; }
+
+/* Rodapé */
+.rodape {
+  margin-top: 48px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--faint);
+  line-height: 1.8;
+}
+
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="topo">
+    <div class="anel"></div>
+    <div class="topo-info">
+      <h1 id="nomeIgreja">SINAL</h1>
+      <p>Programação da equipe de mídia</p>
+    </div>
+  </div>
+
+  <a href="https://instagram.com/ieadrn.pv" target="_blank" class="insta-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+    @ieadrn.pv
+  </a>
+
+  <!-- Cultos -->
+  <div class="secao-titulo">Próximos cultos</div>
+  <div id="listaCultos">
+    <div class="skeleton skeleton-culto"></div>
+    <div class="skeleton skeleton-culto"></div>
+    <div class="skeleton skeleton-culto"></div>
+  </div>
+
+  <!-- Eventos -->
+  <div class="secao-titulo" style="margin-top:32px;">Eventos especiais</div>
+  <div id="listaEventos">
+    <div class="skeleton skeleton-culto"></div>
+    <div class="skeleton skeleton-culto"></div>
+  </div>
+
+  <div class="rodape">
+    Gerenciado com <strong style="color:var(--amber);">SINAL</strong> · Sistema de mídia para igrejas
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, query, where, orderBy, onSnapshot, limit, doc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDe7wqIfMB0BVFzs1yXPrSXK0Iq98BPDb0",
+  authDomain: "sinall.firebaseapp.com",
+  projectId: "sinall",
+  storageBucket: "sinall.firebasestorage.app",
+  messagingSenderId: "811815756526",
+  appId: "1:811815756526:web:baabfe914a5af625ee09ff"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const DIAS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const DIAS_COMPLETO = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+const MESES_ABREV = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+
+function escapeHtml(t) {
+  if (!t) return "";
+  const d = document.createElement("div");
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+// Nome da igreja
+async function carregarConfig() {
+  try {
+    const snap = await getDoc(doc(db, "configuracoes", "app"));
+    if (snap.exists() && snap.data().nomeIgreja) {
+      document.getElementById("nomeIgreja").textContent = snap.data().nomeIgreja;
+    }
+  } catch(e) {}
+}
+carregarConfig();
+
+// Cultos
+const agora = Timestamp.fromDate(new Date());
+const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+const qCultos = query(
+  collection(db, "cultos"),
+  where("data", ">=", agora),
+  orderBy("data", "asc"),
+  limit(8)
+);
+
+onSnapshot(qCultos, (snap) => {
+  const container = document.getElementById("listaCultos");
+
+  if (snap.empty) {
+    container.innerHTML = `<div class="vazio">Nenhum culto cadastrado por enquanto.</div>`;
+    return;
+  }
+
+  container.innerHTML = snap.docs.map((d, i) => {
+    const c = d.data();
+    const dt = c.data.toDate();
+    const alvo = new Date(dt); alvo.setHours(0,0,0,0);
+    const diffDias = Math.round((alvo - hoje) / 86400000);
+    const ehHoje = diffDias === 0;
+    const ehBreve = diffDias <= 3;
+
+    const dia = String(dt.getDate()).padStart(2,"0");
+    const mes = MESES_ABREV[dt.getMonth()];
+    const diaSemana = DIAS_COMPLETO[dt.getDay()];
+
+    return `
+      <div class="culto-card" style="animation-delay:${i*0.05}s">
+        <div class="culto-badge ${ehHoje ? "hoje" : ehBreve ? "breve" : ""}">
+          <div class="culto-badge-dia">${dia}</div>
+          <div class="culto-badge-mes">${mes}</div>
+        </div>
+        <div class="culto-corpo">
+          <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
+          ${c.tema ? `<div class="culto-tema">${escapeHtml(c.tema)}</div>` : ""}
+          ${c.pregador ? `<div class="culto-pregador">🎤 ${escapeHtml(c.pregador)}</div>` : ""}
+        </div>
+        <div class="culto-dia-semana ${ehHoje ? "hoje" : "normal"}">${ehHoje ? "HOJE" : diaSemana}</div>
+      </div>
+    `;
+  }).join("");
+});
+
+// Eventos
+const qEventos = query(
+  collection(db, "eventos"),
+  where("data", ">=", agora),
+  orderBy("data", "asc"),
+  limit(6)
+);
+
+onSnapshot(qEventos, (snap) => {
+  const container = document.getElementById("listaEventos");
+
+  if (snap.empty) {
+    container.innerHTML = `<div class="vazio">Nenhum evento especial cadastrado.</div>`;
+    return;
+  }
+
+  container.innerHTML = snap.docs.map((d, i) => {
+    const e = d.data();
+    const dt = e.data.toDate();
+    const dia = String(dt.getDate()).padStart(2,"0");
+    const mes = MESES_ABREV[dt.getMonth()];
+    const diaSemana = DIAS_COMPLETO[dt.getDay()];
+
+    return `
+      <div class="evento-card" style="animation-delay:${i*0.05}s">
+        <div class="evento-badge">
+          <div class="evento-badge-dia">${dia}</div>
+          <div class="evento-badge-mes">${mes}</div>
+        </div>
+        <div class="evento-corpo">
+          <div class="evento-nome">${escapeHtml(e.nome)}</div>
+          ${e.descricao ? `<div class="evento-desc">${escapeHtml(e.descricao)}</div>` : ""}
+          <div class="evento-meta">
+            <span>📅 ${diaSemana}</span>
+            ${e.horario ? `<span>🕐 ${escapeHtml(e.horario)}</span>` : ""}
+            ${e.local ? `<span>📍 ${escapeHtml(e.local)}</span>` : ""}
+          </div>
+          ${e.banner ? `<img class="evento-banner" src="${escapeHtml(e.banner)}" alt="${escapeHtml(e.nome)}" loading="lazy">` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+});
+</script>
+
+</body>
+</html>
