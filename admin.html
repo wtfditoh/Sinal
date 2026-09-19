@@ -897,6 +897,11 @@ textarea { resize: vertical; }
       Eventos
     </button>
 
+        <button class="nav-btn" data-secao="agenda">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="1.5" fill="currentColor"/></svg>
+      Agenda
+    </button>
+    
     <div class="nav-secao">Gestão</div>
 
     <button class="nav-btn" data-secao="usuarios">
@@ -1216,6 +1221,94 @@ textarea { resize: vertical; }
   
 
 
+  <!-- ====== AGENDA PÚBLICA ====== -->
+  <div id="secao-agenda" class="secao">
+    <div class="main-header">
+      <div class="main-titulo">Agenda pública</div>
+      <div class="main-sub">Programação mostrada em agenda.html e no painel da TV. Diferente de "Eventos" — aqui você cadastra tudo que o público precisa saber (mesmo os cultos que a equipe não cobre).</div>
+    </div>
+    <div class="main-corpo">
+
+      <div class="modulo">
+        <div class="modulo-titulo">Novo item na agenda</div>
+        <div class="modulo-sub">Aparece pra qualquer pessoa que abrir o link público da igreja.</div>
+
+        <div class="row-2">
+          <div class="field">
+            <label>Título</label>
+            <input id="agTitulo" type="text" placeholder="Ex.: Culto de Senhoras, Batismo...">
+          </div>
+          <div class="field">
+            <label>Tipo</label>
+            <select id="agTipo">
+              <option value="culto">Culto / Reunião</option>
+              <option value="evento">Evento especial</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field">
+            <label>Data</label>
+            <input id="agData" type="date">
+          </div>
+          <div class="field">
+            <label>Horário</label>
+            <input id="agHorario" type="text" placeholder="Ex.: 19h30">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Local</label>
+          <input id="agLocal" type="text" placeholder="Ex.: Templo sede">
+        </div>
+
+        <div class="field">
+          <label>Pregador / Responsável (opcional)</label>
+          <input id="agPregador" type="text" placeholder="Ex.: Pastor João">
+        </div>
+
+        <div class="field">
+          <label>Descrição (opcional)</label>
+          <textarea id="agDescricao" rows="3" placeholder="Detalhes adicionais..."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Banner (opcional)</label>
+          <div id="agUploadArea" style="border:2px dashed var(--border); border-radius:12px; padding:24px 20px; text-align:center; cursor:pointer; background:var(--card2); transition:border-color 0.15s;">
+            <div style="font-size:32px; margin-bottom:6px;" id="agUploadIcone">🖼️</div>
+            <div style="font-size:13px; color:var(--dim);" id="agUploadTexto">Clique pra escolher o banner</div>
+            <div style="font-size:11px; color:var(--faint);" id="agUploadHint">JPG ou PNG — máx 10MB</div>
+            <input type="file" id="agFileInput" accept="image/*" style="display:none;">
+            <div id="agPreview" style="display:none; margin-top:12px;">
+              <img id="agPreviewImg" style="max-width:100%; max-height:180px; border-radius:8px;">
+              <button type="button" id="agRemoverBanner" style="margin-top:8px; background:rgba(255,92,92,0.1); border:1px solid rgba(255,92,92,0.3); color:var(--red); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">Remover</button>
+            </div>
+          </div>
+          <input type="hidden" id="agBannerUrl">
+        </div>
+
+        <div class="field" style="display:flex; align-items:center; gap:10px; background:var(--card2); border:1px solid var(--border); border-radius:12px; padding:14px 16px;">
+          <input type="checkbox" id="agNotificar" style="width:20px; height:20px; cursor:pointer;">
+          <label for="agNotificar" style="font-family:var(--body); text-transform:none; letter-spacing:0; color:var(--text); font-size:14px; cursor:pointer; margin:0;">
+            Enviar notificação pra equipe quando publicar
+          </label>
+        </div>
+
+        <button id="btnPublicarAgenda" class="btn-enviar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span id="agBtnText">Publicar na agenda</span>
+        </button>
+      </div>
+
+      <div class="modulo">
+        <div class="modulo-titulo">Itens publicados</div>
+        <div class="modulo-sub">Futuros e passados. Os próximos aparecem primeiro.</div>
+        <div id="listaAgendaAdmin"></div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ====== CONFIGURAÇÕES ====== -->
   <div id="secao-configuracoes" class="secao">
