@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SINAL — Agenda</title>
-<meta name="description" content="Próximos cultos e eventos da igreja">
+<meta name="description" content="Programação completa da igreja">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#08090D">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -36,19 +36,9 @@ body {
     radial-gradient(ellipse 40% 40% at 10% 100%, rgba(46,232,150,0.05), transparent);
 }
 
-.shell {
-  max-width: 540px;
-  margin: 0 auto;
-  padding: 40px 20px 80px;
-}
+.shell { max-width: 540px; margin: 0 auto; padding: 40px 20px 80px; }
 
-/* Topo */
-.topo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 40px;
-}
+.topo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
 
 .anel {
   width: 38px; height: 38px; border-radius: 50%;
@@ -67,14 +57,8 @@ body {
   font-size: 20px;
   letter-spacing: -0.3px;
 }
+.topo-info p { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
-.topo-info p {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-/* Instagram */
 .insta-link {
   display: inline-flex;
   align-items: center;
@@ -92,7 +76,6 @@ body {
 }
 .insta-link:hover { background: rgba(255,176,32,0.14); }
 
-/* Seção */
 .secao-titulo {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 11px;
@@ -112,8 +95,7 @@ body {
   background: var(--border);
 }
 
-/* Card de culto */
-.culto-card {
+.item-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -130,7 +112,12 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.culto-badge {
+.item-card.destaque {
+  border-color: rgba(255,92,92,0.35);
+  background: linear-gradient(180deg, rgba(255,92,92,0.04), var(--surface));
+}
+
+.item-badge {
   flex-shrink: 0;
   text-align: center;
   background: var(--bg);
@@ -139,13 +126,13 @@ body {
   padding: 10px 8px;
   min-width: 52px;
 }
-.culto-badge-dia {
+.item-badge-dia {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 24px;
   line-height: 1;
 }
-.culto-badge-mes {
+.item-badge-mes {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 10px;
   font-weight: 600;
@@ -154,33 +141,64 @@ body {
   color: var(--muted);
   margin-top: 3px;
 }
-.culto-badge.hoje { border-color: rgba(255,92,92,0.4); }
-.culto-badge.hoje .culto-badge-dia { color: var(--red); }
-.culto-badge.breve { border-color: rgba(255,176,32,0.3); }
-.culto-badge.breve .culto-badge-dia { color: var(--amber); }
+.item-badge.hoje { border-color: rgba(255,92,92,0.4); }
+.item-badge.hoje .item-badge-dia { color: var(--red); }
+.item-badge.breve { border-color: rgba(255,176,32,0.3); }
+.item-badge.breve .item-badge-dia { color: var(--amber); }
+.item-badge.evento { border-color: rgba(124,58,237,0.3); background: rgba(124,58,237,0.05); }
+.item-badge.evento .item-badge-dia { color: #A78BFA; }
 
-.culto-corpo { flex: 1; min-width: 0; }
-.culto-tipo {
+.item-corpo { flex: 1; min-width: 0; }
+
+.item-tag {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 6px;
+}
+.item-tag.evento { color: #A78BFA; }
+
+.item-titulo {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 18px;
   margin-bottom: 4px;
+  line-height: 1.2;
 }
-.culto-tema {
+
+.item-sub {
   font-size: 13.5px;
   color: var(--muted);
   margin-bottom: 6px;
   line-height: 1.4;
 }
-.culto-pregador {
-  font-size: 12.5px;
+
+.item-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.item-meta span {
+  font-size: 12px;
   color: var(--faint);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
-.culto-dia-semana {
+.item-banner {
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 12px;
+  max-height: 200px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.item-dia-semana {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 11px;
   font-weight: 600;
@@ -190,87 +208,11 @@ body {
   border-radius: 20px;
   flex-shrink: 0;
   margin-top: 2px;
+  white-space: nowrap;
 }
-.culto-dia-semana.hoje { background: rgba(255,92,92,0.12); color: var(--red); }
-.culto-dia-semana.normal { background: rgba(255,255,255,0.04); color: var(--faint); }
+.item-dia-semana.hoje { background: rgba(255,92,92,0.12); color: var(--red); }
+.item-dia-semana.normal { background: rgba(255,255,255,0.04); color: var(--faint); }
 
-/* Card de evento */
-.evento-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 10px;
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  animation: entrar 0.3s ease backwards;
-}
-
-.evento-badge {
-  flex-shrink: 0;
-  text-align: center;
-  background: rgba(255,176,32,0.08);
-  border: 1px solid rgba(255,176,32,0.2);
-  border-radius: 12px;
-  padding: 10px 8px;
-  min-width: 52px;
-}
-.evento-badge-dia {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 24px;
-  line-height: 1;
-  color: var(--amber);
-}
-.evento-badge-mes {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--amber);
-  opacity: 0.6;
-  margin-top: 3px;
-}
-
-.evento-corpo { flex: 1; min-width: 0; }
-.evento-nome {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  margin-bottom: 4px;
-}
-.evento-desc {
-  font-size: 13.5px;
-  color: var(--muted);
-  margin-bottom: 6px;
-  line-height: 1.4;
-}
-.evento-meta {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.evento-meta span {
-  font-size: 12px;
-  color: var(--faint);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Banner foto evento */
-.evento-banner {
-  width: 100%;
-  border-radius: 12px;
-  margin-top: 12px;
-  max-height: 200px;
-  object-fit: cover;
-  border: 1px solid var(--border);
-}
-
-/* Estado vazio */
 .vazio {
   text-align: center;
   padding: 40px 20px;
@@ -281,7 +223,6 @@ body {
   border-radius: var(--radius);
 }
 
-/* Skeleton */
 @keyframes shimmer {
   0% { background-position: -300% 0; }
   100% { background-position: 300% 0; }
@@ -293,9 +234,8 @@ body {
   border-radius: var(--radius);
   border: 1px solid var(--border);
 }
-.skeleton-culto { height: 90px; margin-bottom: 10px; }
+.skeleton-item { height: 90px; margin-bottom: 10px; }
 
-/* Rodapé */
 .rodape {
   margin-top: 48px;
   text-align: center;
@@ -314,28 +254,20 @@ body {
     <div class="anel"></div>
     <div class="topo-info">
       <h1 id="nomeIgreja">SINAL</h1>
-      <p>Programação da equipe de mídia</p>
+      <p>Programação da igreja</p>
     </div>
   </div>
 
-  <a href="https://instagram.com/ieadrn.pv" target="_blank" class="insta-link">
+  <a href="https://instagram.com/ieadrn.pv" target="_blank" class="insta-link" id="instaLink">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-    @ieadrn.pv
+    <span id="instaTexto">@ieadrn.pv</span>
   </a>
 
-  <!-- Cultos -->
-  <div class="secao-titulo">Próximos cultos</div>
-  <div id="listaCultos">
-    <div class="skeleton skeleton-culto"></div>
-    <div class="skeleton skeleton-culto"></div>
-    <div class="skeleton skeleton-culto"></div>
-  </div>
-
-  <!-- Eventos -->
-  <div class="secao-titulo" style="margin-top:32px;">Eventos especiais</div>
-  <div id="listaEventos">
-    <div class="skeleton skeleton-culto"></div>
-    <div class="skeleton skeleton-culto"></div>
+  <div class="secao-titulo">Próximos</div>
+  <div id="listaAgenda">
+    <div class="skeleton skeleton-item"></div>
+    <div class="skeleton skeleton-item"></div>
+    <div class="skeleton skeleton-item"></div>
   </div>
 
   <div class="rodape">
@@ -346,23 +278,14 @@ body {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, query, where, orderBy, onSnapshot, limit, doc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDe7wqIfMB0BVFzs1yXPrSXK0Iq98BPDb0",
-  authDomain: "sinall.firebaseapp.com",
-  projectId: "sinall",
-  storageBucket: "sinall.firebasestorage.app",
-  messagingSenderId: "811815756526",
-  appId: "1:811815756526:web:baabfe914a5af625ee09ff"
-};
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const DIAS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-const DIAS_COMPLETO = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 const MESES_ABREV = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+const DIAS_COMPLETO = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 
 function escapeHtml(t) {
   if (!t) return "";
@@ -371,108 +294,88 @@ function escapeHtml(t) {
   return d.innerHTML;
 }
 
-// Nome da igreja
+// Config da igreja
 async function carregarConfig() {
   try {
     const snap = await getDoc(doc(db, "configuracoes", "app"));
-    if (snap.exists() && snap.data().nomeIgreja) {
-      document.getElementById("nomeIgreja").textContent = snap.data().nomeIgreja;
+    if (snap.exists()) {
+      const c = snap.data();
+      if (c.nomeIgreja) document.getElementById("nomeIgreja").textContent = c.nomeIgreja;
+
+      // Instagram — procura na string de links (ex: "Instagram: instagram.com/nome")
+      if (c.links) {
+        const match = c.links.match(/instagram\.com\/([a-zA-Z0-9_.]+)/i);
+        if (match) {
+          const handle = match[1];
+          document.getElementById("instaLink").href = `https://instagram.com/${handle}`;
+          document.getElementById("instaTexto").textContent = `@${handle}`;
+        }
+      }
     }
   } catch(e) {}
 }
 carregarConfig();
 
-// Cultos
-const agora = Timestamp.fromDate(new Date());
-const hoje = new Date(); hoje.setHours(0,0,0,0);
+// Agenda
+const hoje0h = new Date(); hoje0h.setHours(0,0,0,0);
 
-const qCultos = query(
-  collection(db, "cultos"),
-  where("data", ">=", agora),
-  orderBy("data", "asc"),
-  limit(8)
+const qAgenda = query(
+  collection(db, "agenda"),
+  orderBy("data", "asc")
 );
 
-onSnapshot(qCultos, (snap) => {
-  const container = document.getElementById("listaCultos");
+onSnapshot(qAgenda, (snap) => {
+  const container = document.getElementById("listaAgenda");
 
-  if (snap.empty) {
-    container.innerHTML = `<div class="vazio">Nenhum culto cadastrado por enquanto.</div>`;
+  // Filtra só do dia de hoje pra frente
+  const itens = snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .filter((item) => {
+      if (!item.data) return false;
+      const d = item.data.toDate();
+      return d >= hoje0h;
+    });
+
+  if (itens.length === 0) {
+    container.innerHTML = `<div class="vazio">Nenhum evento cadastrado por enquanto.</div>`;
     return;
   }
 
-  container.innerHTML = snap.docs.map((d, i) => {
-    const c = d.data();
-    const dt = c.data.toDate();
+  container.innerHTML = itens.map((item, i) => {
+    const dt = item.data.toDate();
     const alvo = new Date(dt); alvo.setHours(0,0,0,0);
-    const diffDias = Math.round((alvo - hoje) / 86400000);
+    const diffDias = Math.round((alvo - hoje0h) / 86400000);
     const ehHoje = diffDias === 0;
-    const ehBreve = diffDias <= 3;
+    const ehBreve = diffDias > 0 && diffDias <= 3;
+    const ehEvento = item.tipo === "evento";
 
     const dia = String(dt.getDate()).padStart(2,"0");
     const mes = MESES_ABREV[dt.getMonth()];
     const diaSemana = DIAS_COMPLETO[dt.getDay()];
 
     return `
-      <div class="culto-card" style="animation-delay:${i*0.05}s">
-        <div class="culto-badge ${ehHoje ? "hoje" : ehBreve ? "breve" : ""}">
-          <div class="culto-badge-dia">${dia}</div>
-          <div class="culto-badge-mes">${mes}</div>
+      <div class="item-card ${ehHoje ? "destaque" : ""}" style="animation-delay:${i*0.05}s">
+        <div class="item-badge ${ehHoje ? "hoje" : ehBreve ? "breve" : ""} ${ehEvento ? "evento" : ""}">
+          <div class="item-badge-dia">${dia}</div>
+          <div class="item-badge-mes">${mes}</div>
         </div>
-        <div class="culto-corpo">
-          <div class="culto-tipo">${escapeHtml(c.tipo) || "Culto"}</div>
-          ${c.tema ? `<div class="culto-tema">${escapeHtml(c.tema)}</div>` : ""}
-          ${c.pregador ? `<div class="culto-pregador">🎤 ${escapeHtml(c.pregador)}</div>` : ""}
-        </div>
-        <div class="culto-dia-semana ${ehHoje ? "hoje" : "normal"}">${ehHoje ? "HOJE" : diaSemana}</div>
-      </div>
-    `;
-  }).join("");
-});
-
-// Eventos
-const qEventos = query(
-  collection(db, "eventos"),
-  where("data", ">=", agora),
-  orderBy("data", "asc"),
-  limit(6)
-);
-
-onSnapshot(qEventos, (snap) => {
-  const container = document.getElementById("listaEventos");
-
-  if (snap.empty) {
-    container.innerHTML = `<div class="vazio">Nenhum evento especial cadastrado.</div>`;
-    return;
-  }
-
-  container.innerHTML = snap.docs.map((d, i) => {
-    const e = d.data();
-    const dt = e.data.toDate();
-    const dia = String(dt.getDate()).padStart(2,"0");
-    const mes = MESES_ABREV[dt.getMonth()];
-    const diaSemana = DIAS_COMPLETO[dt.getDay()];
-
-    return `
-      <div class="evento-card" style="animation-delay:${i*0.05}s">
-        <div class="evento-badge">
-          <div class="evento-badge-dia">${dia}</div>
-          <div class="evento-badge-mes">${mes}</div>
-        </div>
-        <div class="evento-corpo">
-          <div class="evento-nome">${escapeHtml(e.nome)}</div>
-          ${e.descricao ? `<div class="evento-desc">${escapeHtml(e.descricao)}</div>` : ""}
-          <div class="evento-meta">
-            <span>📅 ${diaSemana}</span>
-            ${e.horario ? `<span>🕐 ${escapeHtml(e.horario)}</span>` : ""}
-            ${e.local ? `<span>📍 ${escapeHtml(e.local)}</span>` : ""}
+        <div class="item-corpo">
+          ${ehEvento ? `<div class="item-tag evento">Evento especial</div>` : ""}
+          <div class="item-titulo">${escapeHtml(item.titulo)}</div>
+          ${item.descricao ? `<div class="item-sub">${escapeHtml(item.descricao)}</div>` : ""}
+          <div class="item-meta">
+            ${item.horario ? `<span>🕐 ${escapeHtml(item.horario)}</span>` : ""}
+            ${item.local ? `<span>📍 ${escapeHtml(item.local)}</span>` : ""}
+            ${item.pregador ? `<span>🎤 ${escapeHtml(item.pregador)}</span>` : ""}
           </div>
-          ${e.banner ? `<img class="evento-banner" src="${escapeHtml(e.banner)}" alt="${escapeHtml(e.nome)}" loading="lazy">` : ""}
+          ${item.banner ? `<img class="item-banner" src="${escapeHtml(item.banner)}" alt="${escapeHtml(item.titulo)}" loading="lazy">` : ""}
         </div>
+        ${!ehEvento ? `<div class="item-dia-semana ${ehHoje ? "hoje" : "normal"}">${ehHoje ? "HOJE" : diaSemana}</div>` : ""}
       </div>
     `;
   }).join("");
 });
+
 </script>
 
 </body>
